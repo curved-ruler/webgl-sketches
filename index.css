@@ -1,0 +1,94 @@
+﻿
+body#dark {
+
+  position: absolute;
+  height:   100%;
+  width:    100%;
+  margin:   0px;
+
+  background-color: rgb(0,0,0);
+  color:            rgb(180,180,180);
+  
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:   14px;
+  /*
+  font-family: Monaco;
+  font-size:   15px;
+  */
+}
+
+body.back {
+  background-image: url('backbl.png');
+}
+
+
+span.h {
+  font-size: 27px;
+  font-weight: bold;
+  padding-top:    15px;
+  padding-bottom: 15px;
+  padding-left:   15px;
+  padding-right:  15px;
+}
+
+span.hh {
+  font-size: 20px;
+  font-weight: bold;
+  padding-top:    15px;
+  padding-bottom: 15px;
+  padding-left:   15px;
+  padding-right:  15px;
+}
+
+div.container {
+  margin-top:    70px;
+  margin-bottom: 70px;
+  margin-left:   auto;
+  margin-right:  auto;
+  
+  padding-top:    70px;
+  padding-bottom: 70px;
+  padding-left:   10px;
+  padding-right:  10px;
+  
+  text-align:    center;
+  width:         1040px;
+  background-color: rgb(30,30,30);
+}
+
+div.text {
+  text-align: justify;
+  width:      910px;
+}
+.center {
+  margin-left:  auto;
+  margin-right: auto;
+}
+.txtleft {
+  text-align: left;
+}
+.txtcenter {
+  text-align: center;
+}
+
+td {
+    padding : 0px 10px 0px 10px;
+}
+td.head {
+  background-color: rgb(40,40,40);
+}
+
+
+img.link {
+  border: 0px;
+}
+
+/*
+a:link    { color: rgb(180,160,100); }
+a:visited { color: rgb(180,160,100); }
+*/
+a:link    { color: rgb(175,100,0); }
+a:visited { color: rgb(175,100,0); }
+a:hover {}
+a:active {}
+

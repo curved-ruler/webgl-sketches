@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <link rel="stylesheet" type="text/css" href="objector.css"/>
+        <script src="scripts/objector.js" type="module"></script>
+        <title>Objector</title>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <table id="menu">
+            <tr>
+                <td class="left">Mouse drag, arrow keys:</td>
+                <td>Rotate</td>
+            </tr>
+            <tr>
+                <td class="left">Mouse wheel, W/S :</td>
+                <td>Scale</td>
+            </tr>
+            <tr>
+                <td class="left">M:</td>
+                <td>Show / Hide Menu</td>
+            </tr>
+            <tr>
+                <td class="left">Render:</td>
+                <td>
+                  <select id="render" onchange="setRenderMode(this.value)"></select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Model set 1:</td>
+                <td>
+                  <select id="model1" onchange="setModel(this.value, 1)">
+                    <option value=""></option>
+                  </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Model set 2:</td>
+                <td>
+                  <select id="model2" onchange="setModel(this.value, 2)">
+                    <option value=""></option>
+                  </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Division:</td>
+                <td>
+                    <input id="divide" type="checkbox" onchange="toggleDivision(this.checked)">
+                    <select id="divnum" onchange="setDivNum(this.value)">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Cyclography alpha:</td>
+                <td>
+                    <input id="cycalpha" type="checkbox" onchange="toggleCA(this.checked)">
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Cyclography persp:</td>
+                <td>
+                    <input id="cycp" type="checkbox" onchange="toggleCPersp(this.checked)">
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

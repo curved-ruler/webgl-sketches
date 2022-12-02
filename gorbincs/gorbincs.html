@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <link rel="stylesheet" type="text/css" href="objector.css"/>
+        <script src="./gorbincs.js" type="module"></script>
+        <title>Curves</title>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <table id="menu">
+            <tr>
+                <td class="left">M:</td>
+                <td>Show / hide menu</td>
+            <tr>
+            <tr>
+                <td class="left">Mouse wheel or W/S:</td>
+                <td>Zoom</td>
+            <tr>
+            <tr>
+                <td class="left">Mouse left: <span id="mode_span">Add</span></td>
+                <td>
+                  <button onclick="toggle_mode()">A / M / D</button>
+                </td>
+            <tr>
+            <tr>
+                <td class="left">Curve type:</td>
+                <td>
+                  <select id="curve_type" onchange="set_curve_type(this.value)"></select>
+                </td>
+            <tr>
+            <tr>
+                <td class="left">Num of pts:</td>
+                <td>
+                  <select id="pts" onchange="set_pts(this.value)">
+                    <option value="10">10</option>
+                    <option value="20" selected="true">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                    <option value="500">500</option>
+                  </select>
+                </td>
+            <tr>
+            <tr>
+                <td class="left">Show curve:</td>
+                <td>
+                    <input id="scurve" type="checkbox" onchange="s_curve(this.checked)" checked />
+                </td>
+            <tr>
+            <tr>
+                <td class="left">Show controls:</td>
+                <td>
+                    <input id="scontrols" type="checkbox" onchange="s_cont(this.checked)" checked />
+                </td>
+            <tr>
+            <tr>
+                <td class="left">Discrete curvature:</td>
+                <td>
+                  <input type="radio" name="curvature" value="curva_no" onchange="set_curvature(this.value)" checked="true" />No
+                  &nbsp;<input type="radio" name="curvature" value="curva_lin" onchange="set_curvature(this.value)" />Lin
+                  &nbsp;<input type="radio" name="curvature" value="curva_circ" onchange="set_curvature(this.value)" />C1
+                  &nbsp;<input type="radio" name="curvature" value="curva_circ_ok" onchange="set_curvature(this.value)" />C2
+                </td>
+            <tr>
+        </table>
+    </body>
+</html>

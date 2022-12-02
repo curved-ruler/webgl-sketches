@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <!--link rel="stylesheet" type="text/css" href="base3d.css"/-->
+        <script src="parametric.js" type="module"></script>
+        <title>Parametric</title>
+        <style>
+#menu {
+  position: absolute;
+  top:  10px;
+  left: 10px;
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  color: rgb(120, 255, 255);
+}
+.left {
+  text-align: right;
+  padding-right: 10px;
+}
+.hidden {
+  display: none;
+}
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas" style="position: absolute; top:  0px; left: 0px;"></canvas>
+        
+        <table id="menu">
+            <tr>
+                <td class="left">M:</td>
+                <td>Show/Hide Menu</td>
+            </tr>
+            <tr>
+                <td class="left">I:</td>
+                <td>Toggle projection</td>
+            </tr>
+            <tr>
+                <td class="left">C:</td>
+                <td>Colscheme</td>
+            </tr>
+            <tr>
+                <td class="left">Mouse wheel / drag:</td>
+                <td>Scale / Rotate</td>
+            </tr>
+            <tr>
+                <td class="left">Presets:</td>
+                <td>
+                    <select id="pres" onchange="preset(this.value)">
+                        <option value="shell" selected="true">Shell</option>
+                        <option value="clifford">Clifford</option>
+                        <option value="dini">Dini</option>
+                        <option value="fxy">f(x,y)</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Function:</td>
+                <td>
+                    <textarea id="func" type="text" rows="10" cols="68"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td class="left"></td>
+                <td><button onclick="setf()">Show</button></td>
+            </tr>
+        </table>
+    </body>
+</html>

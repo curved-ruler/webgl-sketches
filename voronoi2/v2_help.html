@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" type="text/css" href="../index.css"/>
+    <title>Help for Voronoi 2.5D</title>
+  </head>
+  
+  <body id="dark" class="back">
+    <div  class="container" style="text-align: justify;">
+      For functions, you can use GLSL, version is WebGL 2.0 (GLSL 300 es).
+      <br/>
+      Quick help: <a href="http://www.shaderific.com/glsl-functions/">Shaderific</a>
+      A bit deeper: <a href="https://www.khronos.org/opengl/wiki/OpenGL_Shading_Language">Khronos Wiki</a>
+      <br/><br/><br/>
+      Wirting helper functions are permitted.
+      <br/><br/><br/><br/>
+      
+      
+      
+      <b><u>Norm function:</u></b> <pre>float norm (in vec2 p1, in vec2 p2)</pre>
+      The canvas corners are [-1,-1] and [1,1].
+      <br/><br/><br/><br/>
+      
+      
+      
+      <b><u>Compute function:</u></b> <pre>hcol comp_values (in fdata fd)</pre>
+      Where "fdata" and "hcol" types are structs:
+<pre>
+// For a given pixel,
+struct fdata
+{
+    bool  spot; // true if pixel is very close to a base
+    float d1;   // distance from the closest base
+    int   i1;   // index of the closest base (-1 if not exists)
+    float d2;   // distance from the 2nd closest base
+    int   i2;   // index of the 2nd closest base (-1 if not exists)
+    float d3;   // distance from the 3rd closest base
+    int   i3;   // index of the 3rd closest base (-1 if not exists)
+};
+
+struct hcol
+{
+    float h;   // the height for the pixel displayed in 3D view
+    vec3  col; // the colour of the pixel.
+    // You can get the colour of a base given its id: vec3 getcol(in int base_id)
+};
+</pre>
+    </div>
+  </body>
+</html>

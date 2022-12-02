@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <link rel="stylesheet" type="text/css" href="../index.css"/>
+        <link rel="stylesheet" type="text/css" href="voronoi2.css"/>
+        <script data-main="scripts/voronoi2.js" src="third/require.js"></script>
+        <title>Voronoi 2.5D</title>
+    </head>
+    <body id="dark" class="back">
+      <div class="maincontent">
+        <table cellpadding="5px" border="0px">
+          <tr>
+            <td style="text-align: center;">
+              Use GLSL to give distance function: <a href="v2_help.html">Help</a>
+              <br/>
+              <textarea rows="10" cols="96" id="fnorm_area"></textarea>
+            </td>
+            
+            <td style="text-align: center;">
+              Compute function: <a href="v2_help.html">Help</a>
+              <br/>
+              <textarea rows="10" cols="96" id="f123_area"></textarea>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="center">
+              
+              <div style="float:left; padding-left:45px">
+                Bases:
+                <select id="presets" onchange="preset_base(this.value)">
+                  <option value="0"></option>
+                  <option value="cross" selected="true">cross</option>
+                  <option value="rrr3">regular3</option>
+                  <option value="rrr4">regular4</option>
+                  <option value="rrr5">regular5</option>
+                  <option value="rrr6">regular6</option>
+                  <option value="rrr7">regular7</option>
+                  <option value="rrr8">regular8</option>
+                  <option value="spiral">spiral</option>
+                  <option value="sin">sin</option>
+                </select>
+                
+                <select id="noise"   onchange="set_noise(this.value)">
+                  <option value="0" selected="true">Noise: 0</option>
+                  <option value="0.01">Noise: 0.01</option>
+                  <option value="0.02">Noise: 0.02</option>
+                  <option value="0.03">Noise: 0.03</option>
+                  <option value="0.04">Noise: 0.04</option>
+                  <option value="0.05">Noise: 0.05</option>
+                  <option value="0.06">Noise: 0.06</option>
+                  <option value="0.07">Noise: 0.07</option>
+                  <option value="0.08">Noise: 0.08</option>
+                  <option value="0.09">Noise: 0.09</option>
+                  <option value="0.1">Noise: 0.1</option>
+                </select>
+                
+                Colour:
+                <select id="col" onchange="set_colscheme(this.value)">
+                  <option value="y" selected="true">Yellow</option>
+                  <option value="cy">Yel-Cy</option>
+                  <option value="rnd">RND</option>
+                </select>
+                
+                Distance:
+                <select id="dist"   onchange="set_dist(this.value)">
+                  <option value="pp-10.0">p-10</option>
+                  <option value="pp-5.0">p-5</option>
+                  <option value="pp-2.0">p-2</option>
+                  <option value="pp-1.0">p-1</option>
+                  <option value="pp-0.5">p-0.5</option>
+                  <option value="pp0.5">p 0.5</option>
+                  <option value="pp1.0">p 1</option>
+                  <option value="pp2.0" selected="true">p 2</option>
+                  <option value="pp4.0">p 4</option>
+                  <option value="pp6.0">p 6</option>
+                  <option value="pp8.0">p 8</option>
+                  <option value="pp10.0">p 10</option>
+                  <option value="pinf">pINF</option>
+                  <option value="sin01">sin01</option>
+                </select>
+                
+                Compute:
+                <select id="compute" onchange="set_computef(this.value)">
+                  <option value="0" selected="true">F1</option>
+                  <option value="1">F2-F1</option>
+                  <option value="2">F123</option>
+                  <option value="3">Fclamp</option>
+                  <option value="4">Fabs</option>
+                </select>
+                
+                3D:
+                <select id="trid" onchange="set_3d(this.value)">
+                  <option value="mt" selected="true">ProjTri</option>
+                  <option value="mta">ProjTriAlpha</option>
+                  <option value="ml">ProjLine</option>
+                  <option value="mla">ProjLineAlpha</option>
+                  <option value="6t">FishTri</option>
+                  <option value="6ta">FishTriAlpha</option>
+                  <option value="6l">FishLine</option>
+                  <option value="6la">FishLineAlpha</option>
+                </select>
+                
+                <button onclick="toggle_bck()">BC</button>
+              </div>
+              
+              <div style="float:right; padding-right:45px">
+                <button onclick="toggle_anim()" id="animbut">Animate</button>
+                <button onclick="zoomin()">+</button>
+                <button onclick="zoomout()">-</button>
+                <button onclick="readNorm()">Apply Funcs</button>
+                <button onclick="toggleBi()">A/M/D</button> : <span id="base_input" style="display:inline-block; width:33px"></span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="text-align: center; width: 790px;">
+              <canvas id="canvas" width="700" height="700"></canvas>
+            </td>
+            <td style="text-align: center; width: 790px;">
+              <canvas id="canvas3d" width="700" height="700"></canvas>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <link rel="stylesheet" type="text/css" href="sphere4d.css"/>
+        <script src="scripts/sphere4d.js" type="module"></script>
+        <title>Sphere4D</title>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        <table id="menu">
+            <tr>
+                <td class="left">M:</td>
+                <td>Show / hide menu</td>
+            <tr>
+            <tr>
+                <td class="left">Mouse drag:</td>
+                <td>Rotate</td>
+            <tr>
+            <tr>
+                <td class="left">Mouse wheel or W/S:</td>
+                <td>Zoom in/out</td>
+            <tr>
+            <tr>
+                <td class="left">Turn angle:</td>
+                <td>
+                  <input type="radio" name="rfi" value="fi1" onchange="set_fi(this.value)" checked="true">φ1
+                  &nbsp;<input type="radio" name="rfi" value="fi2" onchange="set_fi(this.value)">φ2
+                  &nbsp;<input type="radio" name="rfi" value="fi3" onchange="set_fi(this.value)">φ3
+                </td>
+            <tr>
+            <!--tr>
+                <td class="left">B/N:</td>
+                <td>"Plane" up/down</td>
+            <tr-->
+            <tr>
+                <td class="left">G/H:</td>
+                <td>Animation step fw/back</td>
+            <tr>
+            <tr>
+                <td class="left">Step size:</td>
+                <td>
+                  <select id="stepsize" onchange="set_step(this.value)">
+                    <option value="0.5">0.5</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="5" selected="true">5</option>
+                    <option value="10">10</option>
+                  </select>
+                </td>
+            <tr>
+            <tr>
+                <td class="left">0 (zero):</td>
+                <td>Animation go / stop</td>
+            <tr>
+            <tr>
+                <td class="left">O:</td>
+                <td>Points / Lines</td>
+            <tr>
+            <tr>
+                <td class="left">I:</td>
+                <td>Toggle fisheye</td>
+            <tr>
+            <tr>
+                <td class="left">Spiral size:</td>
+                <td>
+                  <select id="spiralsize" onchange="set_spsize(this.value)">
+                    <option value="10">10</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="500">500</option>
+                    <option value="1000" selected="true">1000</option>
+                    <option value="3000">3000</option>
+                    <!--option value="5000">5000</option-->
+                  </select>
+                </td>
+            <tr>
+            <tr>
+                <td class="left">Model:</td>
+                <td>
+                  <select id="model" onchange="set_model(this.value)">
+                    <option value="s1" selected="true">Spiral 1</option>
+                    <option value="s2">Spiral 2</option>
+                    <option value="s3">Spiral 3</option>
+                    <option value="s4">Spiral 4</option>
+                    <option value="s5">Spiral 5</option>
+                    <option value="s6">Spiral 6</option>
+                    <option value="s7">Spiral 7</option>
+                    <option value="sg">Sphere Grid</option>
+                    <option value="sg1">Sphere Grid dir1</option>
+                    <option value="sg2">Sphere Grid dir2</option>
+                    <option value="sg3">Sphere Grid dir3</option>
+                    <option value="gr">3D grid</option>
+                  </select>
+                </td>
+            <tr>
+            <tr>
+                <td class="left">Follow:</td>
+                <td>
+                  <select id="follow" onchange="set_follow(this.value)">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20" selected="true">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                  </select>
+                </td>
+            <tr>
+            <!--tr>
+                <td class="left">Col:</td>
+                <td>
+                  <select id="col" onchange="set_col(this.value)">
+                    <option value="c0" selected="true">W on B</option>
+                    <option value="c1">B on W</option>
+                    <option value="c2" selected="true">Yellow</option>
+                  </select>
+                </td>
+            <tr-->
+        </table>
+    </body>
+</html>

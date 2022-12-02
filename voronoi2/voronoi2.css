@@ -1,0 +1,20 @@
+
+.maincontent {
+    margin : 20px auto 20px auto;
+    width  : 1580px;
+    background-color: rgb(0,0,0);
+}
+
+textarea {
+    font-size: 12px;
+    background-color: rgb(40,40,40);
+    color:            rgb(180,180,180);
+}
+
+table {
+    width  : 1580px;
+}
+
+.center {
+    text-align: center;
+}

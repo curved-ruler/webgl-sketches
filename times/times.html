@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script src="times.js" type="module"></script>
+        <title>Base WebGL</title>
+        <style>
+#canvas {
+  position: absolute;
+  top:  0px;
+  left: 0px;
+}
+
+#menu {
+  position: absolute;
+  top:  10px;
+  left: 10px;
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  color: rgb(120, 255, 255);
+}
+#mp_div, #mp_sub, #mp_add, #mp_mul, #mo_div, #mo_sub, #mo_add, #mo_mul {
+  background-color: rgb(70, 70, 70);
+  cursor: pointer;
+}
+.left {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.hidden {
+  display: none;
+}
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas" tabindex="1"></canvas>
+        
+        <table id="menu">
+            <tr>
+                <td class="left">M:</td>
+                <td>Show/Hide Menu</td>
+            </tr>
+            <tr>
+                <td class="left">A:</td>
+                <td>Toggle arrows</td>
+            </tr>
+            <tr>
+                <td class="left">C:</td>
+                <td>Switch colour</td>
+            </tr>
+            <tr>
+                <td class="left">S:</td>
+                <td>Show visits</td>
+            </tr>
+            <tr>
+                <td class="left">F1:</td>
+                <td>Reset Scale / Pan</td>
+            </tr>
+            <tr>
+                <td class="left">Mouse wheel / drag:</td>
+                <td>Scale / Pan</td>
+            </tr>
+            <!--tr>
+                <td class="left">I:</td>
+                <td>Toggle projection</td>
+            </tr>
+            <tr>
+                <td class="left">Ctrl + Mouse drag:</td>
+                <td>3D rotate</td>
+            </tr-->
+            <tr>
+                <td class="left">Multipier:</td>
+                <td>
+                  <span  id="mp_div" onclick="mp_div()">&nbsp;/&nbsp;</span>
+                  <span  id="mp_sub" onclick="mp_sub()">&nbsp;-&nbsp;</span>
+                  <input id="mp" type="text" size="11" onchange="set_mp(this.value)"/>
+                  <span  id="mp_add" onclick="mp_add()">&nbsp;+&nbsp;</span>
+                  <span  id="mp_mul" onclick="mp_mul()">&nbsp;*&nbsp;</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Modulus:</td>
+                <td>
+                  <span  id="mo_div" onclick="mo_div()">&nbsp;/&nbsp;</span>
+                  <span  id="mo_sub" onclick="mo_sub()">&nbsp;-&nbsp;</span>
+                  <input id="mo" type="text" size="11" onchange="set_mo(this.value)"/>
+                  <span  id="mo_add" onclick="mo_add()">&nbsp;+&nbsp;</span>
+                  <span  id="mo_mul" onclick="mo_mul()">&nbsp;*&nbsp;</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">+ - amount</td>
+                <td>
+                  <input id="addsub" type="text" size="8" onchange="set_addsub(this.value)"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">* / amount</td>
+                <td>
+                  <input id="muldiv" type="text" size="8" onchange="set_muldiv(this.value)"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Alpha:</td>
+                <td>
+                    <select id="alpha" onchange="set_alpha(this.value)">
+                        <option value="0.1">0.1</option>
+                        <option value="0.2">0.2</option>
+                        <option value="0.3">0.3</option>
+                        <option value="0.4">0.4</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.6">0.6</option>
+                        <option value="0.7">0.7</option>
+                        <option value="0.8">0.8</option>
+                        <option value="0.9">0.9</option>
+                        <option value="1.0">1.0</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

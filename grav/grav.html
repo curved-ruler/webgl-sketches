@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script src="grav.js" type="module"></script>
+        <title>Base WebGL</title>
+        <style>
+#canvas {
+  position: absolute;
+  top:  0px;
+  left: 0px;
+}
+#menu {
+  position: absolute;
+  top:   0px;
+  right: 0px;
+  width: 180px;
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  /*color: rgb(120, 255, 255);*/
+  color: rgb(200, 200, 200);
+}
+.hidden {
+  display: none;
+}
+        </style>
+    </head>
+    <body style="background-color: rgb(50, 50, 50);">
+        <canvas id="canvas"></canvas>
+        
+        <div id="menu">
+            <div>Start/Stop: Space</div>
+            
+            <div><br/>Gravity:</div>
+            <div>
+              <input type="range" min="1" max="101" value="51" class="slider" id="grav" onchange="set_g(this.value)">
+            </div>
+            
+            <div><br/>Change speed:</div>
+            <div>
+              <input type="range" min="0" max="200" value="50" class="slider" id="dg" onchange="set_dg(this.value)">
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <link rel="stylesheet" type="text/css" href="objector.css"/>
+        <script src="gorbincs-felho.js" type="module"></script>
+        <title>Curves and more</title>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+            <table id="menu" style="background-color: rgba(50, 50, 50, 1) ; color: rgb(120, 255, 255); padding: 10px;">
+                <tr>
+                    <td class="left">M:</td>
+                    <td>Show/Hide Menu</td>
+                </tr>
+                <tr>
+                    <td class="left">I:</td>
+                    <td>Toggle fisheye</td>
+                </tr>
+                <tr>
+                    <td class="left">W/S:</td>
+                    <td>Move camera up/down</td>
+                </tr>
+                <tr>
+                    <td class="left">Mouse wheel:</td>
+                    <td>Zoom</td>
+                </tr>
+                <tr>
+                    <td class="left">Mouse middle drag:</td>
+                    <td>Rotate</td>
+                </tr>
+                <tr>
+                    <td class="left"><span id="mode_span">Mouse left: Add</span></td>
+                    <td>
+                      <button onclick="toggle_mode()">A / M / D</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="left">Division:</td>
+                    <td>
+                        <select id="division" onchange="set_division(this.value)">
+                            <option value="5">5</option>
+                            <option value="15">20</option>
+                            <option value="45">45</option>
+                            <option value="70" selected="true">70</option>
+                            <option value="150">150</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="left">Alpha:</td>
+                    <td>
+                        <select id="division" onchange="set_a(this.value)">
+                            <option value="1">1</option>
+                            <option value="0.8">0.8</option>
+                            <option value="0.6" selected="true">0.6</option>
+                            <option value="0.35">0.35</option>
+                            <option value="0.2">0.2</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+    </body>
+</html>
