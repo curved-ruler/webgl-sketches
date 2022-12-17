@@ -5,13 +5,24 @@
         <meta charset="utf-8"/>
         <script src="spiro3.js" type="module"></script>
         <style>
+body {
+  height: 100%;
+}
 #menu {
   position: absolute;
   top:  10px;
   left: 10px;
   padding: 10px;
-  background-color: rgb(50, 50, 50);
-  color: rgb(120, 255, 255);
+  background-color: rgb( 50,  50,  50);
+  color:            rgb(120, 255, 255);
+}
+#alertcon {
+  width:      800px;
+  height:     100%;
+  overflow-y: scroll;
+  margin:     20px auto;
+  background-color: rgb(150, 150, 150);
+  color:            rgb( 20,  20,  20);
 }
 .left {
   text-align: right;
@@ -120,5 +131,10 @@
                 </td>
             </tr>
         </table>
+        
+        <!--div id="alertcon" class="hhidden" style="position: absolute; top:  20px; margin: 0 auto;">
+          <div id="alert">XYZ</div>
+          <button onclick="saved()">OK</button>
+        </div-->
     </body>
 </html>

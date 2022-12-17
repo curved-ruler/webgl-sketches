@@ -386,34 +386,39 @@ let make_model = function ()
 
 let make_object = function ()
 {
-    /*
-    if (model.verts.length > 0)
-    {
-        gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts), gl.STATIC_DRAW);
-    }
-    
-    if (model.lines.length > 0)
-    {
-        //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
-        //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(model.lines), gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ARRAY_BUFFER, linbuf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.lines), gl.STATIC_DRAW);
-    }
-    */
-    
     vrtbuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts), gl.STATIC_DRAW);
-    
+    /*
     if (model.lines.length > 0)
     {
         linbuf = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(model.lines), gl.STATIC_DRAW);
     }
+    */
     
     console.log("V", model.verts.length, "L", model.lines.length);
+};
+let save_obj = function ()
+{
+    let objstring = "";
+    let vn = model.verts.length / 3;
+    
+    for (let i=0 ; i<vn ; ++i)
+    {
+        objstring += "v " + model.verts[i*3] + " " + model.verts[i*3 + 1] + " " + model.verts[i*3 + 2] + "\n";
+    }
+    
+    objstring += "\n\n";
+    
+    for (let i=0 ; i<vn-1 ; ++i)
+    {
+        objstring += "l " + (i+1) + " " + (i+2) + "\n";
+    }
+    
+    navigator.clipboard.writeText(objstring);
+    //console.log(objstring);
 };
 
 let draw = function ()
@@ -482,8 +487,11 @@ let handle_mouse_move = function (event)
         draw();
     }
 };
-let handle_key_down = function ()
+let handle_key_down = function (event)
 {
+    if (event.ctrlKey) return;
+    
+    
     if (event.key === "m" || event.key === "M")
     {
         if (menu_hidden)
@@ -515,6 +523,10 @@ let handle_key_down = function ()
         ++proj;
         if (proj > 2) { proj = 0; }
         draw();
+    }
+    else if (event.key === "s" || event.key === "S")
+    {
+        save_obj();
     }
     else if (event.key === "F8")
     {
