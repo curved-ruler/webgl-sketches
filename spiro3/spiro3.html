@@ -5,38 +5,107 @@
         <meta charset="utf-8"/>
         <script src="spiro3.js" type="module"></script>
         <style>
-#canvas {
+#menu {
   position: absolute;
-  top:  0px;
-  left: 0px;
+  top:  10px;
+  left: 10px;
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  color: rgb(120, 255, 255);
+}
+.left {
+  text-align: right;
+  padding-right: 10px;
+}
+.hidden {
+  display: none;
 }
         </style>
         <title>Spiro3</title>
     </head>
     <body>
-        <canvas id="canvas"></canvas>
+        <canvas id="canvas" style="position: absolute; top:  0px; left: 0px;"></canvas>
         
-        <!--table id="menu">
+        <table id="menu">
             <tr>
                 <td class="left">M:</td>
                 <td>Show/Hide Menu</td>
             </tr>
-            <tr>
+            <!--tr>
                 <td class="left">I:</td>
                 <td>Toggle projection</td>
+            </tr-->
+            <tr>
+                <td class="left">S:</td>
+                <td>Save .obj file</td>
             </tr>
             <tr>
-                <td class="left">H:</td>
-                <td>Toggle coords</td>
+                <td class="left">V:</td>
+                <td>View all / half</td>
+            </tr>
+            <tr>
+                <td class="left">C:</td>
+                <td>Colscheme</td>
             </tr>
             <tr>
                 <td class="left">Mouse wheel / drag:</td>
                 <td>Scale / Rotate</td>
             </tr>
             <tr>
+                <td class="left">Enter:</td>
+                <td>Reset Scale / Rotation</td>
+            </tr>
+            <tr>
+                <td class="left">Model:</td>
+                <td>
+                    <select id="model" onchange="set_model(this.value)">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <!--option value="3">3</option-->
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">N:</td>
+                <td>
+                    <input id="n" type="text" size="11" />
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Revolve:</td>
+                <td>
+                    <input id="rev" type="text" size="11" />
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Radius:</td>
+                <td>
+                    <input id="radius" type="text" size="11" />
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Point loaction:</td>
+                <td>
+                    <input id="vp" type="text" size="11" />
+                </td>
+            </tr>
+            <tr>
+                <td class="left">[0,0,0] shows path</td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <td class="left"></td>
+                <td>
+                  <button onclick="set_textinputs()">SET</button>
+                </td>
+            </tr>
+            <tr>
                 <td class="left">Alpha:</td>
                 <td>
                     <select id="alpha" onchange="set_alpha(this.value)">
+                        <option value="0.05">0.05</option>
                         <option value="0.1">0.1</option>
                         <option value="0.2">0.2</option>
                         <option value="0.3">0.3</option>
@@ -50,6 +119,6 @@
                     </select>
                 </td>
             </tr>
-        </table-->
+        </table>
     </body>
 </html>

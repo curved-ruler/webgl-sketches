@@ -3,43 +3,56 @@ import { gl_init }    from "./gl_init.js";
 import { shaders }    from "./shaders.js";
 import { m4, v3, tr } from "./matvec.js";
 
-var gl      = null;
-var glprog  = null;
-var canvas  = null;
-var cwidth, cheight;
+let gl      = null;
+let glprog  = null;
+let canvas  = null;
+let cwidth, cheight;
 
-var model  = { verts:[], lines:[] };
-var vrtbuf = null;
-var linbuf = null;
-var draw_pts   = false;
-var draw_lines = true;
+let model     = { verts:[], lines:[] };
+let modeli    = 0;
+let model_dom = null;
+
+let vrtbuf = null;
+let linbuf = null;
+let draw_pts   = false;
+let draw_lines = true;
 
 
-var bcol  = [0.2, 0.2, 0.2];
-var tcol  = [0.0, 0.0, 0.0];
-var lcol  = [0.5, 0.3, 0.0];
-var alpha = 0.1;
+let N       = 500;
+let rev     = 30;
+let R       = [10,4];
+let dv      = [1,0,1];
+let N_dom   = null;
+let rev_dom = null;
+let R_dom   = null;
+let dv_dom  = null;
+
+
+let col = [
+//      background            drawcol
+    [0.07, 0.27, 0.27,    1.0,  1.0,  1.0],
+    [0.2,  0.2,  0.2,     0.5,  0.3,  0.0],
+    [1.0,  1.0,  1.0,     0.0,  0.0,  0.0]
+];
+let coli = 0;
+
+let alpha = 0.1;
+let alpha_dom = null;
+
+let menu_hidden = false;
+
+let proj = 0;
+let projmat, modlmat, viewmat;
+//let modinvmat;
+let scale    = 0.1;
+let axis     = 0;
+let rotation = 0;
+let rotdir   = true;
+let grabbed  = 0;
+
 /*
-var bcol  = [1.0, 1.0, 1.0];
-var lcol  = [0.0, 0.0, 0.0];
-var alpha = 0.4;
-*/
-var alpha_dom = null;
-
-var menu_hidden = false;
-
-var proj = 0;
-var projmat, modlmat, viewmat;
-//var modinvmat;
-var scale    = 0.1;
-var axis     = 0;
-var rotation = 0;
-var rotdir   = true;
-var grabbed  = 0;
-
-/*
-var a = 1 / Math.sqrt(6);
-var camera = {
+let a = 1 / Math.sqrt(6);
+let camera = {
     pos   : [5, 5, 5],
     look  : v3.normalize([-1, -1, -1]),
     up    : [-a, -a, 2*a],
@@ -50,18 +63,19 @@ var camera = {
     aspect: 1
 };
 */
-var camera = {
+let camera = {
     pos   : [ 5,  0,  0],
     look  : [-1,  0,  0],
     up    : [ 0,  0,  1],
     near  : 0.1,
     median: 1,
-    far   : 10000,
+    far   : 5,
     fovy  : Math.PI / 3,
     aspect: 1
 };
+let vhalf = true;
 
-var compute_matrices = function ()
+let compute_matrices = function ()
 {
     modlmat = tr.rotz(rotation);
     modlmat = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis), modlmat);
@@ -83,25 +97,22 @@ var compute_matrices = function ()
     }
 };
 /*
-var make_model = function ()
+let make_model = function ()
 {
-    model.verts = [];
-    model.lines = [];
+    let N = 4000;
     
-    var N = 4000;
+    let R       = [ 8, 4, 8];
+    let revolve = [ 20, 10, 30];
+    let fi      = [0, 0, 0, 0, 0, 0];
     
-    var R       = [ 8, 4, 8];
-    var revolve = [ 20, 10, 30];
-    var fi      = [0, 0, 0, 0, 0, 0];
-    
-    var dfi     = [  -Math.PI / N,
+    let dfi     = [  -Math.PI / N,
                    2*Math.PI*revolve[0] / N,
                      Math.PI / N,
                    -2*Math.PI*revolve[1] / (N),
                      Math.PI / N,
                    2*Math.PI*revolve[2] / N];
     
-    for (var i=0 ; i<N ; ++i)
+    for (let i=0 ; i<N ; ++i)
     {
         model.verts.push(R[0]*Math.sin(fi[0])*Math.cos(fi[1])  +  R[1]*Math.sin(fi[2])*Math.cos(fi[3])  +  R[2]*Math.sin(fi[4])*Math.cos(fi[5]));
         model.verts.push(R[0]*Math.sin(fi[0])*Math.sin(fi[1])  +  R[1]*Math.sin(fi[2])*Math.sin(fi[3])  +  R[2]*Math.sin(fi[4])*Math.sin(fi[5]));
@@ -132,24 +143,19 @@ var make_model = function ()
         fi[4] += dfi[4];
         fi[5] += dfi[5];
     }
-    
-    make_object();
 };
 */
 
 /*
-var make_model = function ()
+let make_model = function ()
 {
-    model.verts = [];
-    model.lines = [];
+    let N = 2000;
     
-    var N = 2000;
+    let R   = [4, 3, 3];
+    let fi  = [0, 0, 0];
+    let dfi = [4*Math.PI / N, 20*Math.PI / N, 10*Math.PI / N];
     
-    var R   = [4, 3, 3];
-    var fi  = [0, 0, 0];
-    var dfi = [4*Math.PI / N, 20*Math.PI / N, 10*Math.PI / N];
-    
-    for (var i=0 ; i<N ; ++i)
+    for (let i=0 ; i<N ; ++i)
     {
         //model.verts.push( R[0]*Math.sin(fi[0] + i*dfi[0]) );
         //model.verts.push( R[0]*Math.cos(fi[0] + i*dfi[0]) );
@@ -172,38 +178,29 @@ var make_model = function ()
         model.lines.push( R[0]*Math.cos(fi[0] + i*dfi[0]) + R[1]*Math.sin(fi[1] + i*dfi[1]) + 0 );
         model.lines.push( 0                               + R[1]*Math.cos(fi[1] + i*dfi[1]) + R[2]*Math.cos(fi[2] + i*dfi[2]) );
     }
-    
-    make_object();
 };
 */
 
-/*
-var make_model = function ()
+
+let make_model_0 = function ()
 {
-    model.verts = [];
-    model.lines = [];
+    let revolve = [ 7];
+    let fi      = [0, 0];
     
-    var N = 500;
-    
-    var R       = [10, 4];
-    var revolve = [ 7];
-    var fi      = [0, 0];
-    var dv      = [ 7,0,0 ];
-    
-    var dfi     = [  (-Math.PI / N)*10,
+    let dfi     = [  (-Math.PI / N)*10,
                    2*Math.PI*revolve[0] / N];
     
-    var v0 = [(R[0] - R[1]) * Math.sin(fi[0])*Math.cos(fi[1]),
+    let v0 = [(R[0] - R[1]) * Math.sin(fi[0])*Math.cos(fi[1]),
               (R[0] - R[1]) * Math.sin(fi[0])*Math.sin(fi[1]),
               (R[0] - R[1]) * Math.cos(fi[0]) ];
-    var v1 = v0;
-    var v  = dv;
+    let v1 = v0;
+    let v  = dv;
     
-    for (var i=1 ; i<N*70 ; ++i)
+    for (let i=1 ; i<N*rev ; ++i)
     {
-        model.lines.push(v0[0] + v[0]);
-        model.lines.push(v0[1] + v[1]);
-        model.lines.push(v0[2] + v[2]);
+        model.verts.push(v0[0] + v[0]);
+        model.verts.push(v0[1] + v[1]);
+        model.verts.push(v0[2] + v[2]);
         
         fi[0] += dfi[0];
         fi[1] += dfi[1];
@@ -213,67 +210,170 @@ var make_model = function ()
               (R[0] - R[1]) * Math.cos(fi[0]) ];
         
         //mt = tr.translate( v3.sub(v1, v0) );
-        var vrot = v3.normalize( v3.cross(v0,v1) );
-        var arot = Math.acos( v3.dot(v3.normalize(v0), v3.normalize(v1)) ) * (180/Math.PI) * ( -R[0]/R[1] );
+        let vrot = v3.normalize( v3.cross(v0,v1) );
+        let arot = Math.acos( v3.dot(v3.normalize(v0), v3.normalize(v1)) ) * (180/Math.PI) * ( -R[0]/R[1] );
         //console.log(arot);
-        var mr = tr.rot(vrot, arot);
+        let mr = tr.rot(vrot, arot);
         
         v = v3.mmul(mr,v);
-        model.lines.push(v1[0] + v[0]);
-        model.lines.push(v1[1] + v[1]);
-        model.lines.push(v1[2] + v[2]);
+        model.verts.push(v1[0] + v[0]);
+        model.verts.push(v1[1] + v[1]);
+        model.verts.push(v1[2] + v[2]);
         
         v0 = v1;
     }
-    
-    make_object();
 };
-*/
-var make_model = function ()
+
+let make_model_1 = function ()
 {
-    model.verts = [];
-    model.lines = [];
+    let revolve = [ 5.5 ];
+    let fi      = [0, 0];
     
-    var N    = 500;
-    var rev  = 300;
-    var sinn = 11.1;
-    var A    = 6;
+    let dfi     = [  (-Math.PI / N)*10,
+                   2*Math.PI*revolve[0] / N];
     
-    var R       = [10, 4];
-    var dv      = [11,0,0 ];
+    let v0 = [(R[0] - R[1]) * Math.sin(fi[0])*Math.cos(fi[1]),
+              (R[0] - R[1]) * Math.sin(fi[0])*Math.sin(fi[1]),
+              (R[0] - R[1]) * Math.cos(fi[0]) ];
+    let v1 = v0;
+    let v  = dv;
     
-    var P2 = Math.PI/2;
+    for (let i=1 ; i<N*rev ; ++i)
+    {
+        model.verts.push(v0[0] + v[0]);
+        model.verts.push(v0[1] + v[1]);
+        model.verts.push(v0[2] + v[2]);
+        
+        fi[0] = i * dfi[0];
+        fi[1] = i * dfi[1];
+        
+        v1 = [(R[0] - R[1]) * Math.sin(fi[0])*Math.cos(fi[1]),
+              (R[0] - R[1]) * Math.sin(fi[0])*Math.sin(fi[1]),
+              (R[0] - R[1]) * Math.cos(fi[0]) ];
+        
+        let vrot = v3.normalize( v3.cross(v0,v1) );
+        let arot = Math.acos( v3.dot(v3.normalize(v0), v3.normalize(v1)) ) * (180/Math.PI) * ( -R[0]/R[1] );
+        //console.log(arot);
+        let mr = tr.rot(vrot, arot);
+        
+        v = v3.mmul(mr,v);
+        model.verts.push(v1[0] + v[0]);
+        model.verts.push(v1[1] + v[1]);
+        model.verts.push(v1[2] + v[2]);
+        
+        v0 = v1;
+    }
+};
+
+let make_model_2 = function ()
+{
+    let sinn = 11.1;
+    let A    = 6;
     
-    var v0 = [(R[0] + R[1]) * Math.sin(P2)*Math.cos(0),
+    let P2 = Math.PI/2;
+    
+    let v0 = [(R[0] + R[1]) * Math.sin(P2)*Math.cos(0),
               (R[0] + R[1]) * Math.sin(P2)*Math.sin(0),
               (R[0] + R[1]) * Math.cos(P2) ];
-    var v1 = v0;
-    var v  = dv;
+    let v1 = v0;
+    let v  = dv;
     
-    for (var i=1 ; i<=N*rev ; ++i)
+    for (let i=1 ; i<=N*rev ; ++i)
     {
-        model.lines.push(v0[0] + v[0]);
-        model.lines.push(v0[1] + v[1]);
-        model.lines.push(v0[2] + v[2]);
+        model.verts.push(v0[0] + v[0]);
+        model.verts.push(v0[1] + v[1]);
+        model.verts.push(v0[2] + v[2]);
         
-        var fi0 = Math.atan2( R[0]+R[1], A*Math.sin(i * sinn *2*Math.PI / N) );
-        var fi1 = i * 2*Math.PI / N;
+        let fi0 = Math.atan2( R[0]+R[1], A*Math.sin(i * sinn *2*Math.PI / N) );
+        let fi1 = i * 2*Math.PI / N;
         v1 = [(R[0] + R[1]) * Math.sin(fi0)*Math.cos(fi1),
               (R[0] + R[1]) * Math.sin(fi0)*Math.sin(fi1),
               (R[0] + R[1]) * Math.cos(fi0) ];
         
         //mt = tr.translate( v3.sub(v1, v0) );
-        var vrot = v3.normalize( v3.cross(v0,v1) );
-        var arot = Math.acos( v3.dot(v3.normalize(v0), v3.normalize(v1)) ) * (180/Math.PI) * ( R[0]/R[1] );
+        let vrot = v3.normalize( v3.cross(v0,v1) );
+        let arot = Math.acos( v3.dot(v3.normalize(v0), v3.normalize(v1)) ) * (180/Math.PI) * ( R[0]/R[1] );
         //console.log(arot);
-        var mr = tr.rot(vrot, arot);
+        let mr = tr.rot(vrot, arot);
         
         v = v3.mmul(mr,v);
-        model.lines.push(v1[0] + v[0]);
-        model.lines.push(v1[1] + v[1]);
-        model.lines.push(v1[2] + v[2]);
+        model.verts.push(v1[0] + v[0]);
+        model.verts.push(v1[1] + v[1]);
+        model.verts.push(v1[2] + v[2]);
         
         v0 = v1;
+    }
+};
+
+/* ******* 
+ * Chebysev net */
+let make_model_3 = function ()
+{
+    let sinn = 11;
+    let a    = 1.1;
+    
+    let P2 = Math.PI/2;
+    let N2 = Math.floor(Math.sqrt(N));
+    
+    let fi = (u,v) => [Math.cos(v)*Math.cos(u),
+                       Math.cos(v)*Math.sin(u),
+                       Math.sin(v)];
+    
+    let fiu = (u,v) => [-Math.cos(v)*Math.sin(u),
+                         Math.cos(v)*Math.cos(u),
+                         0];
+    
+    let fiv = (u,v) => [-Math.sin(v)*Math.cos(u),
+                        -Math.sin(v)*Math.sin(u),
+                         Math.cos(v)];
+    
+    let v0 = [(a*fiu(0,-P2)[0] + Math.sqrt(4-a*a*Math.cos(-P2)*Math.cos(-P2))*fiv(0,-P2)[0] ) / 2,
+              (a*fiu(0,-P2)[1] + Math.sqrt(4-a*a*Math.cos(-P2)*Math.cos(-P2))*fiv(0,-P2)[1] ) / 2,
+              (a*fiu(0,-P2)[2] + Math.sqrt(4-a*a*Math.cos(-P2)*Math.cos(-P2))*fiv(0,-P2)[2] ) / 2];
+    let v1 = v0;
+    let v  = dv;
+    
+    for (let ri=0 ; ri<rev ; ++ri)
+    for (let i=1 ; i<=N ; ++i)
+    {
+        model.verts.push(v0[0] + v[0]);
+        model.verts.push(v0[1] + v[1]);
+        model.verts.push(v0[2] + v[2]);
+        
+        let uu =        i    * 2*Math.PI / N;
+        let vv = -P2 +  i    *   Math.PI / N;
+        
+        v1 = [(a*fiu(uu,vv)[0] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[0] ) / 2,
+              (a*fiu(uu,vv)[1] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[1] ) / 2,
+              (a*fiu(uu,vv)[2] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[2] ) / 2];
+        
+        //mt = tr.translate( v3.sub(v1, v0) );
+        let vrot = v3.normalize( v3.cross(v0,v1) );
+        let arot = Math.acos( v3.dot(v3.normalize(v0), v3.normalize(v1)) ) * (180/Math.PI) * ( R[0]/R[1] );
+        //console.log(arot);
+        let mr = tr.rot(vrot, arot);
+        
+        v = v3.mmul(mr,v);
+        model.verts.push(v1[0] + v[0]);
+        model.verts.push(v1[1] + v[1]);
+        model.verts.push(v1[2] + v[2]);
+        
+        v0 = v1;
+    }
+};
+
+let make_model = function ()
+{
+    model.verts = [];
+    //model.lines = [];
+    
+    switch (modeli)
+    {
+        case 0:  make_model_0(); break;
+        case 1:  make_model_1(); break;
+        case 2:  make_model_2(); break;
+        case 3:  make_model_3(); break;
+        default: console.log("ERROR: modeli: " + modeli);
     }
     
     make_object();
@@ -284,10 +384,14 @@ var make_model = function ()
 
 
 
-var make_object = function ()
+let make_object = function ()
 {
-    gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts), gl.STATIC_DRAW);
+    /*
+    if (model.verts.length > 0)
+    {
+        gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts), gl.STATIC_DRAW);
+    }
     
     if (model.lines.length > 0)
     {
@@ -296,27 +400,25 @@ var make_object = function ()
         gl.bindBuffer(gl.ARRAY_BUFFER, linbuf);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.lines), gl.STATIC_DRAW);
     }
+    */
+    
+    vrtbuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts), gl.STATIC_DRAW);
+    
+    if (model.lines.length > 0)
+    {
+        linbuf = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(model.lines), gl.STATIC_DRAW);
+    }
     
     console.log("V", model.verts.length, "L", model.lines.length);
 };
 
-var draw = function ()
+let draw = function ()
 {
     if (!gl || !glprog.bin) return;
-    
-    gl.useProgram(glprog.bin);
-    
-    if (alpha < 0.99)
-    {
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        gl.disable(gl.DEPTH_TEST);
-    }
-    else
-    {
-        gl.disable(gl.BLEND);
-        gl.enable(gl.DEPTH_TEST);
-    }
     
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
@@ -326,9 +428,11 @@ var draw = function ()
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
     
-    gl.uniform1f(glprog.alpha, alpha);
-    gl.uniform3fv(glprog.col, lcol);
+    gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
+    gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 0*4, 0*4);
+    gl.drawArrays(gl.LINE_STRIP, 0, model.verts.length / 3);
     
+    /*
     if (draw_pts)
     {
         gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
@@ -342,28 +446,29 @@ var draw = function ()
         gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 0*4, 0*4);
         gl.drawArrays(gl.LINES, 0, model.lines.length / 3);
     }
+    */
 };
 
-var zoomin  = function () { scale *= 1.25; };
-var zoomout = function () { scale *= 0.8;  };
-var handle_wheel = function (event)
+let zoomin  = function () { scale *= 1.25; };
+let zoomout = function () { scale *= 0.8;  };
+let handle_wheel = function (event)
 {
     if (event.deltaY < 0) zoomin();
     else                  zoomout();
     
     draw();
 }
-var handle_mouse_down = function (event)
+let handle_mouse_down = function (event)
 {
     grabbed = 1;
     rotdir = (axis < 90) || (axis > 270);
 };
-var handle_mouse_up = function (event)
+let handle_mouse_up = function (event)
 {
     grabbed = 0;
 };
 
-var handle_mouse_move = function (event)
+let handle_mouse_move = function (event)
 {
     if (grabbed === 1)
     {
@@ -377,7 +482,7 @@ var handle_mouse_move = function (event)
         draw();
     }
 };
-var handle_key_down = function ()
+let handle_key_down = function ()
 {
     if (event.key === "m" || event.key === "M")
     {
@@ -392,9 +497,17 @@ var handle_key_down = function ()
             document.getElementById("menu").className = "hidden";
         }
     }
-    else if (event.key === "h" || event.key === "H")
+    else if (event.key === "v" || event.key === "V")
     {
-        draw_coords = !draw_coords;
+        toggle_vhalf();
+        draw();
+    }
+    else if (event.key === "c" || event.key === "C")
+    {
+        ++coli;
+        if (coli >= col.length) coli = 0;
+        gl.clearColor(           col[coli][0], col[coli][1], col[coli][2], 1.0);
+        gl.uniform3f(glprog.col, col[coli][3], col[coli][4], col[coli][5]);
         draw();
     }
     else if (event.key === "i" || event.key === "I")
@@ -405,7 +518,7 @@ var handle_key_down = function ()
     }
     else if (event.key === "F8")
     {
-        var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        let image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
         window.location.href=image;
     }
     else if (event.key === "Enter")
@@ -413,25 +526,86 @@ var handle_key_down = function ()
         axis     = 0;
         rotation = 0;
         rotdir   = true;
-        scale    = 1;
+        scale    = 0.1;
         draw();
     }
 };
-var set_alpha = function (strval)
+let set_alpha = function (strval)
 {
-    var ival = Number(strval);
+    let ival = Number(strval);
     
-    if (isNaN(ival) || ival === undefined || ival === null) return;
-    if (ival < 0)   ival = 0;
-    if (ival > 1.0) ival = 1.0;
+    //if (isNaN(ival) || ival === undefined || ival === null) return;
+    //if (ival < 0)   ival = 0;
+    //if (ival > 1.0) ival = 1.0;
     
     alpha = ival;
     alpha_dom.blur();
     
+    if (alpha < 0.99)
+    {
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.disable(gl.DEPTH_TEST);
+    }
+    else
+    {
+        gl.disable(gl.BLEND);
+        gl.enable(gl.DEPTH_TEST);
+    }
+    gl.uniform1f(glprog.alpha, alpha);
+    
+    draw();
+};
+let set_model = function (strval)
+{
+    modeli = Number(strval);
+    model_dom.blur();
+    make_model();
+    draw();
+};
+let toggle_vhalf = function ()
+{
+    if (vhalf)
+    {
+        camera.far = 100;
+        vhalf      = false;
+    }
+    else
+    {
+        camera.far = 5;
+        vhalf      = true;
+    }
+};
+let set_textinputs = function ()
+{
+    let N2   = Number(N_dom.value);
+    let rev2 = Number(rev_dom.value);
+    let R2   = Number(R_dom.value);
+    let dv2  = dv_dom.value.split(',').map(Number);
+    
+    if (isNaN(N2)   || N2   === undefined || N2   === null) return;
+    if (isNaN(rev2) || rev2 === undefined || rev2 === null) return;
+    if (isNaN(R2)   || R2   === undefined || R2   === null) return;
+    
+    if (dv2.length < 3) return;
+    if (isNaN(dv2[0]) || dv2[0] === undefined || dv2[0] === null) return;
+    if (isNaN(dv2[1]) || dv2[1] === undefined || dv2[1] === null) return;
+    if (isNaN(dv2[2]) || dv2[2] === undefined || dv2[2] === null) return;
+    
+    if (N2   < 5) N2   = 5;
+    if (rev2 < 1) rev2 = 1;
+    if (R2   < 0.0001) R2 = 0.0001;
+    
+    N    = N2;   N_dom.value   = N;
+    rev  = rev2; rev_dom.value = rev;
+    R[1] = R2;   R_dom.value   = R[1];
+    dv   = dv2;  dv_dom.value  = dv.join(',');
+    
+    make_model();
     draw();
 };
 
-var resize = function ()
+let resize = function ()
 {
     if (!canvas || !gl) return;
     
@@ -443,7 +617,7 @@ var resize = function ()
     gl.viewport(0, 0, canvas.width, canvas.height);
 };
 
-var gpu_init = function (canvas_id)
+let gpu_init = function (canvas_id)
 {
     gl = gl_init.get_webgl2_context(canvas_id, {preserveDrawingBuffer: true/* , antialias: false*/});
     
@@ -458,9 +632,11 @@ var gpu_init = function (canvas_id)
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
     glprog.col     = gl.getUniformLocation(glprog.bin, "col");
     glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
+    
+    gl.useProgram(glprog.bin);
 }
 
-var init = function ()
+let init = function ()
 {
     document.removeEventListener("DOMContentLoaded", init);
     
@@ -470,21 +646,27 @@ var init = function ()
     vrtbuf = gl.createBuffer();
     linbuf = gl.createBuffer();
     
-    gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
+    gl.clearColor(           col[coli][0], col[coli][1], col[coli][2], 1.0);
+    gl.uniform3f(glprog.col, col[coli][3], col[coli][4], col[coli][5]);
     //gl.clearDepth(1); = default
     
     canvas.addEventListener("mousedown", handle_mouse_down);
     canvas.addEventListener("mouseup",   handle_mouse_up);
     canvas.addEventListener("mousemove", handle_mouse_move);
     canvas.addEventListener("wheel",     handle_wheel);
-    /*
+    
+    model_dom = document.getElementById('model');
+    model_dom.options.selectedIndex = 0;
+    
     alpha_dom = document.getElementById('alpha');
-    var opts = alpha_dom.options;
-    for (var i=0 ; i<opts.length ; ++i)
-    {
-        if (opts[i].value == 0.5) { opts.selectedIndex = i; }
-    }
-    */
+    let opts = alpha_dom.options;
+    for (let i=0 ; i<opts.length ; ++i) { if (opts[i].value == alpha) { opts.selectedIndex = i; break; } }
+    set_alpha(alpha);
+    
+    N_dom   = document.getElementById('n');       N_dom.value   = N;
+    rev_dom = document.getElementById('rev');     rev_dom.value = rev;
+    R_dom   = document.getElementById('radius');  R_dom.value   = R[1];
+    dv_dom  = document.getElementById('vp');      dv_dom.value  = dv.join(',');
     
     resize();
     make_model();
@@ -492,7 +674,9 @@ var init = function ()
 };
 
 
-window.set_alpha = set_alpha;
+window.set_alpha      = set_alpha;
+window.set_model      = set_model;
+window.set_textinputs = set_textinputs;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
