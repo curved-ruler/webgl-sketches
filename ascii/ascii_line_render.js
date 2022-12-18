@@ -20,7 +20,7 @@ let camera = {
 };
 
 let mesh_set = "1";
-let mesh_name = "teapot01.obj";
+let mesh_name = "kocka_ures.obj";
 let mesh = null;
 let tr_m_v = [];
 let proj = 1;

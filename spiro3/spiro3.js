@@ -1,4 +1,6 @@
 
+import { saveAs } from './FileSaver.js';
+
 import { gl_init }    from "./gl_init.js";
 import { shaders }    from "./shaders.js";
 import { m4, v3, tr } from "./matvec.js";
@@ -417,7 +419,9 @@ let save_obj = function ()
         objstring += "l " + (i+1) + " " + (i+2) + "\n";
     }
     
-    navigator.clipboard.writeText(objstring);
+    var blob = new Blob([objstring], {type: "text/plain"});
+    saveAs(blob, 'sp3.obj');
+    //navigator.clipboard.writeText(objstring);
     //console.log(objstring);
 };
 
