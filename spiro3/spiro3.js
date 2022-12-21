@@ -23,7 +23,7 @@ let draw_lines = true;
 let N       = 500;
 let rev     = 30;
 let R       = [10,4];
-let dv      = [1,0,1];
+let dv      = [0,0,0];
 let N_dom   = null;
 let rev_dom = null;
 let R_dom   = null;
@@ -311,7 +311,6 @@ let make_model_2 = function ()
  * Chebysev net */
 let make_model_3 = function ()
 {
-    let sinn = 11;
     let a    = 1.1;
     
     let P2 = Math.PI/2;
@@ -335,6 +334,7 @@ let make_model_3 = function ()
     let v1 = v0;
     let v  = dv;
     
+    
     for (let ri=0 ; ri<rev ; ++ri)
     for (let i=1 ; i<=N ; ++i)
     {
@@ -342,20 +342,20 @@ let make_model_3 = function ()
         model.verts.push(v0[1] + v[1]);
         model.verts.push(v0[2] + v[2]);
         
-        let uu =        i    * 2*Math.PI / N;
-        let vv = -P2 +  i    *   Math.PI / N;
+        let uu =       i * 2*Math.PI / N + ri * 2*Math.PI / rev;
+        let vv = -P2 + i * 2*Math.PI / N;
         
         v1 = [(a*fiu(uu,vv)[0] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[0] ) / 2,
               (a*fiu(uu,vv)[1] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[1] ) / 2,
               (a*fiu(uu,vv)[2] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[2] ) / 2];
         
-        //mt = tr.translate( v3.sub(v1, v0) );
         let vrot = v3.normalize( v3.cross(v0,v1) );
         let arot = Math.acos( v3.dot(v3.normalize(v0), v3.normalize(v1)) ) * (180/Math.PI) * ( R[0]/R[1] );
         //console.log(arot);
         let mr = tr.rot(vrot, arot);
         
         v = v3.mmul(mr,v);
+        
         model.verts.push(v1[0] + v[0]);
         model.verts.push(v1[1] + v[1]);
         model.verts.push(v1[2] + v[2]);
