@@ -22,7 +22,7 @@ let draw_lines = true;
 
 let N       = 500;
 let rev     = 30;
-let R       = [10,4];
+let R       = [9,3];
 let dv      = [0,0,0];
 let N_dom   = null;
 let rev_dom = null;
@@ -46,7 +46,7 @@ let menu_hidden = false;
 let proj = 0;
 let projmat, modlmat, viewmat;
 //let modinvmat;
-let scale    = 0.1;
+let scale    = 0.08;
 let axis     = 0;
 let rotation = 0;
 let rotdir   = true;
@@ -316,17 +316,17 @@ let make_model_3 = function ()
     let P2 = Math.PI/2;
     let N2 = Math.floor(Math.sqrt(N));
     
-    let fi = (u,v) => [Math.cos(v)*Math.cos(u),
-                       Math.cos(v)*Math.sin(u),
-                       Math.sin(v)];
+    let fi = (u,v) => [(R[0] + R[1]) * Math.cos(v)*Math.cos(u),
+                       (R[0] + R[1]) * Math.cos(v)*Math.sin(u),
+                       (R[0] + R[1]) * Math.sin(v)];
     
-    let fiu = (u,v) => [-Math.cos(v)*Math.sin(u),
-                         Math.cos(v)*Math.cos(u),
+    let fiu = (u,v) => [-(R[0] + R[1]) * Math.cos(v)*Math.sin(u),
+                         (R[0] + R[1]) * Math.cos(v)*Math.cos(u),
                          0];
     
-    let fiv = (u,v) => [-Math.sin(v)*Math.cos(u),
-                        -Math.sin(v)*Math.sin(u),
-                         Math.cos(v)];
+    let fiv = (u,v) => [-(R[0] + R[1]) * Math.sin(v)*Math.cos(u),
+                        -(R[0] + R[1]) * Math.sin(v)*Math.sin(u),
+                         (R[0] + R[1]) * Math.cos(v)];
     
     let v0 = [(a*fiu(0,-P2)[0] + Math.sqrt(4-a*a*Math.cos(-P2)*Math.cos(-P2))*fiv(0,-P2)[0] ) / 2,
               (a*fiu(0,-P2)[1] + Math.sqrt(4-a*a*Math.cos(-P2)*Math.cos(-P2))*fiv(0,-P2)[1] ) / 2,
@@ -542,7 +542,7 @@ let handle_key_down = function (event)
         axis     = 0;
         rotation = 0;
         rotdir   = true;
-        scale    = 0.1;
+        scale    = 0.08;
         draw();
     }
 };
