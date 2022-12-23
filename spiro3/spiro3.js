@@ -23,11 +23,13 @@ let draw_lines = true;
 let N       = 500;
 let rev     = 30;
 let R       = [9,3];
-let dv      = [0,0,0];
+let dv      = [1,0,1];
+let P0      = 0.1;
 let N_dom   = null;
 let rev_dom = null;
 let R_dom   = null;
 let dv_dom  = null;
+let P0_dom  = null;
 
 
 let col = [
@@ -186,15 +188,15 @@ let make_model = function ()
 
 let make_model_0 = function ()
 {
-    let revolve = [ 7];
+    let revolve = [P0];
     let fi      = [0, 0];
     
-    let dfi     = [  (-Math.PI / N)*10,
+    let dfi     = [  (Math.PI / N)*10,
                    2*Math.PI*revolve[0] / N];
     
-    let v0 = [(R[0] - R[1]) * Math.sin(fi[0])*Math.cos(fi[1]),
-              (R[0] - R[1]) * Math.sin(fi[0])*Math.sin(fi[1]),
-              (R[0] - R[1]) * Math.cos(fi[0]) ];
+    let v0 = [(R[0] + R[1]) * Math.sin(fi[0])*Math.cos(fi[1]),
+              (R[0] + R[1]) * Math.sin(fi[0])*Math.sin(fi[1]),
+              (R[0] + R[1]) * Math.cos(fi[0]) ];
     let v1 = v0;
     let v  = dv;
     
@@ -207,13 +209,13 @@ let make_model_0 = function ()
         fi[0] += dfi[0];
         fi[1] += dfi[1];
         
-        v1 = [(R[0] - R[1]) * Math.sin(fi[0])*Math.cos(fi[1]),
-              (R[0] - R[1]) * Math.sin(fi[0])*Math.sin(fi[1]),
-              (R[0] - R[1]) * Math.cos(fi[0]) ];
+        v1 = [(R[0] + R[1]) * Math.sin(fi[0])*Math.cos(fi[1]),
+              (R[0] + R[1]) * Math.sin(fi[0])*Math.sin(fi[1]),
+              (R[0] + R[1]) * Math.cos(fi[0]) ];
         
         //mt = tr.translate( v3.sub(v1, v0) );
         let vrot = v3.normalize( v3.cross(v0,v1) );
-        let arot = Math.acos( v3.dot(v3.normalize(v0), v3.normalize(v1)) ) * (180/Math.PI) * ( -R[0]/R[1] );
+        let arot = Math.acos( v3.dot(v3.normalize(v0), v3.normalize(v1)) ) * (180/Math.PI) * ( R[0]/R[1] );
         //console.log(arot);
         let mr = tr.rot(vrot, arot);
         
@@ -228,7 +230,7 @@ let make_model_0 = function ()
 
 let make_model_1 = function ()
 {
-    let revolve = [ 5.5 ];
+    let revolve = [P0];
     let fi      = [0, 0];
     
     let dfi     = [  (-Math.PI / N)*10,
@@ -269,7 +271,7 @@ let make_model_1 = function ()
 
 let make_model_2 = function ()
 {
-    let sinn = 11.1;
+    let sinn = P0;
     let A    = 6;
     
     let P2 = Math.PI/2;
@@ -311,7 +313,7 @@ let make_model_2 = function ()
  * Chebysev net */
 let make_model_3 = function ()
 {
-    let a    = 1.1;
+    let a    = P0;
     
     let P2 = Math.PI/2;
     let N2 = Math.floor(Math.sqrt(N));
@@ -328,9 +330,10 @@ let make_model_3 = function ()
                         -(R[0] + R[1]) * Math.sin(v)*Math.sin(u),
                          (R[0] + R[1]) * Math.cos(v)];
     
-    let v0 = [(a*fiu(0,-P2)[0] + Math.sqrt(4-a*a*Math.cos(-P2)*Math.cos(-P2))*fiv(0,-P2)[0] ) / 2,
-              (a*fiu(0,-P2)[1] + Math.sqrt(4-a*a*Math.cos(-P2)*Math.cos(-P2))*fiv(0,-P2)[1] ) / 2,
-              (a*fiu(0,-P2)[2] + Math.sqrt(4-a*a*Math.cos(-P2)*Math.cos(-P2))*fiv(0,-P2)[2] ) / 2];
+    let v0 = [(a*fiu(0,0)[0] + Math.sqrt(4-a*a*Math.cos(0)*Math.cos(-P2))*fiv(0,0)[0] ) / 2,
+              (a*fiu(0,0)[1] + Math.sqrt(4-a*a*Math.cos(0)*Math.cos(-P2))*fiv(0,0)[1] ) / 2,
+              (a*fiu(0,0)[2] + Math.sqrt(4-a*a*Math.cos(0)*Math.cos(-P2))*fiv(0,0)[2] ) / 2];
+    
     let v1 = v0;
     let v  = dv;
     
@@ -342,8 +345,8 @@ let make_model_3 = function ()
         model.verts.push(v0[1] + v[1]);
         model.verts.push(v0[2] + v[2]);
         
-        let uu =       i * 2*Math.PI / N + ri * 2*Math.PI / rev;
-        let vv = -P2 + i * 2*Math.PI / N;
+        let uu =  i * 2*Math.PI / N + ri * 2*Math.PI / rev;
+        let vv =  i * 2*Math.PI / N;
         
         v1 = [(a*fiu(uu,vv)[0] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[0] ) / 2,
               (a*fiu(uu,vv)[1] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[1] ) / 2,
@@ -597,6 +600,7 @@ let set_textinputs = function ()
     let N2   = Number(N_dom.value);
     let rev2 = Number(rev_dom.value);
     let R2   = Number(R_dom.value);
+    let P0_2 = Number(P0_dom.value);
     let dv2  = dv_dom.value.split(',').map(Number);
     
     if (isNaN(N2)   || N2   === undefined || N2   === null) return;
@@ -615,6 +619,7 @@ let set_textinputs = function ()
     N    = N2;   N_dom.value   = N;
     rev  = rev2; rev_dom.value = rev;
     R[1] = R2;   R_dom.value   = R[1];
+    P0   = P0_2;
     dv   = dv2;  dv_dom.value  = dv.join(',');
     
     make_model();
@@ -682,6 +687,7 @@ let init = function ()
     N_dom   = document.getElementById('n');       N_dom.value   = N;
     rev_dom = document.getElementById('rev');     rev_dom.value = rev;
     R_dom   = document.getElementById('radius');  R_dom.value   = R[1];
+    P0_dom  = document.getElementById('par0');    P0_dom.value  = P0;
     dv_dom  = document.getElementById('vp');      dv_dom.value  = dv.join(',');
     
     resize();
