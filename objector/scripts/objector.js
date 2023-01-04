@@ -187,8 +187,8 @@ var drawC = function () {
         
         var r = v3.length(v3.sub(p2,o));
         
-        r = r*r;
-        //var r = Math.sqrt( v3.length(v3.sub(p2,o)) );
+        //r = r*r;
+        //r = Math.sqrt( v3.length(v3.sub(p2,o)) );
 
         var points = [];
 
