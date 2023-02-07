@@ -310,7 +310,9 @@ let make_model_2 = function ()
 };
 
 /* ******* 
- * Chebysev net */
+ * Chebysev net 
+ * https://tex.stackexchange.com/questions/617897/chebyshev-net-in-the-sphere-and-catenary
+ */
 let make_model_3 = function ()
 {
     let a    = P0;
@@ -367,6 +369,54 @@ let make_model_3 = function ()
     }
 };
 
+let make_model_4 = function ()
+{
+    let r  = R[0] * Math.cos(P0);
+    let N2 = 100;
+    let center = [r, 0, 0];
+    let rotor  = [0, 0, R[0] * Math.sin(P0)];
+    
+    let rot1 = 360 / N;
+    let rot2 = 360 / N2;
+    
+    let v0 = v3.add(center, rotor);
+    
+    let v1 = v0;
+    let v  = dv;
+    
+    for (let ri=0 ; ri<rev ; ++ri)
+    for (let j=0 ; j<N  ; ++j)
+    {
+        let mc = tr.rot([0,0,1], rot1);
+        center = v3.mmul(mc, center);
+        
+        for (let i=0 ; i<=N2 ; ++i)
+        {
+            model.verts.push(v0[0] + v[0]);
+            model.verts.push(v0[1] + v[1]);
+            model.verts.push(v0[2] + v[2]);
+            
+            let m0 = tr.rot(v3.normalize(v3.cmul(center, -1)), rot2);
+            rotor = v3.mmul(m0, rotor);
+            
+            v1 = v3.add(center, rotor);
+            
+            let vrot = v3.normalize( v3.cross(v0,v1) );
+            let arot = Math.acos( v3.dot(v3.normalize(v0), v3.normalize(v1)) ) * (180/Math.PI) * ( R[0]/R[1] );
+            //console.log(arot);
+            let mr = tr.rot(vrot, arot);
+            
+            v = v3.mmul(mr,v);
+            
+            model.verts.push(v1[0] + v[0]);
+            model.verts.push(v1[1] + v[1]);
+            model.verts.push(v1[2] + v[2]);
+            
+            v0 = v1;
+        }
+    }
+};
+
 let make_model = function ()
 {
     model.verts = [];
@@ -378,6 +428,7 @@ let make_model = function ()
         case 1:  make_model_1(); break;
         case 2:  make_model_2(); break;
         case 3:  make_model_3(); break;
+        case 4:  make_model_4(); break;
         default: console.log("ERROR: modeli: " + modeli);
     }
     
