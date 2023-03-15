@@ -5,7 +5,7 @@
         <meta charset="utf-8"/>
         <link rel="stylesheet" type="text/css" href="../index.css"/>
         <link rel="stylesheet" type="text/css" href="voronoi2.css"/>
-        <script data-main="scripts/voronoi2.js" src="third/require.js"></script>
+        <script data-main="scripts/voronoi2.js" src="third/require-2.3.6.js"></script>
         <title>Voronoi 2.5D</title>
     </head>
     <body id="dark" class="back">
@@ -13,19 +13,19 @@
         <table cellpadding="5px" border="0px">
           <tr>
             <td style="text-align: center;">
-              Use GLSL to give distance function: <a href="v2_help.html">Help</a>
-              <br/>
               <textarea rows="10" cols="96" id="fnorm_area"></textarea>
             </td>
             
+            <td>
+              <!-- a href="v2_help.html">Help</a -->
+            </td>
+            
             <td style="text-align: center;">
-              Compute function: <a href="v2_help.html">Help</a>
-              <br/>
               <textarea rows="10" cols="96" id="f123_area"></textarea>
             </td>
           </tr>
           <tr>
-            <td colspan="2" class="center">
+            <td colspan="3" class="center">
               
               <div style="float:left; padding-left:45px">
                 Bases:
@@ -118,6 +118,9 @@
             <td style="text-align: center; width: 790px;">
               <canvas id="canvas" width="700" height="700"></canvas>
             </td>
+            
+            <td></td>
+            
             <td style="text-align: center; width: 790px;">
               <canvas id="canvas3d" width="700" height="700"></canvas>
             </td>
