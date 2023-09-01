@@ -18,7 +18,7 @@ let draw_lines = true;
 
 //let step_n = 1000;
 let steptype = "fixed";
-let N    = 5;
+let N    = 70;
 let dpos = 0.5;
 let pos1 = [];
 let pos2 = [];
