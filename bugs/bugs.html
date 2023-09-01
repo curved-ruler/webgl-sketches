@@ -10,46 +10,81 @@
   top:  0px;
   left: 0px;
 }
+#menu {
+  position: absolute;
+  top:  10px;
+  left: 10px;
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  color: rgb(120, 255, 255);
+}
+.left {
+  text-align: right;
+  padding-right: 10px;
+}
+.hidden {
+  display: none;
+}
         </style>
         <title>Bugs</title>
     </head>
     <body>
         <canvas id="canvas"></canvas>
         
-        <!--table id="menu">
+        <table id="menu">
             <tr>
                 <td class="left">M:</td>
                 <td>Show/Hide Menu</td>
             </tr>
             <tr>
-                <td class="left">I:</td>
-                <td>Toggle projection</td>
+                <td class="left">S:</td>
+                <td>Step</td>
             </tr>
             <tr>
-                <td class="left">H:</td>
-                <td>Toggle coords</td>
+                <td class="left">O:</td>
+                <td>Save Path (.Obj)</td>
             </tr>
             <tr>
-                <td class="left">Mouse wheel / drag:</td>
-                <td>Scale / Rotate</td>
+                <td class="left">Mouse wheel:</td>
+                <td>Scale / Pan</td>
             </tr>
             <tr>
-                <td class="left">Alpha:</td>
+                <td class="left">Mouse click:</td>
+                <td><button id="clickb" onclick="toggle_click()">ADD</button></td>
+            </tr>
+            <tr>
+                <td class="left">Start:</td>
                 <td>
-                    <select id="alpha" onchange="set_alpha(this.value)">
-                        <option value="0.1">0.1</option>
-                        <option value="0.2">0.2</option>
-                        <option value="0.3">0.3</option>
-                        <option value="0.4">0.4</option>
-                        <option value="0.5">0.5</option>
-                        <option value="0.6">0.6</option>
-                        <option value="0.7">0.7</option>
-                        <option value="0.8">0.8</option>
-                        <option value="0.9">0.9</option>
-                        <option value="1.0">1.0</option>
+                    <select id="start" onchange="set_start(this.value)">
+                        <option value="rnd">random</option>
+                        <option value="empty">empty</option>
+                        <option value="sq4">square4</option>
+                        <option value="sq">square</option>
+                        <option value="circ">circle</option>
+                        <option value="circ2">circle 2</option>
+                        <option value="2sq">sq 2</option>
                     </select>
                 </td>
             </tr>
-        </table-->
+            <tr>
+                <td class="left">Step:</td>
+                <td>
+                    <select id="step" onchange="set_step(this.value)">
+                        <option value="fixed">fixed</option>
+                        <option value="prop">proportional</option>
+                        <option value="fixm">fixed with max</option>
+                        <option value="fixs">fixed if smaller</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Step size:</td>
+                <td><input id="stepsz" type="text" size="13" onchange="set_stepsz(this.value)"/></td>
+            </tr>
+            <tr>
+                <td class="left">N:</td>
+                <td><input id="nn" type="text" size="13" onchange="set_n(this.value)"/></td>
+            </tr>
+        </table>
     </body>
 </html>

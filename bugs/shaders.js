@@ -32,7 +32,8 @@ uniform float aspect;
 
 void main ()
 {
-    //gl_PointSize = pointsize;
+    gl_PointSize = 7.0;
+
     if (proj == 0 || proj == 1)
     {
         gl_Position = p * vm * vec4(pos, 1.0);
