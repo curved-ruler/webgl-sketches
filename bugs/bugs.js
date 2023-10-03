@@ -197,7 +197,7 @@ let init_pos_2sq = function ()
         pos1[i*6 + 3*N*6 + 5] = 0;
     }*/
 
-    console.log("P", pos1);
+    //console.log("P", pos1);
 };
 let init_pos_circ = function ()
 {

@@ -115,7 +115,8 @@ var calc_fog = function ()
         {
             fog.push(curve[j*2]   + ((curve[i*2]   - curve[j*2])   / 2));
             fog.push(curve[j*2+1] + ((curve[i*2+1] - curve[j*2+1]) / 2));
-            fog.push(Math.sqrt(Math.tan(Math.sqrt((curve[i*2] - curve[j*2]) * (curve[i*2] - curve[j*2]) + (curve[i*2+1] - curve[j*2+1]) * (curve[i*2+1] - curve[j*2+1])))));
+            //fog.push(Math.sqrt(Math.tan(Math.sqrt((curve[i*2] - curve[j*2]) * (curve[i*2] - curve[j*2]) + (curve[i*2+1] - curve[j*2+1]) * (curve[i*2+1] - curve[j*2+1])))));
+            fog.push(Math.sqrt((curve[i*2] - curve[j*2]) * (curve[i*2] - curve[j*2]) + (curve[i*2+1] - curve[j*2+1]) * (curve[i*2+1] - curve[j*2+1])));
         }
     }
     
