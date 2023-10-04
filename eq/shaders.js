@@ -255,12 +255,19 @@ vec3 col(in float x, in float y)
 }
 `,
 
-nr : `\
-// Newton-Rhapson fractal by https://twitter.com/lisyarus
+nr_bad : `\
 vec3 col(in float x, in float y)
 {
+    const int N = 128;
     vec2 z = vec2(x, y);
-    for (int i=0 ; i<100 ; ++i)
+    
+    vec2 r0 = vec2(1.0, 0.0);
+    vec2 r1 = vec2(-0.5,  sqrt(0.75));
+    vec2 r2 = vec2(-0.5, -sqrt(0.75));
+    
+    ivec2 ret;
+    int i;
+    for (i=0 ; i<N ; ++i)
     {
         // f(z) = z^3-1
         vec2 v = vec2(z.x*z.x*z.x - 3.0*z.x*z.y*z.y - 1.0, 3.0*z.x*z.x*z.y - z.y*z.y*z.y);
@@ -270,12 +277,119 @@ vec3 col(in float x, in float y)
         vec2 q = vec2(v.x*d.x + v.y*d.y, -v.x*d.y+v.y*d.x) / dot(d,d);
         
         z = z-q;
+        
+        if ( abs(dot(z,r0)) < 0.01 ) { ret.x = 0; ret.y = i; break; }
+        if ( abs(dot(z,r1)) < 0.01 ) { ret.x = 1; ret.y = i; break; }
+        if ( abs(dot(z,r2)) < 0.01 ) { ret.x = 2; ret.y = i; break; }
     }
+    
+    vec3 c = ret.x == 0 ? vec3(0.0,1.0,1.0) : ret.x == 1 ? vec3(1.0,0.0,1.0) : vec3(1.0,1.0,0.0);
+    
+    return float(N-i)/float(N) * c;
+}
+`,
+
+nr : `\
+vec3 col(in float x, in float y)
+{
+    const int N = 32;
+    vec2 z = vec2(x, y);
+    
     vec2 r0 = vec2(1.0, 0.0);
     vec2 r1 = vec2(-0.5,  sqrt(0.75));
     vec2 r2 = vec2(-0.5, -sqrt(0.75));
     
-    return vec3(dot(z,r0), dot(z,r1), dot(z,r2));
+    ivec2 ret;
+    int i;
+    for (i=0 ; i<N ; ++i)
+    {
+        // f(z) = z^3-1
+        vec2 v = vec2(z.x*z.x*z.x - 3.0*z.x*z.y*z.y - 1.0, 3.0*z.x*z.x*z.y - z.y*z.y*z.y);
+        // f'(z) = 3z^2;
+        vec2 d = 3.0* vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y);
+        // f(z) / f'(z)
+        vec2 q = vec2(v.x*d.x + v.y*d.y, -v.x*d.y+v.y*d.x) / dot(d,d);
+        
+        z = z-q;
+        
+        if ( abs(z-r0).x < 0.0001 && abs(z-r0).y < 0.0001 ) { ret.x = 0; ret.y = i; break; }
+        if ( abs(z-r1).x < 0.0001 && abs(z-r1).y < 0.0001 ) { ret.x = 1; ret.y = i; break; }
+        if ( abs(z-r2).x < 0.0001 && abs(z-r2).y < 0.0001 ) { ret.x = 2; ret.y = i; break; }
+    }
+    
+    vec3 c = ret.x == 0 ? vec3(1.0,0.0,0.0) : ret.x == 1 ? vec3(0.0,1.0,0.0) : vec3(0.0,0.0,1.0);
+    
+    return float(N-i)/float(N) * c;
+}
+`,
+
+sec_bad : `\
+vec3 col(in float x, in float y)
+{
+    const int N = 128;
+    vec2 z0 = vec2(0.0, 0.0);
+    vec2 z1 = vec2(x, y);
+    vec2 z  = z1;
+    
+    vec2 r0 = vec2(1.0, 0.0);
+    vec2 r1 = vec2(-0.5,  sqrt(0.75));
+    vec2 r2 = vec2(-0.5, -sqrt(0.75));
+    
+    ivec2 ret;
+    int i;
+    for (i=0 ; i<N ; ++i)
+    {
+        // f(z) = z^3-1
+        vec2 v0 = vec2(z0.x*z0.x*z0.x - 3.0*z0.x*z0.y*z0.y - 1.0, 3.0*z0.x*z0.x*z0.y - z0.y*z0.y*z0.y);
+        vec2 v1 = vec2(z1.x*z1.x*z1.x - 3.0*z1.x*z1.y*z1.y - 1.0, 3.0*z1.x*z1.x*z1.y - z1.y*z1.y*z1.y);
+        vec2 v2 = cdiv( cmul(z0,v1)-cmul(z1,v0), v1-v0);
+        
+        z0 = z1;
+        z1 = v2;
+        
+        if ( abs(dot(z1,r0)) < 0.01 ) { ret.x = 0; ret.y = i; break; }
+        if ( abs(dot(z1,r1)) < 0.01 ) { ret.x = 1; ret.y = i; break; }
+        if ( abs(dot(z1,r2)) < 0.01 ) { ret.x = 2; ret.y = i; break; }
+    }
+    
+    vec3 c = ret.x == 0 ? vec3(0.0,1.0,1.0) : ret.x == 1 ? vec3(1.0,0.0,1.0) : vec3(1.0,1.0,0.0);
+    
+    return float(N-i)/float(N) * c;
+}
+`,
+
+sec : `\
+vec3 col(in float x, in float y)
+{
+    const int N = 32;
+    vec2 z0 = vec2(0.0, 0.0);
+    vec2 z1 = vec2(x, y);
+    vec2 z  = z1;
+    
+    vec2 r0 = vec2(1.0, 0.0);
+    vec2 r1 = vec2(-0.5,  sqrt(0.75));
+    vec2 r2 = vec2(-0.5, -sqrt(0.75));
+    
+    ivec2 ret;
+    int i;
+    for (i=0 ; i<N ; ++i)
+    {
+        // f(z) = z^3-1
+        vec2 v0 = vec2(z0.x*z0.x*z0.x - 3.0*z0.x*z0.y*z0.y - 1.0, 3.0*z0.x*z0.x*z0.y - z0.y*z0.y*z0.y);
+        vec2 v1 = vec2(z1.x*z1.x*z1.x - 3.0*z1.x*z1.y*z1.y - 1.0, 3.0*z1.x*z1.x*z1.y - z1.y*z1.y*z1.y);
+        vec2 v2 = cdiv( cmul(z0,v1)-cmul(z1,v0), v1-v0);
+        
+        z0 = z1;
+        z1 = v2;
+        
+        if ( abs(z1-r0).x < 0.01 && abs(z1-r0).y < 0.01 ) { ret.x = 0; ret.y = i; break; }
+        if ( abs(z1-r1).x < 0.01 && abs(z1-r1).y < 0.01 ) { ret.x = 1; ret.y = i; break; }
+        if ( abs(z1-r2).x < 0.01 && abs(z1-r2).y < 0.01 ) { ret.x = 2; ret.y = i; break; }
+    }
+    
+    vec3 c = ret.x == 0 ? vec3(1.0,0.0,0.0) : ret.x == 1 ? vec3(0.0,1.0,0.0) : vec3(0.0,0.0,1.0);
+    
+    return float(N-i)/float(N) * c;
 }
 `,
 
