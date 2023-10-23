@@ -15,7 +15,7 @@ return a+b+c;'},
 
     { V: 10.5, Fstr: 'return Math.sqrt(x*x + y*y + z*z);'},
     
-    { V: 5.0,  Fstr: 'return Math.log(x * y * z);'}
+    { V: 5.0,  Fstr: 'return Math.log(x * y * z);'},
     
     { V: 0.0,  Fstr: '// Box Frame by https://iquilezles.org/articles/distfunctions/\n\
 let length = (a,b,c)=>{return Math.sqrt(a*a+b*b+c*c);};\n\
