@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script src="mc.js" type="module"></script>
+        <style>
+#canvas {
+  position: absolute;
+  top:  0px;
+  left: 0px;
+}
+
+#menu {
+  position: absolute;
+  top:  10px;
+  left: 10px;
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  color: rgb(120, 255, 255);
+}
+
+.left {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.hidden {
+  display: none;
+}
+        </style>
+        <title>Marching Cubes</title>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        
+        <table id="menu">
+            <tr>
+                <td class="left">M:</td>
+                <td>Show/Hide Menu</td>
+            </tr>
+            <tr>
+                <td class="left">I:</td>
+                <td>Toggle projection</td>
+            </tr>
+            <tr>
+                <td class="left">O:</td>
+                <td>Tri / Lin</td>
+            </tr>
+            <tr>
+                <td class="left">S:</td>
+                <td>Save .obj</td>
+            </tr>
+            <tr>
+                <td class="left">Mouse wheel / drag:</td>
+                <td>Scale / Rotate</td>
+            </tr>
+            <tr>
+                <td class="left">Level set:</td>
+                <td>
+                  <input id="levelin" type="text" size="11" onchange="set_level(this.value)"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">F(x,y,z):</br>Javascript</td>
+                <td>
+                    <textarea id="func" type="text" rows="10" cols="60"></textarea>
+                    <br/>
+                    <button onclick="setf()">Set F and Level</button>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Presets</td>
+                <td>
+                    <select id="presets" onchange="set_pref(this.value)">
+                        <option value="0">SinCos</option>
+                        <option value="1">Sphere</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Alpha:</td>
+                <td>
+                    <select id="alpha" onchange="set_alpha(this.value)">
+                        <option value="0.1">0.1</option>
+                        <option value="0.2">0.2</option>
+                        <option value="0.3">0.3</option>
+                        <option value="0.4">0.4</option>
+                        <option value="0.5">0.5</option>
+                        <option value="1.0">1.0</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Curse:</td>
+                <td>
+                    <input id="curse" type="checkbox" onchange="set_curse(this.checked)">
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>
