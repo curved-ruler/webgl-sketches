@@ -13,7 +13,22 @@ let b = 2.0*Math.sin(y/2.0)*Math.cos(z/2.0);\n\
 let c = 2.0*Math.sin(z/2.0)*Math.cos(x/2.0);\n\
 return a+b+c;'},
 
-    { V: 10.5, Fstr: 'return Math.sqrt(x*x + y*y + z*z);'}
+    { V: 10.5, Fstr: 'return Math.sqrt(x*x + y*y + z*z);'},
+    
+    { V: 5.0,  Fstr: 'return Math.log(x * y * z);'}
+    
+    { V: 0.0,  Fstr: '// Box Frame by https://iquilezles.org/articles/distfunctions/\n\
+let length = (a,b,c)=>{return Math.sqrt(a*a+b*b+c*c);};\n\
+let e = 2.2;\n\
+let p = {x:Math.abs(x)-20, y:Math.abs(y)-20, z:Math.abs(z)-10};\n\
+let q = {x:Math.abs(p.x+e)-e,\n\
+         y:Math.abs(p.y+e)-e,\n\
+         z:Math.abs(p.z+e)-e};\n\
+  return Math.min(\n\
+      length(Math.max(p.x, 0.0),Math.max(q.y, 0.0),Math.max(q.z, 0.0)) + Math.min(Math.max(p.x,q.y,q.z),0.0),\n\
+      length(Math.max(q.x, 0.0),Math.max(p.y, 0.0),Math.max(q.z, 0.0)) + Math.min(Math.max(q.x,p.y,q.z),0.0),\n\
+      length(Math.max(q.x, 0.0),Math.max(q.y, 0.0),Math.max(p.z, 0.0)) + Math.min(Math.max(q.x,q.y,p.z),0.0)\n\
+                 );' }
 
 ];
 
