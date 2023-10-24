@@ -58,8 +58,10 @@ let alpha_dom = null;
 
 let menu_hidden = false;
 
-let curse = false;
-let curse_dom = null;
+let smooth = false;
+let smooth_dom = null;
+let curses = [false, false];
+let curses_dom = [null, null];
 
 let proj = 0;
 let obj  = 0;
@@ -228,17 +230,26 @@ let mc = function ()
                             field_val(i),   field_val(j+1), field_val(k+1),
                             field_val(i+1), field_val(j+1), field_val(k+1)];
 
-                let cubef = [fxyz(i,   j,   k)   >= V ? 1 : 0,
-                             fxyz(i+1, j,   k)   >= V ? 1 : 0,
-                             fxyz(i,   j+1, k)   >= V ? 1 : 0,
-                             fxyz(i+1, j+1, k)   >= V ? 1 : 0,
-                             fxyz(i,   j,   k+1) >= V ? 1 : 0,
-                             fxyz(i+1, j,   k+1) >= V ? 1 : 0,
-                             fxyz(i,   j+1, k+1) >= V ? 1 : 0,
-                             fxyz(i+1, j+1, k+1) >= V ? 1 : 0];
+                let cubef0 = [fxyz(i,   j,   k),
+                              fxyz(i+1, j,   k),
+                              fxyz(i,   j+1, k),
+                              fxyz(i+1, j+1, k),
+                              fxyz(i,   j,   k+1),
+                              fxyz(i+1, j,   k+1),
+                              fxyz(i,   j+1, k+1),
+                              fxyz(i+1, j+1, k+1)];
+                
+                let cubef  = [cubef0[0] >= V ? 1 : 0,
+                              cubef0[1] >= V ? 1 : 0,
+                              cubef0[2] >= V ? 1 : 0,
+                              cubef0[3] >= V ? 1 : 0,
+                              cubef0[4] >= V ? 1 : 0,
+                              cubef0[5] >= V ? 1 : 0,
+                              cubef0[6] >= V ? 1 : 0,
+                              cubef0[7] >= V ? 1 : 0];
                 
                 let index = 0;
-                if (curse) {
+                if (curses[0]) {
                     index = cubef[0]*128 +
                             cubef[1]*64 +
                             cubef[2]*32 +
@@ -266,14 +277,55 @@ let mc = function ()
                     let e2 = MC.EdgeVertexIndices[triangles[3*t+1]];
                     let e3 = MC.EdgeVertexIndices[triangles[3*t+2]];
 
-                    let va = v3.cmul(v3.add( [ cube[e1[0]*3], cube[e1[0]*3+1], cube[e1[0]*3+2] ],
-                                             [ cube[e1[1]*3], cube[e1[1]*3+1], cube[e1[1]*3+2] ]), 0.5);
+                    let aa = 0.5;
+                    let ab = 0.5;
+                    let ac = 0.5;
+                    
+                    if (smooth)
+                    {
+                        aa = Math.abs(cubef0[e1[1]]-V) / (Math.abs(cubef0[e1[1]]-V) + Math.abs(cubef0[e1[0]]-V));
+                        ab = Math.abs(cubef0[e2[1]]-V) / (Math.abs(cubef0[e2[1]]-V) + Math.abs(cubef0[e2[0]]-V));
+                        ac = Math.abs(cubef0[e3[1]]-V) / (Math.abs(cubef0[e3[1]]-V) + Math.abs(cubef0[e3[0]]-V));
+                        
+                        if (curses[1])
+                        {
+                        //aa = Math.abs(cubef0[e1[0]]-V) / (Math.abs(cubef0[e1[1]]-V) + Math.abs(cubef0[e1[0]]-V));
+                        //ab = Math.abs(cubef0[e2[0]]-V) / (Math.abs(cubef0[e2[1]]-V) + Math.abs(cubef0[e2[0]]-V));
+                        //ac = Math.abs(cubef0[e3[0]]-V) / (Math.abs(cubef0[e3[1]]-V) + Math.abs(cubef0[e3[0]]-V));
+                        
+                        //aa = cubef0[e1[0]] / (cubef0[e1[1]] + cubef0[e1[0]] -2*V);
+                        //ab = cubef0[e2[0]] / (cubef0[e2[1]] + cubef0[e2[0]] -2*V);
+                        //ac = cubef0[e3[0]] / (cubef0[e3[1]] + cubef0[e3[0]] -2*V);
+                        
+                        //aa = cubef0[e1[0]]-V / (-cubef0[e1[1]] - cubef0[e1[0]] +2*V);
+                        //ab = cubef0[e2[0]]-V / (-cubef0[e2[1]] - cubef0[e2[0]] +2*V);
+                        //ac = cubef0[e3[0]]-V / (-cubef0[e3[1]] - cubef0[e3[0]] +2*V);
+                        
+                        //aa = (V-cubef0[e1[1]] + cubef0[e1[0]]-V);
+                        //ab = (V-cubef0[e2[1]] + cubef0[e2[0]]-V);
+                        //ac = (V-cubef0[e3[1]] + cubef0[e3[0]]-V);
+                        
+                        aa = (V-cubef0[e1[1]]) / (cubef0[e1[0]]-V);
+                        ab = (V-cubef0[e2[1]]) / (cubef0[e2[0]]-V);
+                        ac = (V-cubef0[e3[1]]) / (cubef0[e3[0]]-V);
+                        
+                        //aa = (V-cubef0[e1[1]]);
+                        //ab = (V-cubef0[e2[1]]);
+                        //ac = (V-cubef0[e3[1]]);
+                        }
+                    }
+                    
+                    let va = v3.add(v3.cmul(v3.sub( [ cube[e1[0]*3], cube[e1[0]*3+1], cube[e1[0]*3+2] ],
+                                                    [ cube[e1[1]*3], cube[e1[1]*3+1], cube[e1[1]*3+2] ]), aa),
+                                                    [ cube[e1[1]*3], cube[e1[1]*3+1], cube[e1[1]*3+2] ]);
 
-                    let vb = v3.cmul(v3.add( [ cube[e2[0]*3], cube[e2[0]*3+1], cube[e2[0]*3+2] ],
-                                             [ cube[e2[1]*3], cube[e2[1]*3+1], cube[e2[1]*3+2] ]), 0.5);
+                    let vb = v3.add(v3.cmul(v3.sub( [ cube[e2[0]*3], cube[e2[0]*3+1], cube[e2[0]*3+2] ],
+                                                    [ cube[e2[1]*3], cube[e2[1]*3+1], cube[e2[1]*3+2] ]), ab),
+                                                    [ cube[e2[1]*3], cube[e2[1]*3+1], cube[e2[1]*3+2] ]);
 
-                    let vc = v3.cmul(v3.add( [ cube[e3[0]*3], cube[e3[0]*3+1], cube[e3[0]*3+2] ],
-                                             [ cube[e3[1]*3], cube[e3[1]*3+1], cube[e3[1]*3+2] ]), 0.5);
+                    let vc = v3.add(v3.cmul(v3.sub( [ cube[e3[0]*3], cube[e3[0]*3+1], cube[e3[0]*3+2] ],
+                                                    [ cube[e3[1]*3], cube[e3[1]*3+1], cube[e3[1]*3+2] ]), ac),
+                                                    [ cube[e3[1]*3], cube[e3[1]*3+1], cube[e3[1]*3+2] ]);
 
                     let norm = v3.cross(v3.sub(vc, va), v3.sub(vc, vb));
                     
@@ -545,9 +597,25 @@ let setf = function ()
     draw();
 };
 
-let set_curse = function (value)
+let set_smooth = function (value)
 {
-    curse = value;
+    smooth = value;
+    
+    mc();
+    make_object();
+    draw();
+};
+let set_curse0 = function (value)
+{
+    curses[0] = value;
+    
+    mc();
+    make_object();
+    draw();
+};
+let set_curse1 = function (value)
+{
+    curses[1] = value;
     
     mc();
     make_object();
@@ -578,7 +646,9 @@ let set_ui = function ()
     Fdom.value = Fstr;
     F = Function('x', 'y', 'z', Fstr);
     
-    curse_dom.checked = curse;
+    curses_dom[0].checked = curses[0];
+    curses_dom[1].checked = curses[1];
+    smooth_dom.checked = smooth;
     
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
@@ -616,10 +686,12 @@ let init = function ()
     canvas = document.getElementById('canvas');
     gpu_init('canvas');
     
-    Vdom      = document.getElementById("levelin");
-    Fdom      = document.getElementById("func");
-    alpha_dom = document.getElementById('alpha');
-    curse_dom = document.getElementById('curse');
+    Vdom          = document.getElementById("levelin");
+    Fdom          = document.getElementById("func");
+    alpha_dom     = document.getElementById('alpha');
+    curses_dom[0] = document.getElementById('curse0');
+    curses_dom[1] = document.getElementById('curse1');
+    smooth_dom    = document.getElementById('smooth');
     set_ui();
 
 
@@ -639,10 +711,12 @@ let init = function ()
 };
 
 
-window.set_alpha = set_alpha;
-window.set_curse = set_curse;
-window.set_pref  = set_pref;
-window.setf      = setf;
+window.set_alpha  = set_alpha;
+window.set_curse0 = set_curse0;
+window.set_curse1 = set_curse1;
+window.set_smooth = set_smooth;
+window.set_pref   = set_pref;
+window.setf       = setf;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
