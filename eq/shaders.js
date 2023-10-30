@@ -255,6 +255,27 @@ vec3 col(in float x, in float y)
 }
 `,
 
+julia_2: `\
+// Julia set with equation by @Peter_Stampfli@mathstodon.xy
+vec3 col(in float x, in float y)
+{
+    vec2 z  = vec2(x,y);
+    int i = 0;
+    int n = 64;
+    for (i=0 ; i<n ; ++i)
+    {
+        vec2 z5 = cmul(z,cmul(z,cmul(z,cmul(z,cmul(z,z)))));
+        vec2 a  = (z5-vec2(pow(0.3976,2.0), 0.0));
+        vec2 b  = (z5+vec2(pow(0.7638,2.0), 0.0));
+        vec2 c  = (z5+vec2(pow(0.6625,2.0), 0.0));
+        z = 0.72*cdiv(a,cdiv(b,cdiv(c,z)));
+        if (length(z) > 100.0) break;
+    }
+    float t = fract(float(i) / float(n)*16.0);
+    return hsv2rgb(vec3(0.1, 0.9, t));
+}
+`,
+
 nr_bad : `\
 vec3 col(in float x, in float y)
 {
