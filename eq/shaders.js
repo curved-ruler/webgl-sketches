@@ -111,6 +111,11 @@ bool isint(in float t, in float e)
 {
     return (fract(t) < e || fract(t) > 1.0-e);
 }
+
+bool iseq(in float a, in float b, in float e)
+{
+    return (abs(a-b) < e);
+}
 `,
 
 eq01 : `\
@@ -196,24 +201,6 @@ vec3 col(in float x, in float y)
     //vec2 c = vec2( 0.296, -0.017);
     //vec2 c = vec2( 0.318, -0.044);
     //vec2 c = vec2(-0.755, -0.094);
-    int i = 0;
-    int n = 500;
-    for (i=0 ; i<n ; ++i)
-    {
-        z = vec2(z.x*z.x - z.y*z.y + c.x, 2.0*z.x*z.y + c.y);
-        if (length(z) > 2.0) break;
-    }
-    float t = fract(float(i) / float(n) * 2.0);
-    return hsv2rgb(vec3(0.1, 0.9, t));
-}
-`,
-
-julia_mouse : `\
-// Julia sets
-vec3 col(in float x, in float y)
-{
-    vec2 z = vec2(x,y);
-    vec2 c = vec2(mouse.x, mouse.y);
     int i = 0;
     int n = 500;
     for (i=0 ; i<n ; ++i)

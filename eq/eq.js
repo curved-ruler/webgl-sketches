@@ -2,28 +2,31 @@
 import { glprog }  from "./glprogram.js"
 import { shader_strings as S } from "./shaders.js"
 
-var gl      = null;
-var shader  = null;
-var canvas  = null;
-var helpdiv = null;
-var cwidth, cheight;
+let gl      = null;
+let shader  = null;
+let canvas  = null;
+let helpdiv = null;
+let cwidth, cheight;
 
-var pos       = { x:0.0,  y:0.0 };
-var mouse_pos = { x:0.0,  y:0.0 };
-var mouse_dom = { x:null, y:null };
-var tr = [1,0,1,0];
-var scale = 40.0;
-var grabbed  = 0;
-var mouse_param = false;
-var screen_quad_buffer = null;
-var start_func = "";
-var menu_hidden = false;
+let fta = null;
+
+let pos       = { x:0.0,  y:0.0 };
+let mouse_pos = { x:0.0,  y:0.0 };
+let mouse_dom = { x:null, y:null };
+let mousep_dom = null;
+let tr = [1,0,1,0];
+let scale = 40.0;
+let grabbed  = 0;
+let mouse_param = false;
+let screen_quad_buffer = null;
+let start_func = "";
+let menu_hidden = false;
 
 
 
-var make_quad = function ()
+let make_quad = function ()
 {
-    var screen_quad = [
+    let screen_quad = [
         -1.0,  1.0,
         -1.0, -1.0,
          1.0, -1.0,
@@ -38,7 +41,7 @@ var make_quad = function ()
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(screen_quad), gl.STATIC_DRAW);
 };
 
-var draw = function ()
+let draw = function ()
 {
     if (!gl) return;
     if (!shader) return;
@@ -57,49 +60,49 @@ var draw = function ()
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 };
 
-var zoomin  = function () { scale *= 0.8; };
-var zoomout = function () { scale *= 1.25;  };
-var handle_wheel = function (event)
+let zoomin  = function () { scale *= 0.8; };
+let zoomout = function () { scale *= 1.25;  };
+let handle_wheel = function (event)
 {
     if (event.deltaY < 0) zoomin();
     else                  zoomout();
     
     draw();
 }
-var handle_mouse_down = function (event)
+let handle_mouse_down = function (event)
 {
     grabbed = 1;
 };
-var handle_mouse_up = function (event)
+let handle_mouse_up = function (event)
 {
     grabbed = 0;
 };
 
-var handle_mouse_move = function (event)
+let handle_mouse_move = function (event)
 {
     if (grabbed === 1)
     {
-        var a = scale/cheight;
+        let a = scale/cheight;
         pos.x += event.movementX * a;
         pos.y += event.movementY * a;
         draw();
     }
-    else
+    else if (mouse_param)
     {
         mouse_pos.x = tr[0] * event.clientX + tr[1];
         mouse_pos.y = tr[2] * (cheight-event.clientY) + tr[3];
-        if (mouse_param)
-        {
-            mouse_dom.x.innerHTML = mouse_pos.x;
-            mouse_dom.y.innerHTML = mouse_pos.y;
-            draw();
-        }
+        
+        mouse_dom.x.innerHTML = mouse_pos.x;
+        mouse_dom.y.innerHTML = mouse_pos.y;
+        draw();
     }
 };
 
-var handle_key_down = function (event)
+let handle_key_down = function (event)
 {
-    if (event.key === "m" && event.ctrlKey)
+    if (document.activeElement === fta) { return; }
+    
+    if (event.key === "m" || event.key === "M")
     {
         if (menu_hidden)
         {
@@ -112,9 +115,15 @@ var handle_key_down = function (event)
             document.getElementById("menu").className = "hidden";
         }
     }
+    else if (event.key === "q" || event.key === "Q")
+    {
+        mouse_param = !mouse_param;
+        mousep(mouse_param);
+        mousep_dom.checked = mouse_param;
+    }
 };
 
-var resize = function ()
+let resize = function ()
 {
     if (!canvas || !gl) return;
     
@@ -125,11 +134,11 @@ var resize = function ()
     gl.viewport(0, 0, canvas.width, canvas.height);
 };
 
-var create_shader = function ()
+let create_shader = function ()
 {
     if (!gl) return;
     
-    var fs_withf = S.fs.replace('$HELPERS$', S.helpers).replace('$FUNC$', start_func);
+    let fs_withf = S.fs.replace('$HELPERS$', S.helpers).replace('$FUNC$', start_func);
     shader = glprog.create_vf_program(gl, S.vs, fs_withf);
         
     shader.pos = gl.getAttribLocation(shader.glprog, "pos");
@@ -139,7 +148,7 @@ var create_shader = function ()
     shader.mouse = gl.getUniformLocation(shader.glprog, "mouse");
 }
 
-var init = function ()
+let init = function ()
 {
     document.removeEventListener("DOMContentLoaded", init);
     
@@ -155,6 +164,9 @@ var init = function ()
     
     mouse_dom.x = document.getElementById('mousex');
     mouse_dom.y = document.getElementById('mousey');
+    mousep_dom  = document.getElementById('mousep_chk');
+    
+    fta = document.getElementById('func');
     
     resize();
     make_quad();
@@ -163,26 +175,26 @@ var init = function ()
     draw();
 };
 
-var initf = function ()
+let initf = function ()
 {
-    var fta = document.getElementById('func');
+    let fta = document.getElementById('func');
     fta.value = start_func;
 }
-var setf  = function ()
+let setf  = function ()
 {
-    var fta = document.getElementById('func');
+    let fta = document.getElementById('func');
     start_func = fta.value;
     create_shader();
     draw();
 };
-var preset = function (opt)
+let preset = function (opt)
 {
     start_func = S[opt];
     initf();
     create_shader();
     draw();
 }
-var mousep = function (v)
+let mousep = function (v)
 {
     mouse_param = v;
 }
@@ -192,8 +204,8 @@ window.setf   = setf;
 window.preset = preset;
 window.mousep = mousep;
 
-var helper_is_visible = false;
-var show_helper = function ()
+let helper_is_visible = false;
+let show_helper = function ()
 {
     if (helper_is_visible)
     {

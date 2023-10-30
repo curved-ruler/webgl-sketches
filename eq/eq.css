@@ -45,6 +45,7 @@
 .link {
   color: rgb(90, 200, 200);
   text-decoration: underline;
+  cursor: pointer;
 }
 
 a:link    { color: rgb(90, 200, 200); }

@@ -12,16 +12,12 @@
         <div id="hlp" class="hidden"></div>
         <table id="menu">
             <tr>
-                <td class="left">Ctrl+M:</td>
+                <td class="left">M:</td>
                 <td>show/hide menu</td>
             </tr>
             <tr>
-                <td class="left">Mouse wheel:</td>
-                <td>scale</td>
-            </tr>
-            <tr>
-                <td class="left">Mouse drag:</td>
-                <td>drag</td>
+                <td class="left">Mouse wheel / drag:</td>
+                <td>scale / pan</td>
             </tr>
             <tr>
                 <td class="left">Presets:</td>
@@ -34,7 +30,6 @@
                         <option value="cmp01b">Complex phase 1b</option>
                         <option value="mandel">Mandelbrot</option>
                         <option value="julia">Julia sets for parameter c</option>
-                        <option value="julia_mouse">Julia sets, mouse parameter</option>
                         <option value="julia_and_mand">Julia and Mandelbrot, mouse parameter</option>
                         <option value="julia_2">Julia 2</option>
                         <option value="nr">Newton-Rhapson</option>
@@ -44,6 +39,10 @@
                         <option value="bit01">Bitwise</option>
                     </select>
                 </td>
+            </tr>
+            <tr>
+                <td class="left">Q:</td>
+                <td>toggle mouse param</td>
             </tr>
             <tr>
                 <td class="left">Mouse parameter:</td>
@@ -63,8 +62,8 @@
                 <td><button onclick="setf()">Show</button></td>
             </tr>
             <tr>
-                <td class="left">Quick help: </td>
-                <td>scripting language is <a href="https://www.shaderific.com/glsl-functions/">GLSL</a>, built in <span class="link" onclick="show_helper()">helper functions</span></td>
+                <td class="left"></td>
+                <td>scripting language is GLSL 300 ES, built in <span class="link" onclick="show_helper()">helper functions</span></td>
             </tr>
         </table>
     </body>
