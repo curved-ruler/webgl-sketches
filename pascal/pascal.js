@@ -159,9 +159,9 @@ let seed_data = function ()
     for (let i=0 ; i<field.x ; ++i)
     {
         field.data[i] = farr[i];
-        field.im[i*4+0] = field.data[i]*255/(N-1);
-        field.im[i*4+1] = field.data[i]*255/(N-1);
-        field.im[i*4+2] = field.data[i]*255/(N-1);
+        //field.im[i*4+0] = (field.data[i]*255/(N-1)) % 256;
+        field.im[i*4+1] = (field.data[i]*255/(N-1)) % 256;
+        //field.im[i*4+2] = field.data[i]*255/(N-1);
     }
 };
 
@@ -185,9 +185,9 @@ let calc_data = function ()
             
             field.data[j*field.x + i] = R(prev, N);
             
-            field.im[(j*field.x + i)*4 + 0] = field.data[j*field.x + i] * 255 / (N-1);
-            field.im[(j*field.x + i)*4 + 1] = field.data[j*field.x + i] * 255 / (N-1);
-            field.im[(j*field.x + i)*4 + 2] = field.data[j*field.x + i] * 255 / (N-1);
+            //field.im[(j*field.x + i)*4 + 0] = (field.data[j*field.x + i] * 255 / (N-1)) % 256;
+            field.im[(j*field.x + i)*4 + 1] = (field.data[j*field.x + i] * 255 / (N-1)) % 256;
+            //field.im[(j*field.x + i)*4 + 2] = field.data[j*field.x + i] * 255 / (N-1);
             
             //console.log(field.data[j*field.x + i]);
         }
