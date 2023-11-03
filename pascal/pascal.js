@@ -12,6 +12,9 @@ let F = null;
 let R = null;
 let N = null;
 
+let col_channels = { r: 0.0, g:1.0, b: 0.0 };
+
+
 let first_d = null;
 let rule_d  = null;
 let n_d     = null;
@@ -159,9 +162,9 @@ let seed_data = function ()
     for (let i=0 ; i<field.x ; ++i)
     {
         field.data[i] = farr[i];
-        //field.im[i*4+0] = (field.data[i]*255/(N-1)) % 256;
-        field.im[i*4+1] = (field.data[i]*255/(N-1)) % 256;
-        //field.im[i*4+2] = field.data[i]*255/(N-1);
+        field.im[i*4+0] = (field.data[i]*col_channels.r) * 255/(N-1) % 256;
+        field.im[i*4+1] = (field.data[i]*col_channels.g) * 255/(N-1) % 256;
+        field.im[i*4+2] = (field.data[i]*col_channels.b) * 255/(N-1) % 256;
     }
 };
 
@@ -185,9 +188,9 @@ let calc_data = function ()
             
             field.data[j*field.x + i] = R(prev, N);
             
-            //field.im[(j*field.x + i)*4 + 0] = (field.data[j*field.x + i] * 255 / (N-1)) % 256;
-            field.im[(j*field.x + i)*4 + 1] = (field.data[j*field.x + i] * 255 / (N-1)) % 256;
-            //field.im[(j*field.x + i)*4 + 2] = field.data[j*field.x + i] * 255 / (N-1);
+            field.im[(j*field.x + i)*4 + 0] = (field.data[j*field.x + i]*col_channels.r) * 255 / (N-1) % 256;
+            field.im[(j*field.x + i)*4 + 1] = (field.data[j*field.x + i]*col_channels.g) * 255 / (N-1) % 256;
+            field.im[(j*field.x + i)*4 + 2] = (field.data[j*field.x + i]*col_channels.b) * 255 / (N-1) % 256;
             
             //console.log(field.data[j*field.x + i]);
         }
@@ -283,6 +286,10 @@ let initf = function ()
     first_d.value = presets[0].Fstr;
     rule_d.value  = presets[0].Rstr;
     n_d.value     = presets[0].N;
+    
+    document.getElementById("chr").checked = col_channels.r > 0.8;
+    document.getElementById("chg").checked = col_channels.g > 0.8;
+    document.getElementById("chb").checked = col_channels.b > 0.8;
 };
 
 let setf = function ()
@@ -321,6 +328,18 @@ let setf = function ()
     }
     
     draw();
+};
+
+var setc = function (strval)
+{
+    switch (strval)
+    {
+        case 'r' : col_channels.r = 1.0-col_channels.r; draw(); break;
+        case 'g' : col_channels.g = 1.0-col_channels.g; draw(); break;
+        case 'b' : col_channels.b = 1.0-col_channels.b; draw(); break;
+        
+        default: console.error('FI SELECT: ' + strval);
+    }
 };
 
 
@@ -364,6 +383,7 @@ let init = function ()
 
 
 window.setf = setf;
+window.setc = setc;
 
 //document.addEventListener("mouseup", handleMouseUp);
 //document.addEventListener("mousemove", handleMouseMove);
