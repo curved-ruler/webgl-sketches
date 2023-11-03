@@ -38,14 +38,31 @@
                 <td>Show / hide menu</td>
             </tr>
             <tr>
-                <td class="left">Mouse wheel or W/S:</td>
+                <td class="left">Mouse wheel<br/>W/S:</td>
                 <td>Zoom</td>
             </tr>
             <tr>
-                <td class="left">Num of col:</td>
+                <td class="left">N:</td>
                 <td>
-                  <select id="nn" onchange="set_n(this.value)">
-                  </select>
+                  <input id="n" type="text" size="11"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">First row:</td>
+                <td>
+                <textarea id="firstr" type="text" rows="8" cols="60"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Rule:</td>
+                <td>
+                <textarea id="rule" type="text" rows="3" cols="60"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td class="left"></td>
+                <td>
+                <button onclick="setf()">SET</button>
                 </td>
             </tr>
         </table>

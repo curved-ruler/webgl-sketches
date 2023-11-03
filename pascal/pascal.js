@@ -8,7 +8,14 @@ var shader  = null;
 let canvas  = null;
 let screen_quad_buffer = null;
 
-let N = 2;
+let F = null;
+let R = null;
+let N = null;
+
+let first_d = null;
+let rule_d  = null;
+let n_d     = null;
+
 let X = 0;
 let Y = 0;
 let scale = 10;
@@ -36,6 +43,29 @@ let field = {
     im   : null,
     texture : null
 };
+
+
+let presets = [
+    
+    { Fstr: `\
+let middle = xmax / 2;
+let gap = 4;
+let sn  = 22;
+let start = Math.floor(middle - (sn/2)*gap);
+for (let i=0 ; i<sn ; ++i)
+{
+    first[start + i*gap] = 1;
+}
+`,
+      Rstr: `\
+// prev row cells: p[0] p[1] p[2] p[3] p[4]
+// current row:              curr
+return Math.floor(1.7*p[1] + 0*p[2] + 1.7*p[3]) % N;
+`,
+      N: 7
+    },
+
+];
 
 
 
@@ -122,18 +152,17 @@ let seed_data = function ()
     }
     
     //field.data[Math.floor(field.x / 2)] = 1;
-    let middle = field.x / 2;
-    let gap = 4;
-    let sn  = 22;
-    let start = Math.floor(middle - (sn/2)*gap);
-    for (let i=0 ; i<sn ; ++i)
-    {
-        field.data[start + i*gap] = 1;
-        field.im[(start + i*gap)*4+0] = 255/(N-1);
-        field.im[(start + i*gap)*4+1] = 255/(N-1);
-        field.im[(start + i*gap)*4+2] = 255/(N-1);
-    }
+    let farr = [...Array(field.x)].map(i => 0);
     
+    F(farr, field.x, N);
+    
+    for (let i=0 ; i<field.x ; ++i)
+    {
+        field.data[i] = farr[i];
+        field.im[i*4+0] = field.data[i]*255/(N-1);
+        field.im[i*4+1] = field.data[i]*255/(N-1);
+        field.im[i*4+2] = field.data[i]*255/(N-1);
+    }
 };
 
 let calc_data = function ()
@@ -142,17 +171,25 @@ let calc_data = function ()
         
     seed_data();
     
-    for (let j=1 ; j<field.y-1 ; ++j)
+    let fx = field.x-1;
+    
+    for (let j=1 ; j<field.y ; ++j)
     {
-        for (let i=1 ; i<field.x-1 ; ++i)
+        for (let i=0 ; i<field.x ; ++i)
         {
-            field.data[j*field.x + i] = Math.floor( 1.7 * field.data[(j-1)*field.x + (i-1)] +
-                                          0 * field.data[(j-1)*field.x + (i)]   +
-                                          1.7 * field.data[(j-1)*field.x + (i+1)] ) % N;
-                                           
-            field.im[(j*field.x + i)*4 + 0] = field.data[j*field.x + i]*255/(N-1);
-            field.im[(j*field.x + i)*4 + 1] = field.data[j*field.x + i]*255/(N-1);
-            field.im[(j*field.x + i)*4 + 2] = field.data[j*field.x + i]*255/(N-1);
+            let prev = [(i-2)<0  ? 0 : field.data[(j-1)*field.x + (i-2)],
+                        (i-1)<0  ? 0 : field.data[(j-1)*field.x + (i-1)],
+                        field.data[(j-1)*field.x + (i)],
+                        (i+1)>fx ? 0 : field.data[(j-1)*field.x + (i+1)],
+                        (i+2)>fx ? 0 : field.data[(j-1)*field.x + (i+2)]];
+            
+            field.data[j*field.x + i] = R(prev, N);
+            
+            field.im[(j*field.x + i)*4 + 0] = field.data[j*field.x + i] * 255 / (N-1);
+            field.im[(j*field.x + i)*4 + 1] = field.data[j*field.x + i] * 255 / (N-1);
+            field.im[(j*field.x + i)*4 + 2] = field.data[j*field.x + i] * 255 / (N-1);
+            
+            //console.log(field.data[j*field.x + i]);
         }
     }
     
@@ -200,15 +237,19 @@ let handleMouseMove = function (event)
 
 let handleKeyDown = function (event)
 {
-    if (event.key === "w")
+    if (document.activeElement === first_d) { return; }
+    if (document.activeElement === rule_d)  { return; }
+    
+    
+    if (event.key === "w" || event.key === "W")
     {
         zoomin();
     }
-    else if (event.key === "s")
+    else if (event.key === "s" || event.key === "S")
     {
         zoomout();
     }
-    else if (event.key === "m")
+    else if (event.key === "m" || event.key === "M")
     {
         if (menu_hidden)
         {
@@ -237,35 +278,51 @@ let handleWheel = function (event)
     else                  zoomout();
 };
 
-let create_dropdowns = function ()
+let initf = function ()
 {
-    let cmlist = document.getElementById('nn');
-    
-    for (let i=2 ; i<20 ; ++i)
-    {
-        let option = document.createElement("option");
-        option.value = i;
-        option.text  = i;
-        option.selected = i == N;
-        cmlist.appendChild(option);
-    }
+    first_d.value = presets[0].Fstr;
+    rule_d.value  = presets[0].Rstr;
+    n_d.value     = presets[0].N;
 };
 
-let set_n = function (strval)
+let setf = function ()
 {
-    let ival = parseInt(strval);
-    
-    if (isNaN(ival) || ival < 1)
+    let n2 = Number(n_d.value);
+    if (isNaN(n2) || n2 === undefined || n2 === null)
     {
-        N = 2;
+        console.error("Couldn't parse N");
+        alert("Couldn't parse N");
+        return;
     }
-    else
+    N = n2;
+    
+    let Fstr = first_d.value;
+    try
     {
-        N = ival;
+        F = Function('first', 'xmax', 'N', Fstr);
+    }
+    catch (err)
+    {
+        console.error("Func error!", err.message);
+        alert(err.message);
+        return;
+    }
+    
+    let Rstr = rule_d.value;
+    try
+    {
+        R = Function('p', 'N', Rstr);
+    }
+    catch (err)
+    {
+        console.error("Func error!", err.message);
+        alert(err.message);
+        return;
     }
     
     draw();
 };
+
 
 let init = function ()
 {
@@ -289,8 +346,14 @@ let init = function ()
     gl.disable(gl.BLEND);
     gl.disable(gl.DEPTH_TEST);
     
+    first_d = document.getElementById("firstr");
+    rule_d  = document.getElementById("rule");
+    n_d     = document.getElementById("n");
+    
+    initf();
+    setf();
+    
     make_quad();
-    create_dropdowns();
     field.texture = gl.createTexture();
     
     //canvas.addEventListener("mousedown", handleMouseDown);
@@ -299,7 +362,8 @@ let init = function ()
     draw();
 };
 
-window.set_n = set_n;
+
+window.setf = setf;
 
 //document.addEventListener("mouseup", handleMouseUp);
 //document.addEventListener("mousemove", handleMouseMove);
