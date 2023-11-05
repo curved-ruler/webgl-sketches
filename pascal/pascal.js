@@ -65,7 +65,52 @@ for (let i=0 ; i<sn ; ++i)
 // current row:              curr
 return Math.floor(1.7*p[1] + 0*p[2] + 1.7*p[3]) % N;
 `,
-      N: 7
+      N: 7,
+      RGB: [1.0, 1.0, 1.0]
+    },
+    
+    
+    { Fstr: `\
+let middle = Math.floor(xmax / 2);
+first[middle] = 1;
+`,
+      Rstr: `\
+return ( p[1] + (1-p[2]) + p[3] ) % 2;
+`,
+      N: 2,
+      RGB: [1.0, 1.0, 1.0]
+    },
+    
+    
+    { Fstr: `\
+let middle = xmax / 2;
+let gap = 5;
+let sn  = 22;
+let start = Math.floor(middle - (sn/2)*gap);
+for (let i=0 ; i<sn ; ++i)
+{
+    first[start + i*gap] = 1;
+}
+`,
+      Rstr: `\
+return (0.1*p[1] + p[2] + 0.1*p[3] +1) % 2;
+`,
+      N: 2,
+      RGB: [0.0, 1.0, 1.0]
+    },
+    
+    
+    { Fstr: `\
+for (let i=0 ; i<xmax ; ++i)
+{
+    first[i] = i % N;
+}
+`,
+      Rstr: `\
+return Math.floor(1.5*p[1] + -1*p[2] + 1.5*p[3]) % 2;
+`,
+      N: 11,
+      RGB: [0.0, 1.0, 0.0]
     },
 
 ];
@@ -301,15 +346,25 @@ let handleWheel = function (event)
     else                  zoomout();
 };
 
-let initf = function ()
+let initf = function (strval)
 {
-    first_d.value = presets[0].Fstr;
-    rule_d.value  = presets[0].Rstr;
-    n_d.value     = presets[0].N;
+    let i = parseInt(strval);
+    if (i<0 || i>=presets.length) i = 0;
+    
+    first_d.value  = presets[i].Fstr;
+    rule_d.value   = presets[i].Rstr;
+    n_d.value      = presets[i].N;
+    col_channels.r = presets[i].RGB[0];
+    col_channels.g = presets[i].RGB[1];
+    col_channels.b = presets[i].RGB[2];
     
     document.getElementById("chr").checked = col_channels.r > 0.8;
     document.getElementById("chg").checked = col_channels.g > 0.8;
     document.getElementById("chb").checked = col_channels.b > 0.8;
+    
+    document.getElementById("presets").options.selectedIndex = i;
+    
+    setf();
 };
 
 let setf = function ()
@@ -389,8 +444,7 @@ let init = function ()
     rule_d  = document.getElementById("rule");
     n_d     = document.getElementById("n");
     
-    initf();
-    setf();
+    initf(0);
     
     make_quad();
     field.texture = gl.createTexture();
@@ -402,8 +456,9 @@ let init = function ()
 };
 
 
-window.setf = setf;
-window.setc = setc;
+window.initf = initf;
+window.setf  = setf;
+window.setc  = setc;
 
 //document.addEventListener("mouseup", handleMouseUp);
 //document.addEventListener("mousemove", handleMouseMove);
