@@ -157,7 +157,15 @@ let seed_data = function ()
     //field.data[Math.floor(field.x / 2)] = 1;
     let farr = [...Array(field.x)].map(i => 0);
     
-    F(farr, field.x, N);
+    try {
+        F(farr, field.x, N);
+    }
+    catch (err)
+    {
+        console.error("Func error!", err.message);
+        alert("Error in first row script:\n" + err.message);
+        return -1;
+    }
     
     for (let i=0 ; i<field.x ; ++i)
     {
@@ -166,13 +174,16 @@ let seed_data = function ()
         field.im[i*4+1] = (field.data[i]*col_channels.g) * 255/(N-1) % 256;
         field.im[i*4+2] = (field.data[i]*col_channels.b) * 255/(N-1) % 256;
     }
+    
+    return 0;
 };
 
 let calc_data = function ()
 {
     if (!canvas) return;
         
-    seed_data();
+    let sret = seed_data();
+    if (sret < 0) return;
     
     let fx = field.x-1;
     
@@ -186,7 +197,16 @@ let calc_data = function ()
                         (i+1)>fx ? 0 : field.data[(j-1)*field.x + (i+1)],
                         (i+2)>fx ? 0 : field.data[(j-1)*field.x + (i+2)]];
             
-            field.data[j*field.x + i] = R(prev, N);
+            try
+            {
+                field.data[j*field.x + i] = R(prev, N);
+            }
+            catch (err)
+            {
+                console.error("Func error!", err.message);
+                alert("Error in rule script:\n" + err.message);
+                return;
+            }
             
             field.im[(j*field.x + i)*4 + 0] = (field.data[j*field.x + i]*col_channels.r) * 255 / (N-1) % 256;
             field.im[(j*field.x + i)*4 + 1] = (field.data[j*field.x + i]*col_channels.g) * 255 / (N-1) % 256;
@@ -311,7 +331,7 @@ let setf = function ()
     catch (err)
     {
         console.error("Func error!", err.message);
-        alert(err.message);
+        alert("Error in first row script:\n" + err.message);
         return;
     }
     
@@ -323,7 +343,7 @@ let setf = function ()
     catch (err)
     {
         console.error("Func error!", err.message);
-        alert(err.message);
+        alert("Error in rule script:\n" + err.message);
         return;
     }
     

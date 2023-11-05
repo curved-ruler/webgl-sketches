@@ -229,8 +229,10 @@ let mc = function ()
                             field_val(i+1), field_val(j),   field_val(k+1),
                             field_val(i),   field_val(j+1), field_val(k+1),
                             field_val(i+1), field_val(j+1), field_val(k+1)];
-
-                let cubef0 = [fxyz(i,   j,   k),
+                
+                let cubef0 = [];
+                try {
+                    cubef0 = [fxyz(i,   j,   k),
                               fxyz(i+1, j,   k),
                               fxyz(i,   j+1, k),
                               fxyz(i+1, j+1, k),
@@ -238,6 +240,8 @@ let mc = function ()
                               fxyz(i+1, j,   k+1),
                               fxyz(i,   j+1, k+1),
                               fxyz(i+1, j+1, k+1)];
+                }
+                catch (err) { console.error("Func error!", err.message); alert(err.message); return; }
                 
                 let cubef  = [cubef0[0] >= V ? 1 : 0,
                               cubef0[1] >= V ? 1 : 0,
@@ -493,9 +497,10 @@ let save_obj = function ()
     var blob = new Blob([objstring], {type: "text/plain"});
     saveAs(blob, 'marching_cubes.obj');
 };
-let handle_key_down = function ()
+let handle_key_down = function (event)
 {
     if (document.activeElement === Fdom) { return; }
+    if (event.ctrlKey) { return; }
     
     
     
@@ -586,8 +591,7 @@ let setf = function ()
     }
     catch (err)
     {
-        console.error("Func error!");
-        console.log(err.message);
+        console.error("Func error!", err.message);
         alert(err.message);
         return;
     }
