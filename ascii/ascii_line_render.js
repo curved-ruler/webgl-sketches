@@ -13,18 +13,20 @@ let camera = {
     look  : v3.normalize([-1,  0,  0]),
     up    : v3.normalize([ 0,  0,  1]),
     near  : 10.0,
-    median: 10,
+    median: 300,
     far   : 1000,
     fovy  : Math.PI / 3,
     aspect: 1
 };
 
+let usage = "Usage:\n========\nArrow keys - rotate\n+/- keys   - zoom\nI          - projection";
+
 let mesh_set = "1";
 let mesh_name = "kocka_ures.obj";
 let mesh = null;
 let tr_m_v = [];
-let proj = 1;
-let scale = 1;
+let proj = 0;
+let scale = 1.4;
 let axis = 0;
 let rotation = 0;
 let modlmat = null;
@@ -66,14 +68,35 @@ let compute_matrices = function ()
     if (!mesh) return;
     tr_m_v = [];
     let mat = m4.mul(projmat, m4.mul(viewmat, modlmat));
+    
     for (let vi = 0 ; vi < mesh.verts.length / 3 ; ++vi)
     {
         let v = [mesh.verts[vi*3], mesh.verts[vi*3+1], mesh.verts[vi*3+2]];
         tr_m_v.push(v3.mmul(mat, v));
     }
 };
+let transform_6pp = function (position)
+{
+    let rad = 0.4;
+    
+    let vm = m4.mul(viewmat, modlmat);
+    let v  = v3.mmul(vm, position);
+    
+    let l   = v3.length(v);
+    let iv  = (l < 0.00001) ? [0,0,0] : v3.normalize(v);
+    let ivv = (Math.sqrt(iv[0]*iv[0] + iv[1]*iv[1]) < 0.00001) ? [0,0,0] : v3.normalize([iv[0], iv[1], 0.0]);
+    let a   = (l < 0.00001) ? 0.0 : Math.acos(v3.dot([0.0, 0.0, -1.0], iv));
+    let r   = [ ivv[0] * a*rad, ivv[1] * a*rad, ivv[2] * a*rad ];
+    
+    let beta = (1.0 + camera.far/camera.near) / (1.0 - camera.far/camera.near);
+    let alph = (-1.0 - beta) / camera.near;
+    let z  = alph * v3.length(v) + beta;
+    if (v[2] > 0.0) z = -v[2]-1.0;
+    
+    return [r[0] / camera.aspect, r[1], z];
+};
 
-let screen_space = function(x, c)
+let screen_space = function (x, c)
 {
     return Math.floor((x + 1) * c / 2);
 };
@@ -133,7 +156,7 @@ let render_text = function (x, y, z, str)
         ++xi;
     }
 }
-let render = function ()
+let render_mat = function ()
 {
     if (!mesh) return;
     
@@ -142,7 +165,7 @@ let render = function ()
     
     rendered = "";
     
-    render_text(1,cy-1,-1,"Usage:\n======\nArrow keys - rotate\n+/- keys   - zoom");
+    render_text(1,cy-1,-1, usage);
     
     for (let vi = 0 ; vi < tr_m_v.length ; ++vi)
     {
@@ -199,6 +222,47 @@ let render = function ()
     }
     
     render_to_html();
+};
+
+let render_6pp = function ()
+{
+    if (!mesh) return;
+    
+    render_begin();
+    compute_matrices();
+    
+    rendered = "";
+    
+    render_text(1,cy-1,-1, usage);
+    
+    for (let vi = 0 ; vi < mesh.verts.length / 3 ; ++vi)
+    {
+        let v = transform_6pp([mesh.verts[vi*3], mesh.verts[vi*3+1], mesh.verts[vi*3+2]]);
+        let x = screen_space(v[0], cx);
+        let y = screen_space(v[1], cy);
+        render_point(x, y, v[2], 'X');
+    }
+    
+    for (let li = 0 ; li < mesh.lines.length / 2 ; ++li)
+    {
+        let v0 = [mesh.verts[mesh.lines[li*2]*3],   mesh.verts[mesh.lines[li*2]*3+1],   mesh.verts[mesh.lines[li*2]*3+2]];
+        let v1 = [mesh.verts[mesh.lines[li*2+1]*3], mesh.verts[mesh.lines[li*2+1]*3+1], mesh.verts[mesh.lines[li*2+1]*3+2]];
+        
+        for (let i=1 ; i<10 ; ++i)
+        {
+            let p  = v3.add(v3.cmul(v3.sub(v1, v0), (i/10)), v0);
+            let pp = transform_6pp(p);
+            render_point(screen_space(pp[0], cx), screen_space(pp[1], cy), pp[2], '.');
+        }
+    }
+    
+    render_to_html();
+};
+
+let render = function ()
+{
+    if (proj === 0 || proj === 1) { render_mat(); }
+    else                          { render_6pp(); }
 };
 
 var load_model = function ()
@@ -300,6 +364,13 @@ var handle_keydown = function (event)
     else if (event.key === '-')
     {
         scale *= 0.8;
+        render();
+    }
+    else if (event.key === 'i' || event.key === 'I')
+    {
+        if      (proj === 0) { scale /= 1.4; proj = 1; }
+        else if (proj === 1) { scale *= 10;  proj = 2; }
+        else                 { scale /= 10; scale *= 1.4; proj = 0; }
         render();
     }
     // Ensure [0,360]
