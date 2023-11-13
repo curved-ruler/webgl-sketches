@@ -411,6 +411,16 @@ vec3 col(in float x, in float y)
 }
 `,
 
+bit02 : `\
+vec3 col(in float x, in float y)
+{
+    int a = int(floor(x));
+    int b = int(floor(y));
+    int left  = (a*a + b*b) % 256;
+    return vec3(float(left)/256.0);
+}
+`
+
 };
 
 export { shader_strings };
