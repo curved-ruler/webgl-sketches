@@ -39,6 +39,8 @@ var constants = {
         dodeca_e     : 'dodeka_ures.obj',
         icosahedron  : 'ikozaeder.obj',
         icosa_e      : 'ikoza_ures.obj',
+        fulleren_o   : 'fulleren_otszog.obj',
+        
         csaszar     : 'csaszar.obj',
         csaszar_e   : 'csaszar_e.obj',
         szilassi     : 'szilassi.obj',
@@ -47,7 +49,8 @@ var constants = {
         haz_e   : 'haz_e.obj',
         teto    : 'teto.obj',
         teto_e  : 'teto_e.obj',
-        teapot  : 'teapot01.obj'
+        teapot  : 'teapot01.obj',
+        square  : 'negyzet.obj'
     },
    
     inputs2 : {

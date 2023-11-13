@@ -88,7 +88,7 @@ var draw1 = function () {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    gl.clearColor(0.11, 0.11, 0.11, 1.0);
+    gl.clearColor(parameters.bcol[0], parameters.bcol[1], parameters.bcol[2], 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, model.vertexBuffer);
@@ -187,8 +187,11 @@ var drawC = function () {
         
         var r = v3.length(v3.sub(p2,o));
         
-        //r = r*r;
-        //r = Math.sqrt( v3.length(v3.sub(p2,o)) );
+        if (parameters.crr   === 1) r = r*r;
+        if (parameters.csqrt === 1) r = Math.sqrt( r );
+        
+        
+        
 
         var points = [];
 
@@ -251,7 +254,7 @@ var drawC = function () {
         //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_ALPHA);
     }
     
-    gl.clearColor(0.11, 0.11, 0.11, 1.0);
+    gl.clearColor(parameters.bcol[0], parameters.bcol[1], parameters.bcol[2], 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, cmodel.vertexBuffer);
@@ -418,10 +421,21 @@ var toggleCA = function (value) {
     
     draw();
 };
-
 var toggleCPersp = function (value) {
     if (value) parameters.cpersp = 1;
     else       parameters.cpersp = 0;
+    
+    draw();
+};
+var toggleCRR = function (value) {
+    if (value) parameters.crr = 1;
+    else       parameters.crr = 0;
+    
+    draw();
+};
+var toggleCSqrt = function (value) {
+    if (value) parameters.csqrt = 1;
+    else       parameters.csqrt = 0;
     
     draw();
 };
@@ -462,7 +476,7 @@ var getModel = function (set) {
         }
     }
     //xhr.open('GET', parameters.server + '/input/' + set + '/' + parameters.modelName, true);
-    xhr.open('GET', 'input/' + set + '/' + parameters.modelName, true);
+    xhr.open('GET', '../input/obj' + set + '/' + parameters.modelName, true);
     xhr.send(null);
 };
 
@@ -492,8 +506,10 @@ var setModel = function (selectedModel, modelSet) {
 window.setRenderMode = setRenderMode;
 window.setModel = setModel;
 window.toggleDivision = toggleDivision;
-window.toggleCA = toggleCA;
+window.toggleCA     = toggleCA;
 window.toggleCPersp = toggleCPersp;
+window.toggleCRR    = toggleCRR;
+window.toggleCSqrt  = toggleCSqrt;
 window.setDivNum = setDivNum;
 
 createRenderDropdown();

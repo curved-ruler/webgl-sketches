@@ -6,7 +6,7 @@ var mch = function (o, r, ntype)
 {
     var pn = ntype;
     if (ntype < 0)        { pn = Math.floor((Math.random() * 10) + 3); }
-    else if (ntype === 0) { pn = Math.min(Math.max(8, Math.round(r * 2)), 50); }
+    else if (ntype === 0) { pn = Math.min(Math.max(8, Math.round(r * 1.5)), 40); }
     
     var alpha = 0;
     var points = [];

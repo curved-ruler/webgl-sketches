@@ -19,10 +19,24 @@ let camera = {
     aspect: 1
 };
 
-let usage = "Usage:\n========\nArrow keys - rotate\n+/- keys   - zoom\nI          - projection";
+let menu_hidden = false;
+let usage = `\
+Usage:
+========
+arrows - rotate
++/-    - zoom
+M      - menu
+Q      - model
+I      - projection`;
 
 let mesh_set = "1";
-let mesh_name = "kocka_ures.obj";
+let mesh_names = ["tetra_ures.obj",
+                  "okta_ures.obj",
+                  "kocka_ures.obj",
+                  "dodeka_ures.obj",
+                  "ikoza_ures.obj",
+                  "fulleren_otszog.obj"];
+let mesh_i = 2;
 let mesh = null;
 let tr_m_v = [];
 let proj = 0;
@@ -160,13 +174,6 @@ let render_mat = function ()
 {
     if (!mesh) return;
     
-    render_begin();
-    compute_matrices();
-    
-    rendered = "";
-    
-    render_text(1,cy-1,-1, usage);
-    
     for (let vi = 0 ; vi < tr_m_v.length ; ++vi)
     {
         let x = screen_space(tr_m_v[vi][0], cx);
@@ -228,13 +235,6 @@ let render_6pp = function ()
 {
     if (!mesh) return;
     
-    render_begin();
-    compute_matrices();
-    
-    rendered = "";
-    
-    render_text(1,cy-1,-1, usage);
-    
     for (let vi = 0 ; vi < mesh.verts.length / 3 ; ++vi)
     {
         let v = transform_6pp([mesh.verts[vi*3], mesh.verts[vi*3+1], mesh.verts[vi*3+2]]);
@@ -261,6 +261,14 @@ let render_6pp = function ()
 
 let render = function ()
 {
+    render_begin();
+    compute_matrices();
+    
+    rendered = "";
+    
+    if (!menu_hidden) render_text(1,cy-1,-1, usage);
+    
+    
     if (proj === 0 || proj === 1) { render_mat(); }
     else                          { render_6pp(); }
 };
@@ -277,7 +285,7 @@ var load_model = function ()
         }
     };
     
-    xhr.open('GET', 'input/' + mesh_set + '/' + mesh_name, true);
+    xhr.open('GET', '../input/obj' + mesh_set + '/' + mesh_names[mesh_i], true);
     xhr.send(null);
 };
 
@@ -371,6 +379,16 @@ var handle_keydown = function (event)
         if      (proj === 0) { scale /= 1.4; proj = 1; }
         else if (proj === 1) { scale *= 10;  proj = 2; }
         else                 { scale /= 10; scale *= 1.4; proj = 0; }
+        render();
+    }
+    else if (event.key === 'q' || event.key === 'Q')
+    {
+        ++mesh_i; if (mesh_i >= mesh_names.length) mesh_i = 0;
+        load_model();
+    }
+    else if (event.key === 'm' || event.key === 'M')
+    {
+        menu_hidden = !menu_hidden;
         render();
     }
     // Ensure [0,360]
