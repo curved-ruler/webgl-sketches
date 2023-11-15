@@ -119,12 +119,12 @@ var draw1 = function () {
         gl.depthMask(true);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.lineBuffer);
         if (parameters.modelSet === 1) {
-            gl.lineWidth(2.0);
+            gl.lineWidth(1.0);
         } else {
             gl.lineWidth(0.7);
         }
         gl.uniform4fv(shader.col, [0.8, 0.6, 0.0, 1.0]);
-        gl.drawElements(gl.LINES, model.lines.length * 2, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.LINES, model.lines.length * 2, gl.UNSIGNED_INT, 0);
     }
     
     if (model.faces.length) {
@@ -148,7 +148,7 @@ var draw1 = function () {
                 gl.uniform4fv(shader.col, [0.2, 0.2, 0.2, 1.0]);
                 break;
         }
-        gl.drawElements(gl.TRIANGLES, model.faces.length * 3, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, model.faces.length * 3, gl.UNSIGNED_INT, 0);
         gl.disable(gl.POLYGON_OFFSET_FILL);
     }
 };
@@ -220,7 +220,8 @@ var drawC = function () {
         for (var i=0 ; i<(pn-1) ; i++) {
             cmodel.lines.push([pindex+i, pindex+i+1]);
         }
-        //if (pn > 2) { //sure
+        //if (pn < 3) console.error("PN", pn);
+        //if (pn > 2) {
             cmodel.lines.push([pindex, pindex+pn-1]);
         //}
         pindex += pn;
@@ -234,7 +235,7 @@ var drawC = function () {
     
     var lineBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, lineBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cmodel.lines.flat(2)), gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(cmodel.lines.flat(2)), gl.DYNAMIC_DRAW);
     
     cmodel.vertexBuffer = vertexBuffer;
     cmodel.lineBuffer   = lineBuffer;
@@ -268,7 +269,7 @@ var drawC = function () {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cmodel.lineBuffer);
     gl.lineWidth(1);
     gl.uniform4fv(shader.col, parameters.ccol);
-    gl.drawElements(gl.LINES, cmodel.lines.length * 2, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.LINES, cmodel.lines.length * 2, gl.UNSIGNED_INT, 0);
 };
 
 var draw = function ()
@@ -485,15 +486,15 @@ var setModel = function (selectedModel, modelSet) {
     
     if (modelSet === 1) {
         document.getElementById('model2').selectedIndex = 0;
-        document.getElementById('divide').disabled = false;
-        document.getElementById('divnum').disabled = false;
+        //document.getElementById('divide').disabled = false;
+        //document.getElementById('divnum').disabled = false;
         clean = true;
     } else {
         document.getElementById('model1').selectedIndex = 0;
-        document.getElementById('divide').checked = false;
-        document.getElementById('divide').disabled = true;
-        document.getElementById('divnum').disabled = true;
-        parameters.doDivide = false;
+        //document.getElementById('divide').checked = false;
+        //document.getElementById('divide').disabled = true;
+        //document.getElementById('divnum').disabled = true;
+        //parameters.doDivide = false;
         clean = false;
     }
     

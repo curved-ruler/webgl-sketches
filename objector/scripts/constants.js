@@ -57,8 +57,9 @@ var constants = {
         alfa147    : 'alfa147.obj',
         minicooper : 'minicooper.obj',
         cessna     : 'cessna.obj',
-        //lamp       : 'lamp.obj',
-        trumpet    : 'trumpet.obj'
+        lamp       : 'lamp.obj',
+        trumpet    : 'trumpet.obj',
+        sponza_e   : 'sponza_lines.obj'
     }
 };
 

@@ -5,7 +5,7 @@ var msg = "No WebGL";
 
 var canvas = document.getElementById("canvas");
 try {
-    gl = canvas.getContext("webgl");
+    gl = canvas.getContext("webgl2", {antialias: false});
 } catch (e) {
     msg = "Error creating WebGL Context!: " + e.toString();
 }

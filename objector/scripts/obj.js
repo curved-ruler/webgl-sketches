@@ -6,36 +6,36 @@ import { parameters } from "./parameters.js";
 import { constants as c } from "./constants.js";
 
 
-var clean = function (array) {
-    var ret = [];
+let clean = function (array) {
+    let ret = [];
     array.forEach(e => { if (e !== '' && e !== null) ret.push(e); });
     return ret;
 };
 
-var v = function (str) {
-    var i = str.indexOf('/');
+let v = function (str) {
+    let i = str.indexOf('/');
     return str.substring(0, (i != -1) ? i : str.length);
 };
 
-var createFace = function (indices, tokens) {
+let createFace = function (indices, tokens) {
     if (tokens.length < 4) return;
-    for (var end = 3 ; end < tokens.length ; end++) {
+    for (let end = 3 ; end < tokens.length ; end++) {
         indices.push([parseInt(v(tokens[1]))     - 1,
                       parseInt(v(tokens[end-1])) - 1,
                       parseInt(v(tokens[end]))   - 1]);
     }
 };
 
-var create = function (objStr, do_clean) {
-    var eol = /\r\n|\n\r|\n|\r/g;
-    var lines = clean(objStr.replace(eol,'\n').split('\n'));
+let create = function (objStr, do_clean) {
+    let eol = /\r\n|\n\r|\n|\r/g;
+    let lines = clean(objStr.replace(eol,'\n').split('\n'));
     
-    var vertices = [];
-    var faceIndices = [];
-    var lineIndices = [];
+    let vertices = [];
+    let faceIndices = [];
+    let lineIndices = [];
     
-    for (var i in lines) {
-        var tokens = clean(lines[i].split(' '));
+    for (let i in lines) {
+        let tokens = clean(lines[i].split(' '));
         if (tokens.length === 0) continue;
         if (tokens[0] === 'v' || tokens[0] === 'V') {
             vertices.push([parseFloat(tokens[1]),
@@ -51,8 +51,8 @@ var create = function (objStr, do_clean) {
         }
     }
     
-    var model = null;
-    var innerModel = {
+    let model = null;
+    let innerModel = {
         verts: vertices,
         faces: faceIndices,
         lines: lineIndices
@@ -66,32 +66,34 @@ var create = function (objStr, do_clean) {
     
     if (do_clean) objclean(model);
     
-    var vertexBuffer = gl.createBuffer();
+    let vertexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts.flat(2)), gl.STATIC_DRAW);
     
-    var faceBuffer = null;
+    let faceBuffer = null;
     if (model.faces.length > 0) {
         faceBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, faceBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.faces.flat(2)), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(model.faces.flat(2)), gl.STATIC_DRAW);
     }
     
-    var lineBuffer = null;
+    let lineBuffer = null;
     if (model.lines.length > 0) {
         lineBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, lineBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.lines.flat(2)), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(model.lines.flat(2)), gl.STATIC_DRAW);
     }
     
     model.vertexBuffer = vertexBuffer;
     model.faceBuffer   = faceBuffer;
     model.lineBuffer   = lineBuffer;
     
+    console.log("V", model.verts.length, "F", model.faces.length, "L", model.lines.length);
+    
     return model;
 };
 
-var obj = { create };
+let obj = { create };
 
 export { obj };
 
