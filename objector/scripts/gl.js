@@ -1,11 +1,14 @@
 
 
-var gl = null;
-var msg = "No WebGL";
+let gl = null;
+let msg = "No WebGL";
 
-var canvas = document.getElementById("canvas");
+let canvas = document.getElementById("canvas", {antialias: false});
 try {
-    gl = canvas.getContext("webgl2", {antialias: false});
+    gl = canvas.getContext("webgl");
+    let ex = gl.getExtension("OES_element_index_uint");
+    
+    if (!ex) throw new Error("No UINT extension found");
 } catch (e) {
     msg = "Error creating WebGL Context!: " + e.toString();
 }

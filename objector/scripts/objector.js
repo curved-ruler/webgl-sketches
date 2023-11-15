@@ -118,11 +118,7 @@ var draw1 = function () {
     if (model.lines.length > 0) {
         gl.depthMask(true);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.lineBuffer);
-        if (parameters.modelSet === 1) {
-            gl.lineWidth(1.0);
-        } else {
-            gl.lineWidth(0.7);
-        }
+        gl.lineWidth(parameters.linew);
         gl.uniform4fv(shader.col, [0.8, 0.6, 0.0, 1.0]);
         gl.drawElements(gl.LINES, model.lines.length * 2, gl.UNSIGNED_INT, 0);
     }
@@ -267,7 +263,7 @@ var drawC = function () {
     gl.uniformMatrix4fv(shader.projectionMatrix, false, projectionMatrix);
     
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cmodel.lineBuffer);
-    gl.lineWidth(1);
+    gl.lineWidth(parameters.linew);
     gl.uniform4fv(shader.col, parameters.ccol);
     gl.drawElements(gl.LINES, cmodel.lines.length * 2, gl.UNSIGNED_INT, 0);
 };
@@ -447,6 +443,11 @@ var setDivNum = function (divnum) {
     draw();
 };
 
+var setLineWidth = function (lw) {
+    parameters.linew = parseFloat(lw);
+    draw();
+};
+
 var createModelDropdown = function () {
     // set1
     var modelList = document.getElementById('model1');
@@ -512,6 +513,7 @@ window.toggleCPersp = toggleCPersp;
 window.toggleCRR    = toggleCRR;
 window.toggleCSqrt  = toggleCSqrt;
 window.setDivNum = setDivNum;
+window.setLineWidth = setLineWidth;
 
 createRenderDropdown();
 createModelDropdown();

@@ -8,6 +8,7 @@ var parameters = {
     modelSet  : 1,
     doDivide  : false,
     divide    : 2,
+    linew     : 1,
     
     bcol      : [0.11, 0.11, 0.11, 1.0],
     ccol      : [0.9,  0.7,  0.0,  1.0],
