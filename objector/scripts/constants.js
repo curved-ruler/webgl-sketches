@@ -25,7 +25,7 @@ var constants = {
         cyc3: 'Cyclography - 3',
         cyc4: 'Cyclography - 4',
         cyc5: 'Cyclography - 5',
-        cycR: 'Cyclography - R'
+        cycR: 'Cyclography - 3-10'
     },
     
     inputs1 : {

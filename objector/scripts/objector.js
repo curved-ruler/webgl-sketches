@@ -165,6 +165,8 @@ var drawC = function () {
     mvm = m4.mul(rot1, mvm);
     mvm = m4.mul(tr.scale(scale), mvm);
     
+    let cycr = 3;
+    
     for (var vi = 0 ; vi < model.verts.length ; vi++) {
         var p = model.verts[vi];
         var p2 = v3.matrixmul(mvm, p);
@@ -209,7 +211,9 @@ var drawC = function () {
         }
         else if (parameters.render === c.renderModes.cycR)
         {
-            points = util3d.makeXYCircle(o, r, -1);
+            points = util3d.makeXYCircle(o, r, cycr);
+            ++cycr;
+            if (cycr > 10) cycr = 3;
         }
         cmodel.verts = cmodel.verts.concat(points);
         var pn = points.length;
