@@ -29,7 +29,15 @@ var rot1 = m4.init();
 var axis = 0;
 var rotation = 0;
 var rotdir = true;
+
 var model = null;
+let cmodel = {
+        verts: [],
+        lines: [],
+        vertexBuffer: null,
+        lineBuffer:   null
+};
+
 var shader = null;
 var canvas = null;
 var clean = true;
@@ -55,7 +63,8 @@ var setViewport = function () {
 };
 
 
-var computeMatrices = function () {
+var computeMatrices = function ()
+{
     modelViewMatrix = tr.view(camera);
     modelViewMatrix = m4.mul(tr.roty(axis), modelViewMatrix);
     modelViewMatrix = m4.mul(tr.rotx(rotation), modelViewMatrix);
@@ -66,6 +75,10 @@ var computeMatrices = function () {
         case c.renderModes.axw:
         case c.renderModes.axh:
         case c.renderModes.cyc:
+        case c.renderModes.cyc3:
+        case c.renderModes.cyc4:
+        case c.renderModes.cyc5:
+        case c.renderModes.cycR:
             projectionMatrix = tr.axon(camera);
             break;
         case c.renderModes.prw:
@@ -151,15 +164,56 @@ var draw1 = function () {
 
 
 
-
-var drawC = function () {
-    var cmodel = {
-        verts: [],
-        lines: []
-    };
-    var pindex = 0;
+let initCyc = function()
+{
+    cmodel.lines = [];
     
-    var mvm = m4.init();
+    let cycr = 3;
+    let pindex = 0;
+    
+    for (var vi = 0 ; vi < model.verts.length ; vi++)
+    {
+        let pn = 0;
+
+        switch (parameters.render)
+        {
+            case c.renderModes.cyc:  pn = parameters.cycn; break;
+            case c.renderModes.cyc3: pn = 3; break;
+            case c.renderModes.cyc4: pn = 4; break;
+            case c.renderModes.cyc5: pn = 5; break;
+            case c.renderModes.cycR:
+                pn = cycr;
+                ++cycr;
+                if (cycr > 10) cycr = 3;
+                break;
+        }
+        
+        for (let i=0 ; i<(pn-1) ; i++)
+        {
+            cmodel.lines.push(pindex+i, pindex+i+1);
+        }
+        //if (pn < 3) console.error("PN", pn);
+        //if (pn > 2) {
+            cmodel.lines.push(pindex, pindex+pn-1);
+        //}
+        pindex += pn;
+    }
+    
+    cmodel.verts = [...Array(pindex*3)].map(i => 0);
+    
+    cmodel.vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cmodel.vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cmodel.verts), gl.DYNAMIC_DRAW);
+    
+    cmodel.lineBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cmodel.lineBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(cmodel.lines), gl.STATIC_DRAW);
+};
+let drawC = function ()
+{
+    let pindex = 0;
+    
+    let mvm = m4.init();
     mvm = m4.mul(tr.roty(axis), mvm);
     mvm = m4.mul(tr.rotx(rotation), mvm);
     mvm = m4.mul(rot1, mvm);
@@ -167,7 +221,8 @@ var drawC = function () {
     
     let cycr = 3;
     
-    for (var vi = 0 ; vi < model.verts.length ; vi++) {
+    for (let vi = 0 ; vi < model.verts.length ; vi++)
+    {
         var p = model.verts[vi];
         var p2 = v3.matrixmul(mvm, p);
         var o = [p2[0], p2[1], 0];
@@ -189,56 +244,52 @@ var drawC = function () {
         if (parameters.csqrt === 1) r = Math.sqrt( r );
         
         
-        
-
         var points = [];
 
-        if (parameters.render === c.renderModes.cyc)
+        switch (parameters.render)
         {
-            points = util3d.makeXYCircle(o, r, 0);
+            case c.renderModes.cyc:  points = util3d.makeXYCircle(o, r, parameters.cycn); break;
+            case c.renderModes.cyc3: points = util3d.makeXYCircle(o, r, 3); break;
+            case c.renderModes.cyc4: points = util3d.makeXYCircle(o, r, 4); break;
+            case c.renderModes.cyc5: points = util3d.makeXYCircle(o, r, 5); break;
+            case c.renderModes.cycR:
+                points = util3d.makeXYCircle(o, r, cycr);
+                ++cycr;
+                if (cycr > 10) cycr = 3;
+                break;
         }
-        else if (parameters.render === c.renderModes.cyc3)
+        
+        for (let pi = 0 ; pi<points.length ; ++pi)
         {
-            points = util3d.makeXYCircle(o, r, 3);
+            cmodel.verts[pindex*3 + pi*3 + 0] = points[pi][0];
+            cmodel.verts[pindex*3 + pi*3 + 1] = points[pi][1];
+            cmodel.verts[pindex*3 + pi*3 + 2] = points[pi][2];
         }
-        else if (parameters.render === c.renderModes.cyc4)
-        {
-            points = util3d.makeXYCircle(o, r, 4);
-        }
-        else if (parameters.render === c.renderModes.cyc5)
-        {
-            points = util3d.makeXYCircle(o, r, 5);
-        }
-        else if (parameters.render === c.renderModes.cycR)
-        {
-            points = util3d.makeXYCircle(o, r, cycr);
-            ++cycr;
-            if (cycr > 10) cycr = 3;
-        }
-        cmodel.verts = cmodel.verts.concat(points);
-        var pn = points.length;
-        for (var i=0 ; i<(pn-1) ; i++) {
-            cmodel.lines.push([pindex+i, pindex+i+1]);
-        }
+        
+        pindex += points.length;
+        
+        //for (var i=0 ; i<(pn-1) ; i++) {
+        //    cmodel.lines.push([pindex+i, pindex+i+1]);
+        //}
         //if (pn < 3) console.error("PN", pn);
         //if (pn > 2) {
-            cmodel.lines.push([pindex, pindex+pn-1]);
+        //    cmodel.lines.push([pindex, pindex+pn-1]);
         //}
-        pindex += pn;
+        //pindex += pn;
     }
     
     
     
-    var vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cmodel.verts.flat(2)), gl.STREAM_DRAW);
+    //var vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cmodel.vertexBuffer);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(cmodel.verts));
     
-    var lineBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, lineBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(cmodel.lines.flat(2)), gl.DYNAMIC_DRAW);
+    //var lineBuffer = gl.createBuffer();
+    //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, lineBuffer);
+    //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(cmodel.lines.flat(2)), gl.DYNAMIC_DRAW);
     
-    cmodel.vertexBuffer = vertexBuffer;
-    cmodel.lineBuffer   = lineBuffer;
+    //cmodel.vertexBuffer = vertexBuffer;
+    //cmodel.lineBuffer   = lineBuffer;
     
     
     
@@ -269,7 +320,7 @@ var drawC = function () {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cmodel.lineBuffer);
     gl.lineWidth(parameters.linew);
     gl.uniform4fv(shader.col, parameters.ccol);
-    gl.drawElements(gl.LINES, cmodel.lines.length * 2, gl.UNSIGNED_INT, 0);
+    gl.drawElements(gl.LINES, cmodel.lines.length, gl.UNSIGNED_INT, 0);
 };
 
 var draw = function ()
@@ -404,14 +455,31 @@ var createRenderDropdown = function () {
     }
 };
 
-var setRenderMode = function (selectedMode) {
+var setRenderMode = function (selectedMode)
+{
     parameters.render = c.renderModes[selectedMode];
     shader = shaders.create();
+    
+    if (parameters.render === c.renderModes.cyc  ||
+        parameters.render === c.renderModes.cyc3 ||
+        parameters.render === c.renderModes.cyc4 ||
+        parameters.render === c.renderModes.cyc5 ||
+        parameters.render === c.renderModes.cycR)
+    {
+        initCyc();
+    }
+    
     draw();
 };
 
 var toggleDivision = function (value) {
     parameters.doDivide = value;
+    init();
+    draw();
+};
+var setDivNum = function (divnum)
+{
+    parameters.divide = divnum;
     init();
     draw();
 };
@@ -441,18 +509,15 @@ var toggleCSqrt = function (value) {
     draw();
 };
 
-var setDivNum = function (divnum) {
-    parameters.divide = divnum;
-    init();
-    draw();
-};
 
-var setLineWidth = function (lw) {
+var setLineWidth = function (lw)
+{
     parameters.linew = parseFloat(lw);
     draw();
 };
 
-var createModelDropdown = function () {
+var createModelDropdown = function ()
+{
     // set1
     var modelList = document.getElementById('model1');
     for (var r1 in c.inputs1) {
@@ -473,11 +538,24 @@ var createModelDropdown = function () {
     }
 };
 
-var getModel = function (set) {
+let getModel = function (set)
+{
     var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
+    xhr.onreadystatechange = function()
+    {
+        if (xhr.readyState === 4 && xhr.status === 200)
+        {
             model = obj.create(xhr.responseText, clean);
+            
+            if (parameters.render === c.renderModes.cyc  ||
+                parameters.render === c.renderModes.cyc3 ||
+                parameters.render === c.renderModes.cyc4 ||
+                parameters.render === c.renderModes.cyc5 ||
+                parameters.render === c.renderModes.cycR)
+            {
+                initCyc();
+            }
+            
             draw();
         }
     }
@@ -486,7 +564,8 @@ var getModel = function (set) {
     xhr.send(null);
 };
 
-var setModel = function (selectedModel, modelSet) {
+var setModel = function (selectedModel, modelSet)
+{
     if (selectedModel === '') return;
     
     if (modelSet === 1) {
@@ -494,6 +573,7 @@ var setModel = function (selectedModel, modelSet) {
         //document.getElementById('divide').disabled = false;
         //document.getElementById('divnum').disabled = false;
         clean = true;
+        parameters.cycn = parameters.cycn1;
     } else {
         document.getElementById('model1').selectedIndex = 0;
         //document.getElementById('divide').checked = false;
@@ -501,6 +581,7 @@ var setModel = function (selectedModel, modelSet) {
         //document.getElementById('divnum').disabled = true;
         //parameters.doDivide = false;
         clean = false;
+        parameters.cycn = parameters.cycn2;
     }
     
     parameters.modelName = selectedModel;

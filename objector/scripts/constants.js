@@ -49,11 +49,11 @@ var constants = {
         haz_e   : 'haz_e.obj',
         teto    : 'teto.obj',
         teto_e  : 'teto_e.obj',
-        teapot  : 'teapot01.obj',
         square  : 'negyzet.obj'
     },
    
     inputs2 : {
+        teapot     : 'teapot01.obj',
         alfa147    : 'alfa147.obj',
         minicooper : 'minicooper.obj',
         cessna     : 'cessna.obj',

@@ -18,7 +18,11 @@ var parameters = {
     */
     cpersp    : 0,
     crr       : 0,
-    csqrt     : 0
+    csqrt     : 0,
+    
+    cycn1     : 30,
+    cycn2     : 10,
+    cycn      : 30 //prarmeters.cycn1
 };
 
 export { parameters };
