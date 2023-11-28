@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 
 <html>
+
   <head>
     <meta charset="utf-8"/>
     <meta http-equiv="pragma" content="no-cache"/>
     <link rel="stylesheet" type="text/css" href="index.css"/>
     <title>Gorbevonalzo</title>
   </head>
-  <body id="dark" class="back">
+  
+  <body>
   
     <div class="container">
       <span class="h">WebGL sketches</span>
@@ -39,234 +41,188 @@
           </tr>
         </table>
         <br/><br/>
-        The app: <a href="objector/objector.html">Objector</a> Reads an .obj file and displays it in the four ways.
+        The program: <a href="objector/objector.html">Objector</a> Reads an .obj file and displays it in the four ways.
         
       </div>
     </div>
       
-    <div class="container">
-      <div class="center">
+    <div class="container2">
         
-        This app also displays an obj file (only lines), but does not use WebGL, and renders them in ascii
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/ascii-c-01.png" width="200px" alt=""/></td>
-            <td><img src="imgs/ascii-c-02.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="ascii/ascii_line_render.html">Ascii renderer</a>
+        <div class="e">
+          <div class="e-title">
+            <div>
+            ASCII .obj line renderer
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/ascii.png" width="200px" alt=""/>
+            <br/>
+            <a href="ascii/ascii_line_render.html">Ascii renderer</a>
+          </div>
+        </div>
         
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
+        <div class="e">
+          <div class="e-title">
+            <div>
+            Started as an equation plotter, now is a 2d playground
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/eq.png" width="200px" alt=""/>
+            <br/>
+            <a href="eq/eq.html">Eq plotter</a>
+          </div>
+        </div>
         
-        Started as an equation plotter, now is a 2d playground
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/eq_julia02.png"        width="200px" alt=""/></td>
-            <td><img src="imgs/eq_circle_moire_b.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="eq/eq.html">Eq plotter</a>
+        <div class="e">
+          <div class="e-title">
+            <div>
+            F(x,y,z) = S <br/> Triangulization with marching cubes.
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/marchcubes.png" width="200px" alt=""/>
+            <br/>
+            <a href="marching/mc.html">Marching Cubes</a>
+          </div>
+        </div>
         
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
+        <div class="e">
+          <div class="e-title">
+            <div>
+            Small curve collection in canvas-2D
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/curv_lagrange-02.png" width="200px" alt=""/>
+            <br/>
+            <a href="gorbincs/gorbincs.html">Curves</a>
+          </div>
+        </div>
         
-        F(x, y, z) = S &nbsp;&nbsp;&nbsp; Triangulization with marching cubes.
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/march0.png" width="200px" alt=""/></td>
-            <td><img src="imgs/march1.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="marching/mc.html">Marching Cubes</a>
+        <div class="e">
+          <div class="e-title">
+            <div>
+            Takes a curve (on a plane), creates unordered pairs of all
+            points in the curve, and new point location is the midpoint,
+            elevation is the distance. I first encountered with this construction in a
+            3blue1brown <a href="https://www.youtube.com/watch?v=AmgkSdhK4K8">video</a>
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/midpoints.png" width="200px" alt=""/>
+            <br/>
+            <a href="midpoints/gorbincs-felho.html">Midpoints</a>
+          </div>
+        </div>
         
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
+        <div class="e">
+          <div class="e-title">
+            <div>
+            Sphere rolls on sphere.
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/spiro3.png" width="200px" alt=""/>
+            <br/>
+            <a href="spiro3/spiro3.html">Spirograph-like</a> in 3D
+          </div>
+        </div>
         
-        Small curve collection in 2D.
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/curv_disc_ok.png" width="200px" alt=""/></td>
-            <td><img src="imgs/curv_lagrange-01.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="gorbincs/gorbincs.html">Curves</a>
+        <div class="e">
+          <div class="e-title">
+            <div>
+            This <a href="https://mathcatalog.tumblr.com/post/89572389754/xysciences-projection-of-a-double-spiral-on-a">gif</a>
+            is around for a while: stereographic projection of a spiral on a sphere. I had an idea to step up a dimension,
+            4d hypersphere projected onto 3d space. Obviously I don't see in 4d, and could made mistakes,
+            but this program is the result.
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/sph4d.png" width="200px" alt=""/>
+            <br/>
+            <a href="sphere4d/sphere4d.html">Sphere in 4D</a>
+          </div>
+        </div>
         
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
+        <div class="e">
+          <div class="e-title">
+            <div>
+            (u,v) => (x,y,z)
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/parametric.png" width="200px" alt=""/>
+            <br/>
+            <a href="parametric/parametric.html">Parametric surfaces</a>
+          </div>
+        </div>
         
-        Takes a curve (this time on a plane), creates unordered pairs of all
-        points in the curve, and new point location is the midpoint,
-        elevation is the distance. I first encountered with this construction in a
-        3blue1brown <a href="https://www.youtube.com/watch?v=AmgkSdhK4K8">video</a>
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/mid_g0005.png" width="200px" alt=""/></td>
-            <td><img src="imgs/mid_g0007.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="midpoints/gorbincs-felho.html">Midpoints</a>
+        <div class="e">
+          <div class="e-title">
+            <div>
+            Times diagram described in a Mathologer video <a href="https://www.youtube.com/watch?v=qhbuKbxJsk8">here</a>
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/times.png" width="200px" alt=""/>
+            <br/>
+            <a href="times/times.html">Times</a>
+          </div>
+        </div>
         
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
+        <div class="e">
+          <div class="e-title">
+            <div>
+            Voronoi with scriptable distance function
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/voronoi25.png" width="200px" alt=""/>
+            <br/>
+            <a href="voronoi2/voronoi2.html">Voronoi</a>
+          </div>
+        </div>
         
-        Sphere rolls on sphere.
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/spiro3_005.png" width="200px" alt=""/></td>
-            <td><img src="imgs/spiro3_008.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="spiro3/spiro3.html">Spirograph-like</a> in 3D
+        <div class="e">
+          <div class="e-title">
+            <div>
+            Bugs following each other. <br/> 1st -> 2nd, <br/> 2nd -> 3rd <br/> ... <br/> Nth -> 1st
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/bugs.png" width="200px" alt=""/>
+            <br/>
+            <a href="bugs/bugs.html">Bugs</a>
+          </div>
+        </div>
         
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
+        <div class="e">
+          <div class="e-title">
+            <div>
+            1d cellular automata
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/pascal.png" width="200px" alt=""/>
+            <br/>
+            <a href="pascal/pascal.html">Pascal</a>
+          </div>
+        </div>
         
-        This <a href="https://mathcatalog.tumblr.com/post/89572389754/xysciences-projection-of-a-double-spiral-on-a">gif</a>
-        is around for a while: stereographic projection of a spiral on a sphere. I had an idea to step up a dimension,
-        4d hypersphere projected onto 3d space. Obviously I don't see in 4d, and could made mistakes,
-        but this program is the result.
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/c02.png" width="200px" alt=""/></td>
-            <td><img src="imgs/c17.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="sphere4d/sphere4d.html">Sphere in 4D</a>
+        <div class="e">
+          <div class="e-title">
+            <div>
+            (x,y) => F(x,y)
+            </div>
+          </div>
+          <div class="e-link">
+            <img src="imgs/planetr.png" width="200px" alt=""/>
+            <br/>
+            <a href="planetr/planetr.html">Plane transform</a>
+          </div>
+        </div>
         
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
-        
-        (u,v) => (x,y,z)
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/parametric_001.png" width="200px" alt=""/></td>
-            <td><img src="imgs/parametric_002.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="parametric/parametric.html">Parametric surfaces</a>
-        
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
-        
-        Times diagram described in a Mathologer video <a href="https://www.youtube.com/watch?v=qhbuKbxJsk8">here</a>
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/t_4_10082.png" width="200px" alt=""/></td>
-            <td><img src="imgs/t_69_99994.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="times/times.html">Times</a>
-        
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
-        
-        Voronoi
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/v02.png" width="200px" alt=""/></td>
-            <td><img src="imgs/v24.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="voronoi2/voronoi2.html">Voronoi</a> interactive distance function
-        
-      </div>
-    </div>
-
-    <div class="container">
-      <div class="center">
-
-        Bugs following each other. 1st -> 2nd, 2nd -> 3rd ... Nth -> 1st
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/bugs_x.png" width="200px" alt=""/></td>
-            <td><img src="imgs/bugs_2.01.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="bugs/bugs.html">Bugs</a>
-
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
-
-        1d cellular automata
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/pascal0.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="pascal/pascal.html">Pascal</a>
-
-      </div>
-    </div>
-    
-    <div class="container">
-      <div class="center">
-
-        PLane transform: (x,y) => F(x,y)
-        <br/><br/>
-        <table class="center">
-          <tr>
-            <td><img src="imgs/planetr0.png" width="200px" alt=""/></td>
-          </tr>
-        </table>
-        <br/><br/>
-        <a href="planetr/planetr.html">Plane transform</a>
-
-      </div>
     </div>
     
     <!--div class="container">

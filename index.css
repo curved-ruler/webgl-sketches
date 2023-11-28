@@ -1,13 +1,10 @@
 ﻿
-body#dark {
-
-  position: absolute;
-  height:   100%;
-  width:    100%;
-  margin:   0px;
+body {
 
   background-color: rgb(0,0,0);
   color:            rgb(180,180,180);
+  
+  background-image: url('backbl.png');
   
   font-family: Arial, Helvetica, sans-serif;
   font-size:   14px;
@@ -15,10 +12,6 @@ body#dark {
   font-family: Monaco;
   font-size:   15px;
   */
-}
-
-body.back {
-  background-image: url('backbl.png');
 }
 
 
@@ -41,24 +34,42 @@ span.hh {
 }
 
 div.container {
-  margin-top:    70px;
-  margin-bottom: 70px;
-  margin-left:   auto;
-  margin-right:  auto;
-  
-  padding-top:    70px;
-  padding-bottom: 70px;
-  padding-left:   10px;
-  padding-right:  10px;
+  margin:  70px auto;
+  padding: 70px 10px;
   
   text-align:    center;
-  width:         1040px;
+  width:         980px;
   background-color: rgb(30,30,30);
+}
+div.container2 {
+  margin:  70px auto;
+  padding: 70px 10px;
+  
+  text-align:    center;
+  width:         980px;
+}
+
+div.e {
+  width:   280px;
+  height:  320px;
+  padding:  10px;
+  margin:   10px;
+  display: inline-block;
+  vertical-align: bottom;
+  border:  solid 1px #555;
+  background-color: rgb(30,30,30);
+}
+div.e-title {
+  height: 135px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+div.e-link {
 }
 
 div.text {
   text-align: justify;
-  width:      910px;
 }
 .center {
   margin-left:  auto;
