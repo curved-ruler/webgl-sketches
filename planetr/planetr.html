@@ -10,11 +10,15 @@
   top:  0px;
   left: 0px;
 }
-
-#menu {
+#menu-ovf {
   position: absolute;
   top:  10px;
   left: 10px;
+  
+  height: 90%;
+  overflow-y: scroll;
+}
+#menu {
   padding: 10px;
   background-color: rgb(50, 50, 50);
   color: rgb(120, 255, 255);
@@ -34,7 +38,7 @@
     <body>
         <canvas id="canvas"></canvas>
         
-        <table id="menu">
+        <div id="menu-ovf"><table id="menu">
             <tr>
                 <td class="left">M:</td>
                 <td>Show/Hide Menu</td>
@@ -61,6 +65,24 @@
                 <td class="left">A: </td>
                 <td>
                     <input id="ain" type="text" size="11"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Gap: </td>
+                <td>
+                    <input id="gapin" type="text" size="11"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Back-Col: </td>
+                <td>
+                    <input id="bcolin" type="text" size="11"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Line-Col: </td>
+                <td>
+                    <input id="lcolin" type="text" size="11"/>
                 </td>
             </tr>
             <tr>
@@ -105,6 +127,6 @@
                     </select>
                 </td>
             </tr>
-        </table>
+        </table></div>
     </body>
 </html>

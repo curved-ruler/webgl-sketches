@@ -42,8 +42,10 @@ let cwidth, cheight;
 
 let N      = 50;
 let A      = 0.2;
+let G      = 0.0;
 let Ndom   = null;
 let Adom   = null;
+let Gdom   = null;
 
 let F      = null;
 let Fdom   = null;
@@ -61,6 +63,8 @@ let bcol  = [0.0, 0.0, 0.0];
 let lcol  = [0.0, 1.0, 0.0];
 let alpha  = 1.0;
 let Alfdom = null;
+let Bcodom = null;
+let Lcodom = null;
 
 let tiling = "0";
 
@@ -99,34 +103,36 @@ let compute_matrices = function ()
 
 let square_t = function ()
 {
-    model_in.verts = [...Array((N+1)*(N+1)*2)];
-    model_in.lines = [...Array(N*N*4 + 4*N)];
-    
-    for (let j=0 ; j<=N ; ++j)
-    for (let i=0 ; i<=N ; ++i)
-    {
-        model_in.verts[(j*(N+1)+i)*2]   = -(N*A)/2.0 + i*A;
-        model_in.verts[(j*(N+1)+i)*2+1] = -(N*A)/2.0 + j*A;
-    }
+    model_in.verts = [...Array((N)*(N)*8)];
+    model_in.lines = [...Array((N)*(N)*8)];
     
     for (let j=0 ; j<N ; ++j)
     for (let i=0 ; i<N ; ++i)
     {
-        model_in.lines[(j*N+i)*4]   = j*(N+1)+i;
-        model_in.lines[(j*N+i)*4+1] = j*(N+1)+i+1;
+        model_in.verts[(j*(N)+i)*8+0] = -(N*A)/2.0 + i*A + G/2;
+        model_in.verts[(j*(N)+i)*8+1] = -(N*A)/2.0 + j*A + G/2;
         
-        model_in.lines[(j*N+i)*4+2] = j*(N+1)+i;
-        model_in.lines[(j*N+i)*4+3] = (j+1)*(N+1)+i;
+        model_in.verts[(j*(N)+i)*8+2] = -(N*A)/2.0 + i*A     + G/2;
+        model_in.verts[(j*(N)+i)*8+3] = -(N*A)/2.0 + (j+1)*A - G/2;
+        
+        model_in.verts[(j*(N)+i)*8+4] = -(N*A)/2.0 + (i+1)*A - G/2;
+        model_in.verts[(j*(N)+i)*8+5] = -(N*A)/2.0 + (j+1)*A - G/2;
+        
+        model_in.verts[(j*(N)+i)*8+6] = -(N*A)/2.0 + (i+1)*A - G/2;
+        model_in.verts[(j*(N)+i)*8+7] = -(N*A)/2.0 + j*A     + G/2;
     }
+    
     for (let j=0 ; j<N ; ++j)
-    {
-        model_in.lines[N*N*4 + j*2]   = j*(N+1)+N;
-        model_in.lines[N*N*4 + j*2+1] = (j+1)*(N+1)+N;
-    }
     for (let i=0 ; i<N ; ++i)
     {
-        model_in.lines[N*N*4 + N*2 + i*2]   = N*(N+1)+i;
-        model_in.lines[N*N*4 + N*2 + i*2+1] = N*(N+1)+i+1;
+        model_in.lines[(j*N+i)*8+0] = (j*(N)+i)*4;
+        model_in.lines[(j*N+i)*8+1] = (j*(N)+i)*4+1;
+        model_in.lines[(j*N+i)*8+2] = (j*(N)+i)*4+1;
+        model_in.lines[(j*N+i)*8+3] = (j*(N)+i)*4+2;
+        model_in.lines[(j*N+i)*8+4] = (j*(N)+i)*4+2;
+        model_in.lines[(j*N+i)*8+5] = (j*(N)+i)*4+3;
+        model_in.lines[(j*N+i)*8+6] = (j*(N)+i)*4+3;
+        model_in.lines[(j*N+i)*8+7] = (j*(N)+i)*4;
     }
     
     gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
@@ -146,12 +152,16 @@ let hexa_t = function ()
     model_in.verts = [...Array(N*N*12)];
     model_in.lines = [...Array(N*N*12)];
     
-    let va = [ A/2.0, -A*Math.sqrt(3.0)/2.0, 0.0];
-    let vb = [-A/2.0, -A*Math.sqrt(3.0)/2.0, 0.0];
-    let vc = [-A,               0.0        , 0.0];
-    let vd = [-A/2.0,  A*Math.sqrt(3.0)/2.0, 0.0];
-    let ve = [ A/2.0,  A*Math.sqrt(3.0)/2.0, 0.0];
-    let vf = [ A    ,           0.0,         0.0];
+    let G2 = G/2;
+    let G3 = G/2 * Math.cos(30*Math.PI/180); //s3/2
+    let G4 = G/2 * Math.sin(30*Math.PI/180); //0.5
+    
+    let va = [ A/2.0 - G4, -A*Math.sqrt(3.0)/2.0 + G3, 0.0];
+    let vb = [-A/2.0 + G4, -A*Math.sqrt(3.0)/2.0 + G3, 0.0];
+    let vc = [-A+G2,            0.0        , 0.0];
+    let vd = [-A/2.0 + G4,  A*Math.sqrt(3.0)/2.0 - G3, 0.0];
+    let ve = [ A/2.0 - G4,  A*Math.sqrt(3.0)/2.0 - G3, 0.0];
+    let vf = [ A-G2,            0.0,         0.0];
     
     let vdy  = [  0.0,  A*Math.sqrt(3.0),     0.0];
     let vdx1 = [A*1.5,  A*Math.sqrt(3.0)/2.0, 0.0];
@@ -212,14 +222,16 @@ let hexa_t = function ()
 
 let james_t10_cmm_t = function ()
 {
+    let N2 = Math.ceil(N/2);
+    
     // -+, ++
     // --, +-
-    let addpenta = (xd, yd, xm, ym) => {
-        return [xd+xm*0, yd+ym*0,
-                xd+xm*0, yd+ym*2,
-                xd+xm*1, yd+ym*2,
-                xd+xm*2, yd+ym*1,
-                xd+xm*2, yd+ym*0];
+    let addpenta = (xd, yd, xm, ym, g) => {
+        return [xd+xm*(0+g),   yd+ym*(0+g),
+                xd+xm*(0+g),   yd+ym*(2-g),
+                xd+xm*(1-g/2), yd+ym*(2-g),
+                xd+xm*(2-g),   yd+ym*(1-g/2),
+                xd+xm*(2-g),   yd+ym*(0+g)];
     };
     
     model_in.verts = [];
@@ -227,48 +239,48 @@ let james_t10_cmm_t = function ()
     
     let pent = [];
     let vi  = 0;
-    let egy = A/2;
+    let egy = A/4;
     
     let xy  = [0,0];
     let xpp = [ 3*egy, 3*egy];
     let ypp = [-2*egy, 5*egy];
     
-    for (let y=0 ; y < N ; ++y)
+    for (let y=0 ; y < N2 ; ++y)
     {
-        xy = [-N*(xpp[0] + ypp[0])/2, -N*(xpp[1] + ypp[1])/2];
+        xy = [-N2*(xpp[0] + ypp[0])/2, -N2*(xpp[1] + ypp[1])/2];
         xy[0] += y*ypp[0];
         xy[1] += y*ypp[1];
         
-        for (let x=0 ; x < N ; ++x)
+        for (let x=0 ; x < N2 ; ++x)
         {
-            pent = addpenta(xy[0], xy[1], egy, egy);
+            pent = addpenta(xy[0], xy[1], egy, egy, G);
             model_in.verts.push(...pent);
             model_in.lines.push(vi + 0, vi + 1, vi + 1, vi + 2, vi + 2, vi + 3, vi + 3, vi + 4, vi + 4, vi + 0);
             vi += 5;
             
-            pent = addpenta(xy[0], xy[1], -egy, egy);
+            pent = addpenta(xy[0], xy[1], -egy, egy, G);
             model_in.verts.push(...pent);
             model_in.lines.push(vi + 0, vi + 1, vi + 1, vi + 2, vi + 2, vi + 3, vi + 3, vi + 4, vi + 4, vi + 0);
             vi += 5;
             
-            pent = addpenta(xy[0], xy[1], -egy, -egy);
+            pent = addpenta(xy[0], xy[1], -egy, -egy, G);
             model_in.verts.push(...pent);
             model_in.lines.push(vi + 0, vi + 1, vi + 1, vi + 2, vi + 2, vi + 3, vi + 3, vi + 4, vi + 4, vi + 0);
             vi += 5;
             
-            pent = addpenta(xy[0], xy[1], egy, -egy);
+            pent = addpenta(xy[0], xy[1], egy, -egy, G);
             model_in.verts.push(...pent);
             model_in.lines.push(vi + 0, vi + 1, vi + 1, vi + 2, vi + 2, vi + 3, vi + 3, vi + 4, vi + 4, vi + 0);
             vi += 5;
             
             
             
-            pent = addpenta(xy[0]-2*egy, xy[1]-egy, -egy, egy);
+            pent = addpenta(xy[0]-2*egy, xy[1]-egy, -egy, egy, G);
             model_in.verts.push(...pent);
             model_in.lines.push(vi + 0, vi + 1, vi + 1, vi + 2, vi + 2, vi + 3, vi + 3, vi + 4, vi + 4, vi + 0);
             vi += 5;
             
-            pent = addpenta(xy[0]-3*egy, xy[1]+3*egy, egy, -egy);
+            pent = addpenta(xy[0]-3*egy, xy[1]+3*egy, egy, -egy, G);
             model_in.verts.push(...pent);
             model_in.lines.push(vi + 0, vi + 1, vi + 1, vi + 2, vi + 2, vi + 3, vi + 3, vi + 4, vi + 4, vi + 0);
             vi += 5;
@@ -367,6 +379,7 @@ let draw = function ()
         gl.disable(gl.BLEND);
     }
     
+    gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     viewmat = tr.view(camera);
@@ -382,35 +395,6 @@ let draw = function ()
     gl.drawElements(gl.LINES, model_in.lines.length, gl.UNSIGNED_INT, 0);
 };
 
-let zoomin  = function () { scale *= 1.25; };
-let zoomout = function () { scale *= 0.8;  };
-let handle_wheel = function (event)
-{
-    if (event.deltaY < 0) zoomin();
-    else                  zoomout();
-    
-    transform();
-    draw();
-}
-let handle_mouse_down = function (event)
-{
-    grabbed = 1;
-};
-let handle_mouse_up = function (event)
-{
-    grabbed = 0;
-};
-let handle_mouse_move = function (event)
-{
-    if (grabbed === 1)
-    {
-        let a = 5/cheight;
-        pan[0] += event.movementX * a;
-        pan[1] -= event.movementY * a;
-        transform();
-        draw();
-    }
-};
 
 
 
@@ -437,6 +421,8 @@ let save_obj = function ()
     let blob = new Blob([objstring], {type: "text/plain"});
     saveAs(blob, 'planetr.obj');
 };
+
+
 let handle_key_down = function (event)
 {
     if (document.activeElement === Fdom) { return; }
@@ -470,6 +456,36 @@ let handle_key_down = function (event)
     {
         pan   = [0,0];
         scale = 1;
+        transform();
+        draw();
+    }
+};
+let zoomin  = function () { scale *= 1.25; };
+let zoomout = function () { scale *= 0.8;  };
+let handle_wheel = function (event)
+{
+    if (event.deltaY < 0) zoomin();
+    else                  zoomout();
+    
+    transform();
+    draw();
+}
+let handle_mouse_down = function (event)
+{
+    grabbed = 1;
+};
+let handle_mouse_up = function (event)
+{
+    grabbed = 0;
+};
+let handle_mouse_move = function (event)
+{
+    if (grabbed === 1)
+    {
+        let y = 2 * Math.tan(camera.fovy/2) * camera.median;
+        let pixsize = (scale*y)/(cwidth*camera.aspect);
+        pan[0] += event.movementX * pixsize;
+        pan[1] -= event.movementY * pixsize;
         transform();
         draw();
     }
@@ -540,6 +556,26 @@ let set_a = function (value)
     if (isNaN(a2) || a2 === undefined || a2 === null) return;
     A = a2;
 };
+let set_g = function (value)
+{
+    let g2 = parseFloat(value);
+    if (isNaN(g2) || g2 === undefined || g2 === null) return;
+    G = g2;
+};
+let set_col = function (bstr, lstr)
+{
+    let bc = bstr.split(',');
+    let lc = lstr.split(',');
+    if (bc.length < 3 || lc.length < 3) return;
+    
+    bcol[0] = parseInt(bc[0]) / 255.0;
+    bcol[1] = parseInt(bc[1]) / 255.0;
+    bcol[2] = parseInt(bc[2]) / 255.0;
+    
+    lcol[0] = parseInt(lc[0]) / 255.0;
+    lcol[1] = parseInt(lc[1]) / 255.0;
+    lcol[2] = parseInt(lc[2]) / 255.0;
+}
 let set_alpha = function (value)
 {
     let a2 = parseFloat(value);
@@ -551,6 +587,8 @@ let set_params = function ()
 {
     set_n(Ndom.value);
     set_a(Adom.value);
+    set_g(Gdom.value);
+    set_col(Bcodom.value, Lcodom.value);
     set_alpha(Alfdom.value);
     set_tiling(tiling);
 }
@@ -568,6 +606,9 @@ let set_ui = function ()
     
     Ndom.value = N;
     Adom.value = A;
+    Gdom.value = G;
+    Bcodom.value = "" + Math.floor(bcol[0]*255) + ", " + Math.floor(bcol[1]*255) + ", " + Math.floor(bcol[2]*255);
+    Lcodom.value = "" + Math.floor(lcol[0]*255) + ", " + Math.floor(lcol[1]*255) + ", " + Math.floor(lcol[2]*255);
     Alfdom.value = alpha;
 };
 
@@ -598,11 +639,11 @@ let init = function ()
     Fdom     = document.getElementById("func");
     Ndom     = document.getElementById("nin");
     Adom     = document.getElementById("ain");
+    Gdom     = document.getElementById("gapin");
     Alfdom   = document.getElementById("alphain");
-
-
-    gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
-    //gl.clearDepth(1); = default
+    Bcodom   = document.getElementById("bcolin");
+    Lcodom   = document.getElementById("lcolin");
+    
     
     canvas.addEventListener("mousedown", handle_mouse_down);
     canvas.addEventListener("mouseup",   handle_mouse_up);
@@ -618,9 +659,6 @@ let init = function ()
 window.set_tiling = set_tiling;
 window.set_pref   = set_pref;
 window.set_func   = set_func;
-//window.set_n      = set_n;
-//window.set_a      = set_a;
-//window.set_alpha  = set_alpha;
 window.set_params = set_params;
 
 document.addEventListener("DOMContentLoaded", init);
