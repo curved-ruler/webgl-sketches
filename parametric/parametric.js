@@ -17,10 +17,11 @@ let vrtbuf = null;
 let tribuf = null;
 let linbuf = null;
 
-let bcol  = [1.0, 1.0, 1.0];
-let tcol  = [1.0, 1.0, 1.0];
-let pcol  = [0.0, 0.0, 0.0];
+let bcol  = [0.0, 0.0, 0.0];
+let wcol  = [1.0, 1.0, 1.0];
 
+let col  = 0;
+let obj  = 0;
 let proj = 1;
 let projmat, modlmat, viewmat;
 //let modinvmat;
@@ -63,6 +64,8 @@ let compute_matrices = function ()
         projmat = tr.persp(camera);
     }
 };
+
+
 let parametric_eq = function (u, v)
 {
     
@@ -118,7 +121,7 @@ let parametric_eq = function (u, v)
 };
 let make_object = function ()
 {
-    let un  = 32;
+    let un  = 128;
     let vn  = 128;
     
     model.verts.length = (un)*(vn) * 2;
@@ -152,6 +155,17 @@ let make_object = function ()
         }
     }
     
+    for (let vi = 0 ; vi<vn-1 ; ++vi)
+    {
+        model.lines.push(vi*un     + un-1);
+        model.lines.push((vi+1)*un + un-1);
+    }
+    for (let ui = 0 ; ui<un-1 ; ++ui)
+    {
+        model.lines.push((vn-1)*un     + ui);
+        model.lines.push((vn-1)*un     + ui+1);
+    }
+    
     vrtbuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts), gl.STATIC_DRAW);
@@ -176,7 +190,18 @@ let draw = function ()
     
     gl.disable(gl.BLEND);
     gl.enable(gl.DEPTH_TEST);
-    
+
+    //gl.enable(gl.BLEND);
+    //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    //gl.disable(gl.DEPTH_TEST);
+    if (col === 0)
+    {
+        gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
+    }
+    else
+    {
+        gl.clearColor(wcol[0], wcol[1], wcol[2], 1.0);
+    }
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     compute_matrices();
@@ -184,24 +209,47 @@ let draw = function ()
     gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
+    
+    if (col === 0)
+    {
+        gl.uniform3fv(glprog.col, wcol);
+    }
+    else
+    {
+        gl.uniform3fv(glprog.col, bcol);
+    }
 
     
     gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
     gl.vertexAttribPointer(glprog.uv, 2, gl.FLOAT, false, 0*4, 0*4);
-    gl.uniform3fv(glprog.col, pcol);
-    //gl.drawArrays(gl.POINTS, 0, model.verts.length/2);
     
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
-    gl.drawElements(gl.LINES, model.lines.length, gl.UNSIGNED_SHORT, 0);
+    if (obj % 2 === 0)
+    {
+        gl.drawArrays(gl.POINTS, 0, model.verts.length/2);
+    }
+    else
+    {
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
+        gl.drawElements(gl.LINES, model.lines.length, gl.UNSIGNED_SHORT, 0);
+    }
     
-    /*
-    gl.enable(gl.POLYGON_OFFSET_FILL);
-    gl.polygonOffset(1, 1);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tribuf);
-    gl.uniform3fv(glprog.col, tcol);
-    gl.drawElements(gl.TRIANGLES, model.faces.length, gl.UNSIGNED_SHORT, 0);
-    gl.disable(gl.POLYGON_OFFSET_FILL);
-    */
+    if (obj > 1)
+    {
+        if (col === 0)
+        {
+            gl.uniform3fv(glprog.col, bcol);
+        }
+        else
+        {
+            gl.uniform3fv(glprog.col, wcol);
+        }
+        
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(1, 1);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tribuf);
+        gl.drawElements(gl.TRIANGLES, model.faces.length, gl.UNSIGNED_SHORT, 0);
+        gl.disable(gl.POLYGON_OFFSET_FILL);
+    }
 };
 
 let zoomin  = function () { scale *= 1.25; };
@@ -261,6 +309,18 @@ let handle_key_down = function ()
     {
         ++proj;
         if (proj > 2) { proj = 0; }
+        draw();
+    }
+    else if (event.key === "o" || event.key === "O")
+    {
+        ++obj;
+        if (obj > 3) { obj = 0; }
+        draw();
+    }
+    else if (event.key === "c" || event.key === "C")
+    {
+        ++col;
+        if (col > 1) { col = 0; }
         draw();
     }
     else if (event.key === "F8")
@@ -338,9 +398,6 @@ let init = function ()
     fta    = document.getElementById('func');
     initf();
     gpu_init('canvas');
-    
-    gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
-    //gl.clearDepth(1); = default
     
     canvas.addEventListener("mousedown", handle_mouse_down);
     canvas.addEventListener("mouseup",   handle_mouse_up);

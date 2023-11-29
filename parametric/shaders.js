@@ -81,8 +81,22 @@ vec3 parametric (in float u, in float v)
         sin(u) * sin(v/8.0) + cos(v/8.0) * 1.5,
         sin(v) * (1.0 + cos(u)) * sin(v/8.0)
     );
-}
-`,
+}`,
+
+torus : `\
+const vec2 u_range = vec2(0.0, 2.0*PI);
+const vec2 v_range = vec2(0.0, 2.0*PI);
+
+vec3 parametric (in float u, in float v)
+{
+    float a = 1.0;
+    float b = 4.0;
+    return vec3(
+        (a*cos(u)+b)*cos(v),
+        (a*cos(u)+b)*sin(v),
+        a*sin(u)
+    );
+}`,
 
 clifford: `\
 const vec2 u_range = vec2(0.0, PI);
@@ -95,8 +109,7 @@ vec3 parametric (in float u, in float v)
         sin(v-u) / (sqrt(2.0) + cos(v-u)),
         sin(u+v) / (sqrt(2.0) + cos(v-u))
     );
-}
-`,
+}`,
 
 dini: `\
 const vec2 u_range = vec2(0.0, 4.0*PI);
@@ -111,8 +124,21 @@ vec3 parametric (in float u, in float v)
         a * sin(u) * sin(v),
         (cos(v) + log(tan(v/2.0) + 0.05)) + b*u
     );
-}
-`,
+}`,
+
+henneberg:`\
+const vec2 u_range = vec2(-0.4*PI, 0.4*PI);
+const vec2 v_range = vec2(-0.4*PI, 0.4*PI);
+
+vec3 parametric (in float u, in float v)
+{
+    return vec3(
+        2.0*cos(v)*sinh(u) - (2.0/3.0)*cos(3.0*v)*sinh(3.0*u),
+        2.0*cos(v)*sinh(u) - (2.0/3.0)*sin(3.0*v)*sinh(3.0*u),
+        2.0*cos(2.0*v)*cosh(2.0*u)
+    );
+}`,
+
 
 fxy:`\
 const vec2 u_range = vec2(-1.0, 1.0);
@@ -125,8 +151,7 @@ vec3 parametric (in float u, in float v)
         v,
         u*u - v*v
     );
-}
-`
+}`
 
 };
 
