@@ -34,15 +34,16 @@ span.hh {
 }
 
 div.container {
-  margin:  70px auto;
-  padding: 70px 10px;
+  margin:  50px auto;
+  padding: 40px 10px;
   
   text-align:    center;
   width:         980px;
+  border:  solid 1px #555;
   background-color: rgb(30,30,30);
 }
 div.container2 {
-  margin:  70px auto;
+  margin:  50px auto;
   padding: 70px 10px;
   
   text-align:    center;
@@ -69,7 +70,7 @@ div.e-link {
 }
 
 div.text {
-  text-align: justify;
+  
 }
 .center {
   margin-left:  auto;
