@@ -19,6 +19,13 @@ return a+b+c;'},
     
     { V: 0.0,  Fstr: 'return z*(z*z - 100) - x*(x*x - 3*y*y);' },
     
+    { V: 5.0,  Fstr: `\
+let a = Math.sqrt(Math.abs(x));
+let b = Math.sqrt(Math.abs(y));
+let c = Math.sqrt(Math.abs(z));
+return a+b+c;`
+    },
+    
     { V: 0.0,  Fstr: '// Box Frame by https://iquilezles.org/articles/distfunctions/\n\
 let length = (a,b,c)=>{return Math.sqrt(a*a+b*b+c*c);};\n\
 let e = 2.2;\n\

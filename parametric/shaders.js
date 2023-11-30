@@ -139,6 +139,19 @@ vec3 parametric (in float u, in float v)
     );
 }`,
 
+cone_sp: `\
+const vec2 u_range = vec2(-PI, PI);
+const vec2 v_range = vec2(-PI, PI);
+
+vec3 parametric (in float u, in float v)
+{
+    return vec3(
+        3.0 * cos(u-v),
+        3.0 * sin(u-v),
+        v
+    );
+}`,
+
 henneberg:`\
 const vec2 u_range = vec2(-0.4*PI, 0.4*PI);
 const vec2 v_range = vec2(-0.4*PI, 0.4*PI);
