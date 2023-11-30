@@ -126,6 +126,19 @@ vec3 parametric (in float u, in float v)
     );
 }`,
 
+helicoid0: `\
+const vec2 u_range = vec2(-PI, PI);
+const vec2 v_range = vec2(-PI, PI);
+
+vec3 parametric (in float u, in float v)
+{
+    return vec3(
+        u * cos(v) - sin(v),
+        u * sin(v) + cos(v),
+        u - v
+    );
+}`,
+
 henneberg:`\
 const vec2 u_range = vec2(-0.4*PI, 0.4*PI);
 const vec2 v_range = vec2(-0.4*PI, 0.4*PI);

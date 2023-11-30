@@ -8,6 +8,11 @@ let glprog  = null;
 let canvas  = null;
 let cwidth, cheight;
 
+let Nu = 64;
+let Nv = 64;
+let Nudom = null;
+let Nvdom = null;
+
 let fta = null;
 let start_func = shaders['shell'];
 let menu_hidden = false;
@@ -66,117 +71,61 @@ let compute_matrices = function ()
 };
 
 
-let parametric_eq = function (u, v)
-{
-    
-    // Shell
-    //let umin = 0;
-    //let umax = 2*Math.PI;
-    //let un  = 32;
-    //let vmin = 0;
-    //let vmax = 4*Math.PI;
-    //let vn  = 128;
-    /*
-    return [
-        Math.cos(v) * (1 + Math.cos(u)) * Math.sin(v/8),
-        Math.sin(u) * Math.sin(v/8) + Math.cos(v/8) * 1.5,
-        Math.sin(v) * (1 + Math.cos(u)) * Math.sin(v/8)
-    ];
-    */
-    
-    /*
-    // Clifford torus
-    //let umin = 0;
-    //let umax = Math.PI;
-    //let un  = 10;
-    //let vmin = 0;
-    //let vmax = 2*Math.PI;
-    //let vn  = 128;
-    
-    return [
-        Math.cos(u+v) / (Math.sqrt(2.0) + Math.cos(v-u)),
-        Math.sin(v-u) / (Math.sqrt(2.0) + Math.cos(v-u)),
-        Math.sin(u+v) / (Math.sqrt(2.0) + Math.cos(v-u))
-    ];
-    */
-    
-    
-    // Dini
-    //let umin = 0;
-    //let umax = 4*Math.PI;
-    //let un  = 64;
-    //let vmin = 0;
-    //let vmax = 2;
-    //let vn  = 64;
-    
-    let a = 1.5;
-    let b = 0.2;
-    return [
-        a * Math.cos(u) * Math.sin(v),
-        a * Math.sin(u) * Math.sin(v),
-        //(Math.cos(v)+Math.log(Math.tan(v/2)+0.001)) + b*u
-        (Math.cos(v)+Math.log(Math.tan(v/2)+0.1)) + b*u
-    ];
-    
-};
 let make_object = function ()
 {
-    let un  = 128;
-    let vn  = 128;
+    model.verts = [...Array((Nu)*(Nv) * 2)];
+    model.faces = [...Array(2*(Nu-1)*(Nv-1) * 3)];
+    model.lines = [...Array(2*(Nu-1)*(Nv-1) * 2)];
     
-    model.verts.length = (un)*(vn) * 2;
-    model.faces.length = 2*(un-1)*(vn-1) * 3;
-    model.lines.length = 2*(un-1)*(vn-1) * 2;
-    
-    for (let vi = 0 ; vi<vn ; ++vi)
+    for (let vi = 0 ; vi<Nv ; ++vi)
     {
-        for (let ui = 0 ; ui<un ; ++ui)
+        for (let ui = 0 ; ui<Nu ; ++ui)
         {
-            model.verts[(vi*un + ui)*2 + 0] = ui / (un-1);
-            model.verts[(vi*un + ui)*2 + 1] = vi / (vn-1);
-        }
-    }
-    
-    for (let vi = 0 ; vi<vn-1 ; ++vi)
-    {
-        for (let ui = 0 ; ui<un-1 ; ++ui)
-        {
-            model.faces[(vi*un + ui)*6 + 0] = vi*un     + ui;
-            model.faces[(vi*un + ui)*6 + 1] = (vi+1)*un + ui;
-            model.faces[(vi*un + ui)*6 + 2] = vi*un     + ui+1;
-            model.faces[(vi*un + ui)*6 + 3] = (vi+1)*un + ui;
-            model.faces[(vi*un + ui)*6 + 4] = (vi+1)*un + ui+1;
-            model.faces[(vi*un + ui)*6 + 5] = vi*un     + ui+1;
+            //model.verts[(vi*Nu + ui)*2 + 0] = ui / (Nu-1);
+            //model.verts[(vi*Nu + ui)*2 + 1] = vi / (Nv-1);
             
-            model.lines[(vi*un + ui)*4 + 0] = vi*un     + ui;
-            model.lines[(vi*un + ui)*4 + 1] = vi*un     + ui+1;
-            model.lines[(vi*un + ui)*4 + 2] = vi*un     + ui;
-            model.lines[(vi*un + ui)*4 + 3] = (vi+1)*un + ui;
+            model.verts[(vi*Nu + ui)*2 + 0] = ui / (Nu-1);
+            model.verts[(vi*Nu + ui)*2 + 1] = vi / (Nv-1);
         }
     }
     
-    for (let vi = 0 ; vi<vn-1 ; ++vi)
+    for (let vi = 0 ; vi<Nv-1 ; ++vi)
     {
-        model.lines.push(vi*un     + un-1);
-        model.lines.push((vi+1)*un + un-1);
-    }
-    for (let ui = 0 ; ui<un-1 ; ++ui)
-    {
-        model.lines.push((vn-1)*un     + ui);
-        model.lines.push((vn-1)*un     + ui+1);
+        for (let ui = 0 ; ui<Nu-1 ; ++ui)
+        {
+            model.faces[(vi*Nu + ui)*6 + 0] = vi*Nu     + ui;
+            model.faces[(vi*Nu + ui)*6 + 1] = (vi+1)*Nu + ui;
+            model.faces[(vi*Nu + ui)*6 + 2] = vi*Nu     + ui+1;
+            model.faces[(vi*Nu + ui)*6 + 3] = (vi+1)*Nu + ui;
+            model.faces[(vi*Nu + ui)*6 + 4] = (vi+1)*Nu + ui+1;
+            model.faces[(vi*Nu + ui)*6 + 5] = vi*Nu     + ui+1;
+            
+            model.lines[(vi*Nu + ui)*4 + 0] = vi*Nu     + ui;
+            model.lines[(vi*Nu + ui)*4 + 1] = vi*Nu     + ui+1;
+            model.lines[(vi*Nu + ui)*4 + 2] = vi*Nu     + ui;
+            model.lines[(vi*Nu + ui)*4 + 3] = (vi+1)*Nu + ui;
+        }
     }
     
-    vrtbuf = gl.createBuffer();
+    for (let vi = 0 ; vi<Nv-1 ; ++vi)
+    {
+        model.lines.push(vi*Nu     + Nu-1);
+        model.lines.push((vi+1)*Nu + Nu-1);
+    }
+    for (let ui = 0 ; ui<Nu-1 ; ++ui)
+    {
+        model.lines.push((Nv-1)*Nu     + ui);
+        model.lines.push((Nv-1)*Nu     + ui+1);
+    }
+    
     gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts), gl.STATIC_DRAW);
     
-    tribuf = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tribuf);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.faces), gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(model.faces), gl.STATIC_DRAW);
     
-    linbuf = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.lines), gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(model.lines), gl.STATIC_DRAW);
     
     console.log("V", model.verts.length, "T", model.faces.length);
 };
@@ -230,7 +179,7 @@ let draw = function ()
     else
     {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
-        gl.drawElements(gl.LINES, model.lines.length, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.LINES, model.lines.length, gl.UNSIGNED_INT, 0);
     }
     
     if (obj > 1)
@@ -247,7 +196,7 @@ let draw = function ()
         gl.enable(gl.POLYGON_OFFSET_FILL);
         gl.polygonOffset(1, 1);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tribuf);
-        gl.drawElements(gl.TRIANGLES, model.faces.length, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, model.faces.length, gl.UNSIGNED_INT, 0);
         gl.disable(gl.POLYGON_OFFSET_FILL);
     }
 };
@@ -369,23 +318,45 @@ let create_shader = function ()
 let gpu_init = function (canvas_id)
 {
     gl = gl_init.get_webgl2_context(canvas_id);
+    vrtbuf = gl.createBuffer();
+    tribuf = gl.createBuffer();
+    linbuf = gl.createBuffer();
+    
     create_shader();
 };
 
-var initf = function ()
+let set_ui = function ()
 {
     fta.value = start_func;
-}
-var setf  = function ()
+    
+    Nudom.value = Nu;
+    Nvdom.value = Nv;
+};
+let set_params = function ()
+{
+    let nu2 = parseInt(Nudom.value);
+    let nv2 = parseInt(Nvdom.value);
+    
+    if (isNaN(nu2) || nu2 === undefined || nu2 === null) return;
+    if (isNaN(nv2) || nv2 === undefined || nv2 === null) return;
+    
+    if (nu2 < 2 || nu2 > 512 || nv2 < 2 || nv2 > 512) return;
+    
+    Nu = nu2;
+    Nv = nv2;
+    make_object();
+    draw();
+};
+let setf  = function ()
 {
     start_func = fta.value;
     create_shader();
     draw();
 };
-var preset = function (opt)
+let preset = function (opt)
 {
     start_func = shaders[opt];
-    initf();
+    set_ui();
     create_shader();
     draw();
 };
@@ -396,7 +367,10 @@ let init = function ()
     
     canvas = document.getElementById('canvas');
     fta    = document.getElementById('func');
-    initf();
+    Nudom  = document.getElementById('nuin');
+    Nvdom  = document.getElementById('nvin');
+    
+    set_ui();
     gpu_init('canvas');
     
     canvas.addEventListener("mousedown", handle_mouse_down);
@@ -410,6 +384,7 @@ let init = function ()
 };
 
 window.preset = preset;
+window.set_params = set_params;
 window.setf   = setf;
 
 document.addEventListener("DOMContentLoaded", init);

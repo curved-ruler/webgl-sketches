@@ -49,6 +49,28 @@
                 <td>Scale / Rotate</td>
             </tr>
             <tr>
+                <td class="left">N: </td>
+                <td>
+                    u: <input id="nuin" type="text" size="11"/>
+                    v: <input id="nvin" type="text" size="11"/>
+                    [2;512]
+                </td>
+            </tr>
+            <tr>
+                <td class="left"></td>
+                <td><button onclick="set_params()">Set Params</button></td>
+            </tr>
+            <tr>
+                <td class="left">F(u,v):</td>
+                <td>
+                    <textarea id="func" type="text" rows="10" cols="68"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td class="left"></td>
+                <td><button onclick="setf()">Set F(u,v)</button></td>
+            </tr>
+            <tr>
                 <td class="left">Presets:</td>
                 <td>
                     <select id="pres" onchange="preset(this.value)">
@@ -56,20 +78,11 @@
                         <option value="torus">Torus</option>
                         <option value="clifford">Clifford</option>
                         <option value="dini">Dini</option>
+                        <option value="helicoid0">Helicoid base</option>
                         <option value="henneberg">Henneberg</option>
                         <option value="fxy">f(x,y)</option>
                     </select>
                 </td>
-            </tr>
-            <tr>
-                <td class="left">Function:</td>
-                <td>
-                    <textarea id="func" type="text" rows="10" cols="68"></textarea>
-                </td>
-            </tr>
-            <tr>
-                <td class="left"></td>
-                <td><button onclick="setf()">Show</button></td>
             </tr>
         </table>
     </body>
