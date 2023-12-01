@@ -7,8 +7,8 @@ var menu_hidden = false;
 var grabbed  = -1;
 var mode     = 0;    // 0 - add, 1 - move, 2 - delete
 var curvemode  = 0;
-var curvemodes = ["Bezier4 patches", "Lagrange interpolaton"];
-var vectormode = [true, false];
+var curvemodes = ["Bezier", "Bezier4 patches", "Lagrange interpolaton"];
+var vectormode = [false, true, false];
 var canvas   = null;
 var context  = null;
 var pts = 20;
@@ -238,6 +238,37 @@ var calc_curvature = function()
     curve_c.push(curve[i*2+1]);
 }
 
+let calcBezier = function ()
+{
+    curve = [];
+    
+    let n = controls.length/2;
+    
+    for (let pi=0 ; pi<pts ; ++pi)
+    {
+        let t = pi/(pts-1);
+        let P = [0,0];
+        for (let ci=0 ; ci<n ; ++ci)
+        {
+            let Bt = 1.0;
+            let ni = n-1;
+            for (let i=0 ; i<ci ; ++i)
+            {
+                Bt *= ni / (i+1);
+                --ni;
+            }
+            
+            P[0] += controls[ci*2]   * Bt * Math.pow(t,ci) * Math.pow(1-t, n-1-ci);
+            P[1] += controls[ci*2+1] * Bt * Math.pow(t,ci) * Math.pow(1-t, n-1-ci);
+        }
+        
+        curve.push(P[0]);
+        curve.push(P[1]);
+    }
+    
+    calc_curvature();
+};
+
 var calcB4 = function ()
 {
     curve = [];
@@ -296,8 +327,9 @@ var calc_curve = function ()
 {
     switch (curvemode)
     {
-        case 0 : calcB4(); break;
-        case 1 : calcLagrange(); break;
+        case 0 : calcBezier(); break;
+        case 1 : calcB4(); break;
+        case 2 : calcLagrange(); break;
         default: break;
     }
 };
