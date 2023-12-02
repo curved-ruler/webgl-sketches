@@ -11,10 +11,15 @@
   left: 0px;
 }
 
-#menu {
+#menu-ovf {
   position: absolute;
   top:  10px;
   left: 10px;
+  
+  height: 90%;
+  overflow-y: scroll;
+}
+#menu {
   padding: 10px;
   background-color: rgb(50, 50, 50);
   color: rgb(120, 255, 255);
@@ -34,7 +39,7 @@
     <body>
         <canvas id="canvas"></canvas>
         
-        <table id="menu">
+        <div id="menu-ovf"><table id="menu">
             <tr>
                 <td class="left">M:</td>
                 <td>Show/Hide Menu</td>
@@ -54,6 +59,24 @@
             <tr>
                 <td class="left">Mouse wheel / drag:</td>
                 <td>Scale / Rotate</td>
+            </tr>
+            <tr>
+                <td class="left">Grid xyz:</td>
+                <td>
+                  <input id="nxyz" type="text" size="11"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Scale xyz:</td>
+                <td>
+                  <input id="sxyz" type="text" size="11"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left"></td>
+                <td>
+                    <button onclick="set_params()">Set Params</button>
+                </td>
             </tr>
             <tr>
                 <td class="left">Level set:</td>
@@ -76,9 +99,10 @@
                         <option value="0">SinCos</option>
                         <option value="1">Sphere</option>
                         <option value="2">Log</option>
-                        <option value="3">Cubic</option>
-                        <option value="4">Astroidal Lamé</option>
-                        <option value="5">Box Frame</option>
+                        <option value="3">Astroidal Lamé</option>
+                        <option value="4">Cubic</option>
+                        <option value="5">Parabolic Cyclide</option>
+                        <option value="6">Box Frame</option>
                     </select>
                 </td>
             </tr>
@@ -114,6 +138,6 @@
                     1:<input id="curse1" type="checkbox" onchange="set_curse1(this.checked)">
                 </td>
             </tr>
-        </table>
+        </table></div>
     </body>
 </html>

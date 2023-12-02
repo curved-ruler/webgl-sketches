@@ -8,36 +8,45 @@ import { MC }     from "./ModifiedMarchingCubes.js";
 
 let FS = [
     
-    { V: 2.0, Fstr: 'let a = 2.0*Math.sin(x/2.0)*Math.cos(y/2.0);\n\
-let b = 2.0*Math.sin(y/2.0)*Math.cos(z/2.0);\n\
-let c = 2.0*Math.sin(z/2.0)*Math.cos(x/2.0);\n\
-return a+b+c;'},
+    { V: 2.0, Fstr: `\
+let a = 2.0*Math.sin(x/4.0)*Math.cos(y/4.0);
+let b = 2.0*Math.sin(y/4.0)*Math.cos(z/4.0);
+let c = 2.0*Math.sin(z/4.0)*Math.cos(x/4.0);
+return a+b+c;`
+    },
 
-    { V: 10.5, Fstr: 'return Math.sqrt(x*x + y*y + z*z);'},
+    { V: 21,   Fstr: 'return Math.sqrt(x*x + y*y + z*z);'},
     
-    { V: 5.0,  Fstr: 'return Math.log(x * y * z);'},
+    { V: 6.1,  Fstr: 'return Math.log(x * y * z);'},
     
-    { V: 0.0,  Fstr: 'return z*(z*z - 100) - x*(x*x - 3*y*y);' },
-    
-    { V: 5.0,  Fstr: `\
+    { V: 8.0,  Fstr: `\
 let a = Math.sqrt(Math.abs(x));
 let b = Math.sqrt(Math.abs(y));
 let c = Math.sqrt(Math.abs(z));
 return a+b+c;`
     },
     
-    { V: 0.0,  Fstr: '// Box Frame by https://iquilezles.org/articles/distfunctions/\n\
-let length = (a,b,c)=>{return Math.sqrt(a*a+b*b+c*c);};\n\
-let e = 2.2;\n\
-let p = {x:Math.abs(x)-20, y:Math.abs(y)-20, z:Math.abs(z)-10};\n\
-let q = {x:Math.abs(p.x+e)-e,\n\
-         y:Math.abs(p.y+e)-e,\n\
-         z:Math.abs(p.z+e)-e};\n\
-  return Math.min(\n\
-      length(Math.max(p.x, 0.0),Math.max(q.y, 0.0),Math.max(q.z, 0.0)) + Math.min(Math.max(p.x,q.y,q.z),0.0),\n\
-      length(Math.max(q.x, 0.0),Math.max(p.y, 0.0),Math.max(q.z, 0.0)) + Math.min(Math.max(q.x,p.y,q.z),0.0),\n\
-      length(Math.max(q.x, 0.0),Math.max(q.y, 0.0),Math.max(p.z, 0.0)) + Math.min(Math.max(q.x,q.y,p.z),0.0)\n\
-                 );' }
+    { V: 0.0,  Fstr: 'return z*(z*z - 400) - x*(x*x - 3*y*y);' },
+    
+    { V: 0.0,  Fstr : `\
+let a = 20.0;
+return (x*x + y*y + z*z - a*a)*z - a*(x*x - y*y);`
+    },
+    
+    { V: 0.0,  Fstr: `\
+// Box Frame by https://iquilezles.org/articles/distfunctions/
+let length = (a,b,c)=>{return Math.sqrt(a*a+b*b+c*c);};
+let e = 2.2;
+let p = {x:Math.abs(x)-20, y:Math.abs(y)-20, z:Math.abs(z)-10};
+let q = {x:Math.abs(p.x+e)-e,
+         y:Math.abs(p.y+e)-e,
+         z:Math.abs(p.z+e)-e};
+  return Math.min(
+      length(Math.max(p.x, 0.0),Math.max(q.y, 0.0),Math.max(q.z, 0.0)) + Math.min(Math.max(p.x,q.y,q.z),0.0),
+      length(Math.max(q.x, 0.0),Math.max(p.y, 0.0),Math.max(q.z, 0.0)) + Math.min(Math.max(q.x,p.y,q.z),0.0),
+      length(Math.max(q.x, 0.0),Math.max(q.y, 0.0),Math.max(p.z, 0.0)) + Math.min(Math.max(q.x,q.y,p.z),0.0)
+                 );`
+    }
 
 ];
 
@@ -47,7 +56,15 @@ let canvas  = null;
 let cwidth, cheight;
 
 //let field  = [];
-let N      = 100;
+let Nx     = 100;
+let Ny     = 100;
+let Nz     = 100;
+let Sx     = 1.0;
+let Sy     = 1.0;
+let Sz     = 1.0;
+let Ndom   = null;
+let Sdom   = null;
+
 let V      = FS[0].V;
 let F      = null;
 let Vdom   = null;
@@ -159,9 +176,11 @@ let noise = function (x,y,z)
 };
 */
 
-let field_val = function(x)
+let field_pos = function(x,y,z)
 {
-    return (-N/2.0 + x) / 2.0;
+    return [(-(Nx-1)*Sx/2.0 + x*Sx),
+            (-(Ny-1)*Sy/2.0 + y*Sy),
+            (-(Nz-1)*Sz/2.0 + z*Sz)];
 };
 
 /*
@@ -187,12 +206,10 @@ let make_field = function ()
     }
 };
 */
-let fxyz = function (xx,yy,zz)
+let fxyz = function (x,y,z)
 {
-    let x = field_val(xx);
-    let y = field_val(yy);
-    let z = field_val(zz);
-    return F(x,y,z);
+    let p = field_pos(x,y,z);
+    return F(p[0], p[1], p[2]);
 };
 
 
@@ -224,20 +241,20 @@ let mc = function ()
     model.tris  = [];
     model.lines = [];
     
-    for (let i=0 ; i<N-1 ; ++i)
+    for (let i=0 ; i<Nx-1 ; ++i)
     {
-        for (let j=0 ; j<N-1 ; ++j)
+        for (let j=0 ; j<Ny-1 ; ++j)
         {
-            for (let k=0 ; k<N-1 ; ++k)
+            for (let k=0 ; k<Nz-1 ; ++k)
             {
-                let cube = [field_val(i),   field_val(j),   field_val(k),
-                            field_val(i+1), field_val(j),   field_val(k),
-                            field_val(i),   field_val(j+1), field_val(k),
-                            field_val(i+1), field_val(j+1), field_val(k),
-                            field_val(i),   field_val(j),   field_val(k+1),
-                            field_val(i+1), field_val(j),   field_val(k+1),
-                            field_val(i),   field_val(j+1), field_val(k+1),
-                            field_val(i+1), field_val(j+1), field_val(k+1)];
+                let cube = [...field_pos(i,    j,   k),
+                            ...field_pos(i+1,  j,   k),
+                            ...field_pos(i,    j+1, k),
+                            ...field_pos(i+1,  j+1, k),
+                            ...field_pos(i,    j,   k+1),
+                            ...field_pos(i+1,  j,   k+1),
+                            ...field_pos(i,    j+1, k+1),
+                            ...field_pos(i+1,  j+1, k+1)];
                 
                 let cubef0 = [];
                 try {
@@ -653,8 +670,59 @@ let set_pref = function (value)
     draw();
 };
 
+let set_n = function ()
+{
+    let nxyz = Ndom.value.split(',');
+    if (nxyz.length < 3) return;
+    
+    let n2x = parseInt(nxyz[0]);
+    let n2y = parseInt(nxyz[1]);
+    let n2z = parseInt(nxyz[2]);
+    let nnn = n2x*n2y*n2z;
+    
+    if (isNaN(nnn)) return;
+    if (nnn > 16777216)
+    {
+        alert("Error: Divx*Divy*Divz > " + 16777216);
+        return;
+    }
+    
+    Nx = n2x;
+    Ny = n2y;
+    Nz = n2z;
+};
+let set_s = function ()
+{
+    let sxyz = Sdom.value.split(',');
+    if (sxyz.length < 3) return;
+    
+    let s2x = parseFloat(sxyz[0]);
+    let s2y = parseFloat(sxyz[1]);
+    let s2z = parseFloat(sxyz[2]);
+    let sss = s2x*s2y*s2z;
+    
+    if (isNaN(sss)) return;
+    
+    Sx = s2x;
+    Sy = s2y;
+    Sz = s2z;
+};
+
+let set_params = function ()
+{
+    set_n();
+    set_s();
+    
+    mc();
+    make_object();
+    draw();
+};
+
 let set_ui = function ()
 {
+    Ndom.value = "" + Nx + "," + Ny + "," + Nz;
+    Sdom.value = "" + Sx + "," + Sy + "," + Sz;
+    
     Vdom.value = V;
     Fdom.value = Fstr;
     F = Function('x', 'y', 'z', Fstr);
@@ -701,6 +769,8 @@ let init = function ()
     
     Vdom          = document.getElementById("levelin");
     Fdom          = document.getElementById("func");
+    Ndom          = document.getElementById("nxyz");
+    Sdom          = document.getElementById("sxyz");
     alpha_dom     = document.getElementById('alpha');
     curses_dom[0] = document.getElementById('curse0');
     curses_dom[1] = document.getElementById('curse1');
@@ -728,6 +798,7 @@ window.set_alpha  = set_alpha;
 window.set_curse0 = set_curse0;
 window.set_curse1 = set_curse1;
 window.set_smooth = set_smooth;
+window.set_params = set_params;
 window.set_pref   = set_pref;
 window.setf       = setf;
 
