@@ -319,9 +319,9 @@ let mc = function ()
                         
                         if (curses[1])
                         {
-                        //aa = Math.abs(cubef0[e1[0]]-V) / (Math.abs(cubef0[e1[1]]-V) + Math.abs(cubef0[e1[0]]-V));
-                        //ab = Math.abs(cubef0[e2[0]]-V) / (Math.abs(cubef0[e2[1]]-V) + Math.abs(cubef0[e2[0]]-V));
-                        //ac = Math.abs(cubef0[e3[0]]-V) / (Math.abs(cubef0[e3[1]]-V) + Math.abs(cubef0[e3[0]]-V));
+                        aa = Math.abs(cubef0[e1[0]]-V) / (Math.abs(cubef0[e1[1]]-V) + Math.abs(cubef0[e1[0]]-V));
+                        ab = Math.abs(cubef0[e2[0]]-V) / (Math.abs(cubef0[e2[1]]-V) + Math.abs(cubef0[e2[0]]-V));
+                        ac = Math.abs(cubef0[e3[0]]-V) / (Math.abs(cubef0[e3[1]]-V) + Math.abs(cubef0[e3[0]]-V));
                         
                         //aa = cubef0[e1[0]] / (cubef0[e1[1]] + cubef0[e1[0]] -2*V);
                         //ab = cubef0[e2[0]] / (cubef0[e2[1]] + cubef0[e2[0]] -2*V);
@@ -335,9 +335,9 @@ let mc = function ()
                         //ab = (V-cubef0[e2[1]] + cubef0[e2[0]]-V);
                         //ac = (V-cubef0[e3[1]] + cubef0[e3[0]]-V);
                         
-                        aa = (V-cubef0[e1[1]]) / (cubef0[e1[0]]-V);
-                        ab = (V-cubef0[e2[1]]) / (cubef0[e2[0]]-V);
-                        ac = (V-cubef0[e3[1]]) / (cubef0[e3[0]]-V);
+                        //aa = (V-cubef0[e1[1]]) / (cubef0[e1[0]]-V);
+                        //ab = (V-cubef0[e2[1]]) / (cubef0[e2[0]]-V);
+                        //ac = (V-cubef0[e3[1]]) / (cubef0[e3[0]]-V);
                         
                         //aa = (V-cubef0[e1[1]]);
                         //ab = (V-cubef0[e2[1]]);
