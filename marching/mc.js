@@ -76,8 +76,10 @@ let Fstr   = FS[0].Fstr;
 
 let added_noise = 0;
 let A_noise     = 30;
+let L_noise     = 0.1;
 let rnd         = [];
 let nAdom       = null;
+let nLdom       = null;
 let nOdom       = null;
 
 let model  = { tris:[], lines:[] };
@@ -160,7 +162,9 @@ let fxyz = function (x,y,z)
     let oct = 1.0;
     for (let i=0 ; i<added_noise ; ++i)
     {
-        f   += (A_noise*oct) * noise((p[0]/10.0/oct)*(rnd[i%rnd.length]), (p[1]/10.0/oct)*(rnd[i%rnd.length]), (p[2]/10.0/oct)*(rnd[i%rnd.length]));
+        f   += (A_noise*oct) * noise((p[0]*L_noise/oct) * rnd[i%rnd.length],
+                                     (p[1]*L_noise/oct) * rnd[i%rnd.length],
+                                     (p[2]*L_noise/oct) * rnd[i%rnd.length]);
         oct /= 2.0;
     }
     
@@ -685,6 +689,8 @@ let set_s = function ()
 let set_noise = function ()
 {
     A_noise = parseFloat(nAdom.value);
+    L_noise = parseFloat(nLdom.value);
+    
     let ovi = parseInt(nOdom.options[nOdom.selectedIndex].value);
     if (ovi >= 0 && ovi < 10)
     {
@@ -717,6 +723,7 @@ let set_ui = function ()
     smooth_dom.checked = smooth;
     
     nAdom.value = A_noise;
+    nLdom.value = L_noise;
     let oO = nOdom.options;
     for (let i=0 ; i<oO.length ; ++i)
     {
@@ -768,6 +775,7 @@ let init = function ()
     curses_dom[1] = document.getElementById('curse1');
     smooth_dom    = document.getElementById('smooth');
     nAdom         = document.getElementById('noiseA');
+    nLdom         = document.getElementById('noiseL');
     nOdom         = document.getElementById('octaves');
     set_ui();
 
