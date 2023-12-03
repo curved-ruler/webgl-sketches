@@ -73,6 +73,19 @@
                 </td>
             </tr>
             <tr>
+                <td class="left">Smooth:</td>
+                <td>
+                    <input id="smooth" type="checkbox">
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Curses:</td>
+                <td>
+                    0: <input id="curse0" type="checkbox">
+                    1: <input id="curse1" type="checkbox">
+                </td>
+            </tr>
+            <tr>
                 <td class="left">Noise:</td>
                 <td>
                     <select id="octaves">
@@ -87,8 +100,8 @@
                         <option value="8">8</option>
                         <option value="9">9</option>
                     </select>
-                    A: <input id="noiseA" type="text" size="5"/>
-                    λ: <input id="noiseL" type="text" size="5"/>
+                    A:   <input id="noiseA" type="text" size="5"/>
+                    1/λ: <input id="noiseL" type="text" size="5"/>
                 </td>
             </tr>
             <tr>
@@ -143,19 +156,6 @@
                         <option value="0.5">0.5</option>
                         <option value="1.0">1.0</option>
                     </select>
-                </td>
-            </tr>
-            <tr>
-                <td class="left">Smooth:</td>
-                <td>
-                    <input id="smooth" type="checkbox" onchange="set_smooth(this.checked)">
-                </td>
-            </tr>
-            <tr>
-                <td class="left">Curses:</td>
-                <td>
-                    0:<input id="curse0" type="checkbox" onchange="set_curse0(this.checked)">
-                    1:<input id="curse1" type="checkbox" onchange="set_curse1(this.checked)">
                 </td>
             </tr>
         </table></div>

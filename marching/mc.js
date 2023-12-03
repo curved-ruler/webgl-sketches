@@ -38,7 +38,7 @@ return (x*x + y*y + z*z - a*a)*z - a*(x*x - y*y);`
     
     { V: 0.0, Fstr: `\
 // Box Frame by https://iquilezles.org/articles/distfunctions/
-let length = (a,b,c)=>{return Math.sqrt(a*a+b*b+c*c);};
+let length = (a,b,c)=>( Math.sqrt(a*a+b*b+c*c) );
 let e = 2.2;
 let p = {x:Math.abs(x)-20, y:Math.abs(y)-20, z:Math.abs(z)-10};
 let q = {x:Math.abs(p.x+e)-e,
@@ -606,30 +606,6 @@ let setf = function ()
     draw();
 };
 
-let set_smooth = function (value)
-{
-    smooth = value;
-    
-    mc();
-    make_object();
-    draw();
-};
-let set_curse0 = function (value)
-{
-    curses[0] = value;
-    
-    mc();
-    make_object();
-    draw();
-};
-let set_curse1 = function (value)
-{
-    curses[1] = value;
-    
-    mc();
-    make_object();
-    draw();
-};
 
 let set_pref = function (value)
 {
@@ -703,6 +679,10 @@ let set_params = function ()
     set_n();
     set_s();
     set_noise();
+    
+    curses[0] = curses_dom[0].checked;
+    curses[1] = curses_dom[1].checked;
+    smooth    = smooth_dom.checked;
     
     mc();
     make_object();
@@ -797,9 +777,6 @@ let init = function ()
 
 
 window.set_alpha  = set_alpha;
-window.set_curse0 = set_curse0;
-window.set_curse1 = set_curse1;
-window.set_smooth = set_smooth;
 window.set_params = set_params;
 window.set_pref   = set_pref;
 window.setf       = setf;
