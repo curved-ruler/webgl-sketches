@@ -3,6 +3,7 @@ import { gl_init }    from "./gl_init.js";
 import { shaders }    from "./shaders.js";
 import { m4, v3, tr } from "./matvec.js";
 
+import { noise }  from './noise.js';
 import { saveAs } from './FileSaver.js';
 import { MC }     from "./ModifiedMarchingCubes.js";
 
@@ -15,25 +16,27 @@ let c = 2.0*Math.sin(z/4.0)*Math.cos(x/4.0);
 return a+b+c;`
     },
 
-    { V: 21,   Fstr: 'return Math.sqrt(x*x + y*y + z*z);'},
+    { V: 21,  Fstr: 'return Math.sqrt(x*x + y*y + z*z);'},
     
-    { V: 6.1,  Fstr: 'return Math.log(x * y * z);'},
+    { V: 6.1, Fstr: 'return Math.log(x * y * z);'},
     
-    { V: 8.0,  Fstr: `\
+    { V: 8.0, Fstr: `\
 let a = Math.sqrt(Math.abs(x));
 let b = Math.sqrt(Math.abs(y));
 let c = Math.sqrt(Math.abs(z));
 return a+b+c;`
     },
     
-    { V: 0.0,  Fstr: 'return z*(z*z - 400) - x*(x*x - 3*y*y);' },
+    { V: 0.0, Fstr: 'return z*(z*z - 400) - x*(x*x - 3*y*y);' },
     
-    { V: 0.0,  Fstr : `\
+    { V: 0.0, Fstr : `\
 let a = 20.0;
 return (x*x + y*y + z*z - a*a)*z - a*(x*x - y*y);`
     },
     
-    { V: 0.0,  Fstr: `\
+    { V: 0, Fstr: 'return -z;' },
+    
+    { V: 0.0, Fstr: `\
 // Box Frame by https://iquilezles.org/articles/distfunctions/
 let length = (a,b,c)=>{return Math.sqrt(a*a+b*b+c*c);};
 let e = 2.2;
@@ -55,7 +58,7 @@ let glprog  = null;
 let canvas  = null;
 let cwidth, cheight;
 
-//let field  = [];
+let field  = [];
 let Nx     = 100;
 let Ny     = 100;
 let Nz     = 100;
@@ -71,6 +74,12 @@ let Vdom   = null;
 let Fdom   = null;
 let Fstr   = FS[0].Fstr;
 
+let added_noise = 0;
+let A_noise     = 30;
+let rnd         = [];
+let nAdom       = null;
+let nOdom       = null;
+
 let model  = { tris:[], lines:[] };
 let vrtbuf = null;
 let tribuf = null;
@@ -84,7 +93,7 @@ let alpha_dom = null;
 
 let menu_hidden = false;
 
-let smooth = false;
+let smooth = true;
 let smooth_dom = null;
 let curses = [false, false];
 let curses_dom = [null, null];
@@ -133,48 +142,7 @@ let compute_matrices = function ()
         projmat = tr.persp(camera);
     }
 };
-/*
-let noise = function (x,y,z)
-{
-    let p = [Math.floor(x), Math.floor(y), Math.floor(y)];
-    let w = [x-p[0], y-p[1], z-p[2]];
 
-    // quintic interpolant
-    let u = [w[0]*w[0]*w[0]*(w[0]*(w[0]*6.0-15.0)+10.0),
-             w[1]*w[1]*w[1]*(w[1]*(w[1]*6.0-15.0)+10.0),
-             w[2]*w[2]*w[2]*(w[2]*(w[2]*6.0-15.0)+10.0)];
-
-    // gradients
-    vec3 ga = hash( p+vec3(0.0,0.0,0.0) );
-    vec3 gb = hash( p+vec3(1.0,0.0,0.0) );
-    vec3 gc = hash( p+vec3(0.0,1.0,0.0) );
-    vec3 gd = hash( p+vec3(1.0,1.0,0.0) );
-    vec3 ge = hash( p+vec3(0.0,0.0,1.0) );
-    vec3 gf = hash( p+vec3(1.0,0.0,1.0) );
-    vec3 gg = hash( p+vec3(0.0,1.0,1.0) );
-    vec3 gh = hash( p+vec3(1.0,1.0,1.0) );
-
-    // projections
-    let va = v3.dot( ga, v3.sub(w, [0.0,0.0,0.0]) );
-    let vb = v3.dot( gb, v3.sub(w, [1.0,0.0,0.0]) );
-    let vc = v3.dot( gc, v3.sub(w, [0.0,1.0,0.0]) );
-    let vd = v3.dot( gd, v3.sub(w, [1.0,1.0,0.0]) );
-    let ve = v3.dot( ge, v3.sub(w, [0.0,0.0,1.0]) );
-    let vf = v3.dot( gf, v3.sub(w, [1.0,0.0,1.0]) );
-    let vg = v3.dot( gg, v3.sub(w, [0.0,1.0,1.0]) );
-    let vh = v3.dot( gh, v3.sub(w, [1.0,1.0,1.0]) );
-
-    // interpolation
-    return va +
-           u[0]*v3.sub(vb,va) +
-           u[1]*v3.sub(vc,va) +
-           u[2]*v3.sub(ve,va) +
-           u[0]*u[1]*(va-vb-vc+vd) +
-           u[1]*u[2]*(va-vc-ve+vg) +
-           u[2]*u[0]*(va-vb-ve+vf) +
-           u[0]*u[1]*u[2]*(-va+vb+vc-vd+ve-vf-vg+vh);
-};
-*/
 
 let field_pos = function(x,y,z)
 {
@@ -183,36 +151,43 @@ let field_pos = function(x,y,z)
             (-(Nz-1)*Sz/2.0 + z*Sz)];
 };
 
-/*
+
+let fxyz = function (x,y,z)
+{
+    let p = field_pos(x,y,z);
+    let f = F(p[0], p[1], p[2]);
+    
+    let oct = 1.0;
+    for (let i=0 ; i<added_noise ; ++i)
+    {
+        f   += (A_noise*oct) * noise((p[0]/10.0/oct)*(rnd[i%rnd.length]), (p[1]/10.0/oct)*(rnd[i%rnd.length]), (p[2]/10.0/oct)*(rnd[i%rnd.length]));
+        oct /= 2.0;
+    }
+    
+    return f;
+};
+
+
+
 let make_field = function ()
 {
     field = [];
 
-    for (let i=0 ; i<N ; ++i)
+    for (let i=0 ; i<Nx ; ++i)
     {
-        let fi = field_val(i);
-
-        for (let j=0 ; j<N ; ++j)
+        for (let j=0 ; j<Ny ; ++j)
         {
-            let fj = field_val(j);
-
-            for (let k=0 ; k<N ; ++k)
+            for (let k=0 ; k<Nz ; ++k)
             {
-                let fk = field_val(k);
-
-                field.push(Math.sqrt(fi*fi + fj*fj + fk*fk));
+                try
+                {
+                    field.push(fxyz(i,j,k));
+                }
+                catch (err) { console.error("Func error!", err.message); alert(err.message); return; }
             }
         }
     }
 };
-*/
-let fxyz = function (x,y,z)
-{
-    let p = field_pos(x,y,z);
-    return F(p[0], p[1], p[2]);
-};
-
-
 
 // Axes are:
 //
@@ -241,6 +216,8 @@ let mc = function ()
     model.tris  = [];
     model.lines = [];
     
+    make_field();
+    
     for (let i=0 ; i<Nx-1 ; ++i)
     {
         for (let j=0 ; j<Ny-1 ; ++j)
@@ -256,18 +233,16 @@ let mc = function ()
                             ...field_pos(i,    j+1, k+1),
                             ...field_pos(i+1,  j+1, k+1)];
                 
-                let cubef0 = [];
-                try {
-                    cubef0 = [fxyz(i,   j,   k),
-                              fxyz(i+1, j,   k),
-                              fxyz(i,   j+1, k),
-                              fxyz(i+1, j+1, k),
-                              fxyz(i,   j,   k+1),
-                              fxyz(i+1, j,   k+1),
-                              fxyz(i,   j+1, k+1),
-                              fxyz(i+1, j+1, k+1)];
-                }
-                catch (err) { console.error("Func error!", err.message); alert(err.message); return; }
+                let cubef0 = [
+                    field[ i   *(Ny*Nz) +  j   *(Nz) + k],
+                    field[(i+1)*(Ny*Nz) +  j   *(Nz) + k],
+                    field[ i   *(Ny*Nz) + (j+1)*(Nz) + k],
+                    field[(i+1)*(Ny*Nz) + (j+1)*(Nz) + k],
+                    field[ i   *(Ny*Nz) +  j   *(Nz) + k+1],
+                    field[(i+1)*(Ny*Nz) +  j   *(Nz) + k+1],
+                    field[ i   *(Ny*Nz) + (j+1)*(Nz) + k+1],
+                    field[(i+1)*(Ny*Nz) + (j+1)*(Nz) + k+1]
+                ];
                 
                 let cubef  = [cubef0[0] >= V ? 1 : 0,
                               cubef0[1] >= V ? 1 : 0,
@@ -663,11 +638,10 @@ let set_pref = function (value)
     
     V    = FS[i].V;
     Fstr = FS[i].Fstr;
+    
     set_ui();
     
-    mc();
-    make_object();
-    draw();
+    setf();
 };
 
 let set_n = function ()
@@ -708,15 +682,27 @@ let set_s = function ()
     Sz = s2z;
 };
 
+let set_noise = function ()
+{
+    A_noise = parseFloat(nAdom.value);
+    let ovi = parseInt(nOdom.options[nOdom.selectedIndex].value);
+    if (ovi >= 0 && ovi < 10)
+    {
+        added_noise = ovi;
+    }
+};
+
 let set_params = function ()
 {
     set_n();
     set_s();
+    set_noise();
     
     mc();
     make_object();
     draw();
 };
+
 
 let set_ui = function ()
 {
@@ -725,11 +711,17 @@ let set_ui = function ()
     
     Vdom.value = V;
     Fdom.value = Fstr;
-    F = Function('x', 'y', 'z', Fstr);
     
     curses_dom[0].checked = curses[0];
     curses_dom[1].checked = curses[1];
     smooth_dom.checked = smooth;
+    
+    nAdom.value = A_noise;
+    let oO = nOdom.options;
+    for (let i=0 ; i<oO.length ; ++i)
+    {
+        if (oO[i].value == added_noise) { oO.selectedIndex = i; }
+    }
     
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
@@ -775,6 +767,8 @@ let init = function ()
     curses_dom[0] = document.getElementById('curse0');
     curses_dom[1] = document.getElementById('curse1');
     smooth_dom    = document.getElementById('smooth');
+    nAdom         = document.getElementById('noiseA');
+    nOdom         = document.getElementById('octaves');
     set_ui();
 
 
@@ -786,11 +780,11 @@ let init = function ()
     canvas.addEventListener("mousemove", handle_mouse_move);
     canvas.addEventListener("wheel",     handle_wheel);
     
+    for (let i=0 ; i<100 ; ++i) { rnd.push(Math.random()); }
+    
     resize();
-
-    mc();
-    make_object();
-    draw();
+    
+    setf();
 };
 
 

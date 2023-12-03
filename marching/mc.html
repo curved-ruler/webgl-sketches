@@ -73,6 +73,24 @@
                 </td>
             </tr>
             <tr>
+                <td class="left">Noise:</td>
+                <td>
+                    <select id="octaves">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                    </select>
+                    A: <input id="noiseA" type="text" size="5"/>
+                </td>
+            </tr>
+            <tr>
                 <td class="left"></td>
                 <td>
                     <button onclick="set_params()">Set Params</button>
@@ -102,7 +120,8 @@
                         <option value="3">Astroidal Lamé</option>
                         <option value="4">Cubic</option>
                         <option value="5">Parabolic Cyclide</option>
-                        <option value="6">Box Frame</option>
+                        <option value="6">Plane</option>
+                        <option value="7">Box Frame</option>
                     </select>
                 </td>
             </tr>
