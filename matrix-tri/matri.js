@@ -56,6 +56,9 @@ let nStream = 1.0/dAlpha;
 let iStream = 0;
 let streams = [];
 
+let run    = false;
+let run_id = null;
+
 
 let tick = function ()
 {
@@ -214,6 +217,63 @@ let resize = function ()
     init_tris();
 };
 
+let handle_key_down = function (event)
+{
+    if (event.ctrlKey) { return; }
+    
+    if (event.key === " ") // Space
+    {
+        if (run)
+        {
+            run = false;
+            window.clearInterval(run_id);
+        }
+        else
+        {
+            run = true;
+            run_id = window.setInterval(tick, 80);
+        }
+    }
+    else if (event.key === "c" || event.key === "C")
+    {
+        for (let i=0 ; i<streams.length ; ++i)
+        {
+            streams[i] = -1;
+        }
+        for (let j=0 ; j<Ny ; ++j)
+        for (let i=0 ; i<Nx ; ++i)
+        {
+            setcol(i,j, 0);
+        }
+    
+        gl.bindBuffer(gl.ARRAY_BUFFER, tribuf);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(tris));
+    
+        draw();
+    }
+    else if (event.key === "q" || event.key === "Q")
+    {
+        /*
+        for (let i=0 ; i<streams.length ; ++i)
+        {
+            streams[i] = -1;
+        }
+        */
+        for (let j=0 ; j<Ny ; ++j)
+        for (let i=0 ; i<Nx ; ++i)
+        {
+            setcol(i,j, 1-dAlpha);
+        }
+    
+        gl.bindBuffer(gl.ARRAY_BUFFER, tribuf);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(tris));
+    
+        draw();
+    }
+    
+    console.log("key", event.key);
+};
+
 let gpu_init = function (canvas_id)
 {
     gl     = gl_init.get_webgl2_context(canvas_id);
@@ -244,5 +304,8 @@ let init = function ()
 
 
 document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("keydown", handle_key_down);
 window.addEventListener("resize", function() { resize(); draw(); });
-window.setInterval(tick, 80);
+
+run = true;
+run_id = window.setInterval(tick, 80);
