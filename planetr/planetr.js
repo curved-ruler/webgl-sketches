@@ -310,6 +310,125 @@ let james_t10_cmm_t = function ()
     transform();
 };
 
+let cairo_t = function ()
+{
+    let N2 = Math.ceil(N/2);
+    
+    model_in.verts = [...Array(N2*N2*5*4*2)];
+    model_in.lines = [...Array(N2*N2*5*4*2)];
+    
+    let A2 = A/2;
+    let H  = 0.9 * A;
+    let H2 = H*0.5;
+    let X2 = Math.sqrt( (H2+A2)*(H2+A2) + (H2-A2)*(H2-A2) ) / 2;
+    
+    let G2 = G/2;
+    
+    let vv = [
+        [ A2,            0.0,      0.0],
+        [ A2 + (H-A2)/2, (H+A2)/2, 0.0],
+        [0.0,   H,                 0.0],
+        [-A2 - (H-A2)/2, (H+A2)/2, 0.0],
+        [-A2,            0.0,      0.0]
+    ];
+    let center = [0, H2, 0];
+    let vv2 = [];
+    for (let i=0 ; i<5 ; ++i)
+    {
+        //let vvtr = v3.cmul(v3.normalize(v3.sub(center, vv[i])), G2);
+        //vv2.push(v3.add(vv[i], vvtr));
+        let vvtr = v3.cmul( v3.sub(vv[i], center), (H2-G2)/H2 );
+        vv2.push(v3.add(center, vvtr));
+    }
+    
+    let xy  = [0,0];
+    let xpp = [ H+A2, H+A2];
+    let ypp = [-H-A2, H+A2];
+    
+    for (let y=0 ; y < N2 ; ++y)
+    {
+        xy = [-N2*(xpp[0] + ypp[0])/2, -N2*(xpp[1] + ypp[1])/2];
+        xy[0] += y*ypp[0];
+        xy[1] += y*ypp[1];
+        
+        for (let x=0 ; x < N2 ; ++x)
+        {
+            let mat = m4.init();
+            mat = m4.mul(tr.translate([xy[0], xy[1], 0]), mat);
+            for (let i=0 ; i<5 ; ++i)
+            {
+                model_in.verts[(y*N+x)*40+ i*2+0] = v3.mmul(mat, vv2[i])[0];
+                model_in.verts[(y*N+x)*40+ i*2+1] = v3.mmul(mat, vv2[i])[1];
+            }
+            
+            mat = m4.init();
+            mat = m4.mul(tr.rotz(-90), mat);
+            mat = m4.mul(tr.translate([xy[0]-A2-H, xy[1], 0]), mat);
+            for (let i=0 ; i<5 ; ++i)
+            {
+                model_in.verts[(y*N+x)*40+ 10+ i*2+0] = v3.mmul(mat, vv2[i])[0];
+                model_in.verts[(y*N+x)*40+ 10+ i*2+1] = v3.mmul(mat, vv2[i])[1];
+            }
+            
+            mat = m4.init();
+            mat = m4.mul(tr.rotz(180), mat);
+            mat = m4.mul(tr.translate([xy[0], xy[1], 0]), mat);
+            for (let i=0 ; i<5 ; ++i)
+            {
+                model_in.verts[(y*N+x)*40+ 20+ i*2+0] = v3.mmul(mat, vv2[i])[0];
+                model_in.verts[(y*N+x)*40+ 20+ i*2+1] = v3.mmul(mat, vv2[i])[1];
+            }
+            
+            mat = m4.init();
+            mat = m4.mul(tr.rotz(90), mat);
+            mat = m4.mul(tr.translate([xy[0]+A2+H, xy[1], 0]), mat);
+            for (let i=0 ; i<5 ; ++i)
+            {
+                model_in.verts[(y*N+x)*40+ 30+ i*2+0] = v3.mmul(mat, vv2[i])[0];
+                model_in.verts[(y*N+x)*40+ 30+ i*2+1] = v3.mmul(mat, vv2[i])[1];
+            }
+            
+            
+            
+            
+            for (let i=0 ; i<5 ; ++i)
+            {
+                model_in.lines[(y*N+x)*40+ i*2+0] = (y*N+x)*20 + i;
+                model_in.lines[(y*N+x)*40+ i*2+1] = (y*N+x)*20 + (i+1)%5;
+            }
+            for (let i=0 ; i<5 ; ++i)
+            {
+                model_in.lines[(y*N+x)*40+ 10+ i*2+0] = (y*N+x)*20 + 5+ i;
+                model_in.lines[(y*N+x)*40+ 10+ i*2+1] = (y*N+x)*20 + 5+ (i+1)%5;
+            }
+            for (let i=0 ; i<5 ; ++i)
+            {
+                model_in.lines[(y*N+x)*40+ 20+ i*2+0] = (y*N+x)*20 + 10+ i;
+                model_in.lines[(y*N+x)*40+ 20+ i*2+1] = (y*N+x)*20 + 10+ (i+1)%5;
+            }
+            for (let i=0 ; i<5 ; ++i)
+            {
+                model_in.lines[(y*N+x)*40+ 30+ i*2+0] = (y*N+x)*20 + 15+ i;
+                model_in.lines[(y*N+x)*40+ 30+ i*2+1] = (y*N+x)*20 + 15+ (i+1)%5;
+            }
+            
+            xy[0] += xpp[0];
+            xy[1] += xpp[1];
+        }
+    }
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_in.verts), gl.DYNAMIC_DRAW);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(model_in.lines), gl.STATIC_DRAW);
+    
+    
+    console.log("V", model_in.verts.length, "L", model_in.lines.length);
+    
+    transform();
+};
+
 let set_tiling = function (t)
 {
     tiling = t;
@@ -327,6 +446,11 @@ let set_tiling = function (t)
     else if (t == "2")
     {
         james_t10_cmm_t();
+        draw();
+    }
+    else if (t == "3")
+    {
+        cairo_t();
         draw();
     }
 };
@@ -482,10 +606,13 @@ let handle_mouse_move = function (event)
 {
     if (grabbed === 1)
     {
-        let y = 2 * Math.tan(camera.fovy/2) * camera.median;
-        let pixsize = (scale*y)/(cwidth*camera.aspect);
-        pan[0] += event.movementX * pixsize;
-        pan[1] -= event.movementY * pixsize;
+        //let y = 2 * Math.tan(camera.fovy/2) * camera.median;
+        //let pixsize = (scale*y)/(cwidth*camera.aspect);
+        
+        let lambda = (scale > 1) ? scale*0.0005 : scale*0.02;
+        
+        pan[0] += event.movementX * lambda;
+        pan[1] -= event.movementY * lambda;
         transform();
         draw();
     }
