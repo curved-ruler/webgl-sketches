@@ -31,14 +31,18 @@ uniform mat4  vm;
 uniform int   proj;
 uniform float aspect;
 
+out vec3 opos;
 out vec3 ocol;
 
 void main ()
 {
+    vec4 p2 = vm * vec4(pos, 1.0);
+    
     //gl_PointSize = pointsize;
+    
     if (proj == 0 || proj == 1)
     {
-        gl_Position = p * vm * vec4(pos, 1.0);
+        gl_Position = p * p2;
     }
     else
     {
@@ -51,19 +55,31 @@ void main ()
                             );
     }
     
+    opos = p2.xyz;
     ocol = col;
 }
 `,
 
         fs : `\
 
+in      vec3  opos;
 in      vec3  ocol;
 uniform float alpha;
+uniform int   shaded;
 out     vec4  fragcolor;
 
 void main ()
 {
-    fragcolor = vec4(ocol, alpha);
+    if (shaded == 1)
+    {
+        vec3 light  = normalize(vec3(1.0, 1.0, 1.0));
+        vec3 normal = normalize(cross(dFdx(opos), dFdy(opos)));
+        fragcolor = vec4(ocol, alpha) * clamp(dot(light, normal), 0.2f, 1.0f);
+    }
+    else
+    {
+        fragcolor = vec4(ocol, alpha);
+    }
 }
 `
 

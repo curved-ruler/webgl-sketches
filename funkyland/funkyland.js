@@ -26,9 +26,11 @@ let funk = false;
 let bcol  = [0.2, 0.2, 0.2];
 let tcol  = [1.0, 1.0, 1.0];
 let alpha = 1.0;
+let alpha_dom = null;
 
 let menu_hidden = false;
 
+let obj  = 1;
 let proj = 1;
 let projmat, modlmat, viewmat;
 let scale    = 1;
@@ -46,8 +48,11 @@ let camera = {
     fovy  : Math.PI / 3,
     aspect: 1,
     
-    move_k : 0.2,
-    rot_k  : 0.1
+    move_k : 0.1,
+    rot_k  : 0.1,
+    
+    move_ws : 0,
+    move_ad : 0
 };
 let cam_constrain = function ()
 {
@@ -58,6 +63,23 @@ let cam_constrain = function ()
     camera.up = v3.cross(up2, camera.look);
     camera.up = v3.normalize(camera.up);
 };
+let cam_move = function ()
+{
+    if (camera.move_ws)
+    {
+        camera.pos[0] += camera.look[0] * camera.move_k*camera.move_ws;
+        camera.pos[1] += camera.look[1] * camera.move_k*camera.move_ws;
+    }
+    
+    if (camera.move_ad)
+    {
+        let d = v3.cross(camera.up, camera.look);
+        d[2] = 0;
+        d = v3.normalize(d);
+        camera.pos = v3.add(camera.pos, v3.cmul(d, camera.move_k*camera.move_ad));
+    }
+};
+
 
 let compute_matrices = function ()
 {
@@ -84,10 +106,10 @@ let clamp = function (x, a, b)
 
 let getheight = function (pos)
 {
-    if (planet.ready < planet.cx*planet.cy) return 0+camh;
-    
     let i = clamp(Math.floor(pos[0] / planet.N), 0, planet.cx-1);
     let j = clamp(Math.floor(pos[1] / planet.N), 0, planet.cy-1);
+    
+    if (planet.cells[j*3+i].tris.length < 1) return 0+camh;
     
     let x = pos[0] - Math.floor(pos[0]/planet.N)*planet.N;
     let y = pos[1] - Math.floor(pos[1]/planet.N)*planet.N;
@@ -168,7 +190,7 @@ let fetch_terr = function (name, x, y, pnx)
                 planet.cells[y*pnx+x].lines.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255);
                 planet.cells[y*pnx+x].lines.push(xoff+i,   yoff+j+1, H[(j+1)*(Nx+1)+i],   r/255, g/255, b/255);
                 
-                planet.cells[y*pnx+x].points.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255);
+                //planet.cells[y*pnx+x].points.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255);
             }
             
             //console.log("H", H);
@@ -181,13 +203,11 @@ let fetch_terr = function (name, x, y, pnx)
             gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[y*pnx+x].lbuf);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(planet.cells[y*pnx+x].lines), gl.STATIC_DRAW);
             
-            planet.cells[y*pnx+x].pbuf = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[y*pnx+x].pbuf);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(planet.cells[y*pnx+x].points), gl.STATIC_DRAW);
+            //planet.cells[y*pnx+x].pbuf = gl.createBuffer();
+            //gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[y*pnx+x].pbuf);
+            //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(planet.cells[y*pnx+x].points), gl.STATIC_DRAW);
             
             ++planet.ready;
-            
-            draw();
         }
     }
     xhr.open('GET', name, true);
@@ -197,19 +217,20 @@ let fetch_terr = function (name, x, y, pnx)
 
 let make_planet = function ()
 {
+    planet.ready = 0;
     for (let i=0 ; i<planet.cx*planet.cy ; ++i)
     {
         planet.cells[i].tris   = [];
         planet.cells[i].lines  = [];
-        planet.cells[i].points = [];
+        //planet.cells[i].points = [];
         if (planet.cells[i].tbuf)
         {
             gl.deleteBuffer(planet.cells[i].tbuf);
             gl.deleteBuffer(planet.cells[i].lbuf);
-            gl.deleteBuffer(planet.cells[i].pbuf);
+            //gl.deleteBuffer(planet.cells[i].pbuf);
             planet.cells[i].tbuf = null;
             planet.cells[i].lbuf = null;
-            planet.cells[i].pbuf = null;
+            //planet.cells[i].pbuf = null;
         }
     }
     
@@ -232,16 +253,17 @@ let draw = function ()
     
     gl.useProgram(glprog.bin);
     
-    if (alpha < 0.99)
+    if (alpha < 0.98)
     {
+        gl.disable(gl.DEPTH_TEST);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     }
     else
     {
         gl.disable(gl.BLEND);
+        gl.enable(gl.DEPTH_TEST);
     }
-    gl.enable(gl.DEPTH_TEST);
     
     gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -256,11 +278,21 @@ let draw = function ()
     
     for (let i=0 ; i<9 ; ++i)
     {
-        if (planet.cells[i].tbuf)
+        if (planet.cells[i].lbuf !== null)
+        {
+            gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].lbuf);
+            gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 6*4, 0*4);
+            gl.vertexAttribPointer(glprog.col, 3, gl.FLOAT, false, 6*4, 3*4);
+            gl.uniform1i(glprog.sahded, 0);
+            gl.drawArrays(gl.LINES, 0, planet.cells[i].lines.length / 6);
+        }
+        
+        if (obj === 2 && planet.cells[i].tbuf !== null)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].tbuf);
             gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 6*4, 0*4);
             gl.vertexAttribPointer(glprog.col, 3, gl.FLOAT, false, 6*4, 3*4);
+            gl.uniform1i(glprog.sahded, 1);
             
             gl.enable(gl.POLYGON_OFFSET_FILL);
             gl.polygonOffset(1, 1);
@@ -287,8 +319,8 @@ let handle_mouse_move = function (event)
     {
         let zi   = [0, 0, 1];
         let left = v3.cross(camera.up, camera.look);
-        let qx = tr.rot(zi,   camera.rot_k*event.movementX);
-        let qy = tr.rot(left, camera.rot_k*event.movementY);
+        let qx = tr.rot(zi,   -camera.rot_k*event.movementX);
+        let qy = tr.rot(left,  camera.rot_k*event.movementY);
         
         let nu = v3.mmul(qy, camera.up);
         let nl = v3.mmul(qy, camera.look);
@@ -303,11 +335,28 @@ let handle_mouse_move = function (event)
         camera.look = v3.mmul(qx, camera.look);
         
         cam_constrain();
-        
-        draw();
     }
 };
-let handle_key_down = function ()
+let handle_key_up = function (event)
+{
+    if (event.key === "w" || event.key === "W")
+    {
+        camera.move_ws = 0;
+    }
+    else if (event.key === "s" || event.key === "S")
+    {
+        camera.move_ws = 0;
+    }
+    else if (event.key === "a" || event.key === "A")
+    {
+        camera.move_ad = 0;
+    }
+    else if (event.key === "d" || event.key === "D")
+    {
+        camera.move_ad = 0;
+    }
+};
+let handle_key_down = function (event)
 {
     if (event.key === "m" || event.key === "M")
     {
@@ -326,7 +375,11 @@ let handle_key_down = function ()
     {
         ++proj;
         if (proj > 2) { proj = 0; }
-        draw();
+    }
+    else if (event.key === "o" || event.key === "O")
+    {
+        ++obj;
+        if (obj > 2) { obj = 1; }
     }
     else if (event.key === "F8")
     {
@@ -343,49 +396,34 @@ let handle_key_down = function ()
     
     else if (event.key === "w" || event.key === "W")
     {
-        camera.pos[0] += camera.look[0] * camera.move_k;
-        camera.pos[1] += camera.look[1] * camera.move_k;
-        cam_pos_h();
-        draw();
+        camera.move_ws = 1;
     }
     else if (event.key === "s" || event.key === "S")
     {
-        camera.pos[0] -= camera.look[0] * camera.move_k;
-        camera.pos[1] -= camera.look[1] * camera.move_k;
-        cam_pos_h();
-        draw();
+        camera.move_ws = -1;
     }
     else if (event.key === "a" || event.key === "A")
     {
-        let d = v3.cross(camera.up, camera.look);
-        d[2] = 0;
-        d = v3.normalize(d);
-        camera.pos = v3.add(camera.pos, v3.cmul(d, camera.move_k));
-        cam_pos_h();
-        draw();
+        camera.move_ad = 1;
     }
     else if (event.key === "d" || event.key === "D")
     {
-        let d = v3.cross(camera.up, camera.look);
-        d[2] = 0;
-        d = v3.normalize(d);
-        camera.pos = v3.add(camera.pos, v3.cmul(d, -camera.move_k));
-        cam_pos_h();
-        draw();
+        camera.move_ad = -1;
     }
 };
 let set_alpha = function (strval)
 {
-    let ival = Number(strval);
-    
-    if (isNaN(ival) || ival === undefined || ival === null) return;
-    if (ival < 0)   ival = 0;
-    if (ival > 1.0) ival = 1.0;
-    
-    alpha = ival;
+    alpha = parseFloat(strval);
     alpha_dom.blur();
-    
+};
+
+let tick = function (timestamp)
+{
+    cam_move();
+    cam_pos_h();
     draw();
+    
+    window.requestAnimationFrame(tick);
 };
 
 let resize = function ()
@@ -416,6 +454,7 @@ let gpu_init = function (canvas_id)
     glprog.proj    = gl.getUniformLocation(glprog.bin, "proj");
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
     glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
+    glprog.shaded  = gl.getUniformLocation(glprog.bin, "shaded");
 }
 
 let init = function ()
@@ -429,12 +468,12 @@ let init = function ()
     canvas.addEventListener("mouseup",   handle_mouse_up);
     canvas.addEventListener("mousemove", handle_mouse_move);
     
-    //alpha_dom = document.getElementById('alpha');
-    //let opts = alpha_dom.options;
-    //for (let i=0 ; i<opts.length ; ++i)
-    //{
-    //    if (opts[i].value == 0.5) { opts.selectedIndex = i; }
-    //}
+    alpha_dom = document.getElementById('alpha');
+    let opts = alpha_dom.options;
+    for (let i=0 ; i<opts.length ; ++i)
+    {
+        if (opts[i].value == 0.5) { opts.selectedIndex = i; }
+    }
     
     resize();
     
@@ -446,4 +485,7 @@ window.set_alpha = set_alpha;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
+document.addEventListener("keyup",   handle_key_up);
 window.addEventListener("resize", function() { resize(); draw(); });
+
+window.requestAnimationFrame(tick);
