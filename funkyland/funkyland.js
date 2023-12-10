@@ -472,7 +472,7 @@ let init = function ()
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
     {
-        if (opts[i].value == 0.5) { opts.selectedIndex = i; }
+        if (opts[i].value == alpha) { opts.selectedIndex = i; }
     }
     
     resize();
