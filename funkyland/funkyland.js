@@ -82,11 +82,11 @@ let cam_move = function ()
         camera.pos = v3.add(camera.pos, v3.cmul(d, camera.move_k*camera.move_ad));
     }
     
-    let a = camera.move_touch[1]-camera.move_touch[0];
-    if (a > 0.01 || a < 0.01)
+    let a = camera.move_touch[0]-camera.move_touch[1];
+    if (a > 0.01 || a < -0.01)
     {
-        camera.pos[0] += camera.look[0] * 0.001*a;
-        camera.pos[1] += camera.look[1] * 0.001*a;
+        camera.pos[0] += camera.look[0] * 0.0001*a;
+        camera.pos[1] += camera.look[1] * 0.0001*a;
     }
 };
 
