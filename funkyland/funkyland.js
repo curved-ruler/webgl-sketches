@@ -93,7 +93,7 @@ let cam_move = function ()
     if (b > 0.01 || b < -0.01)
     {
         let zi   = [0, 0, 1];
-        let qx = tr.rot(zi, -0.0005*b);
+        let qx = tr.rot(zi, 0.0005*b);
         camera.up   = v3.mmul(qx, camera.up);
         camera.look = v3.mmul(qx, camera.look);
     }
