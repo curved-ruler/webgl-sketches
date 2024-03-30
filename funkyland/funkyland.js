@@ -410,8 +410,7 @@ let handle_key_down = function (event)
     
     else if (event.key === "f" || event.key === "F")
     {
-        funk = !funk;
-        make_planet();
+        funk();
     }
     
     
@@ -435,8 +434,6 @@ let handle_key_down = function (event)
 
 let touchstart = function (event)
 {
-    event.preventDefault();
-    
     if (event.touches.length === 1)
     {
         camera.look_touch = [event.touches[0].pageX, event.touches[0].pageX];
@@ -445,20 +442,16 @@ let touchstart = function (event)
 };
 let touchend = function (event)
 {
-    event.preventDefault();
     camera.look_touch = [0, 0];
     camera.move_touch = [0, 0];
 };
 let touchcancel = function (event)
 {
-    event.preventDefault();
     camera.look_touch = [0, 0];
     camera.move_touch = [0, 0];
 };
 let touchmove = function (event)
 {
-    event.preventDefault();
-    
     if (event.touches.length === 1)
     {
         camera.look_touch[1] = event.touches[0].pageX;
@@ -540,8 +533,14 @@ let init = function ()
     make_planet();
 };
 
+let funk = function ()
+{
+    funk = !funk;
+    make_planet();
+};
 
 window.set_alpha = set_alpha;
+window.funk = funk;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
