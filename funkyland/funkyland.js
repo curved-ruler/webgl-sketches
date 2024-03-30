@@ -85,10 +85,8 @@ let cam_move = function ()
     let a = camera.move_touch[1]-camera.move_touch[0];
     if (a > 0.001)
     {
-        let d = v3.cross(camera.up, camera.look);
-        d[2] = 0;
-        d = v3.normalize(d);
-        camera.pos = v3.add(camera.pos, v3.cmul(d, a*0.1));
+        camera.pos[0] += camera.look[0] * 0.1*a;
+        camera.pos[1] += camera.look[1] * 0.1*a;
     }
 };
 
