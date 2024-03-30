@@ -410,7 +410,8 @@ let handle_key_down = function (event)
     
     else if (event.key === "f" || event.key === "F")
     {
-        funk();
+        funk = !funk;
+        make_planet();
     }
     
     
@@ -533,14 +534,8 @@ let init = function ()
     make_planet();
 };
 
-let funk = function ()
-{
-    funk = !funk;
-    make_planet();
-};
 
 window.set_alpha = set_alpha;
-window.funk = funk;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
