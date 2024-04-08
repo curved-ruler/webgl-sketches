@@ -75,6 +75,7 @@ let Fdom   = null;
 let Fstr   = FS[0].Fstr;
 
 let added_noise = 0;
+let warp        = false;
 let A_noise     = 30;
 let L_noise     = 0.1;
 let rnd         = [];
@@ -153,18 +154,36 @@ let field_pos = function(x,y,z)
             (-(Nz-1)*Sz/2.0 + z*Sz)];
 };
 
+let saturate = function (x)
+{
+    if (x > 1) return 1;
+    if (x < 0) return 0;
+    return x;
+}
 
 let fxyz = function (x,y,z)
 {
     let p = field_pos(x,y,z);
     let f = F(p[0], p[1], p[2]);
     
+    if (warp)
+    {
+        let p2 = [noise(p[0]*0.004 + x*0.004, p[1]*0.004, p[2]*0.004)*8,
+                  noise(p[0]*0.004, p[1]*0.004 + y*0.004, p[2]*0.004)*8,
+                  noise(p[0]*0.004, p[1]*0.004, p[2]*0.004 + z*0.004)*8];
+        p[0] = p2[0];
+        p[1] = p2[1];
+        p[2] = p2[2];
+    }
+    
+    //p[2] = saturate( (5-  p[2])*3 )*10; 
+    
     let oct = 1.0;
     for (let i=0 ; i<added_noise ; ++i)
     {
-        f   += (A_noise*oct) * noise((p[0]*L_noise/oct) * rnd[i%rnd.length],
-                                     (p[1]*L_noise/oct) * rnd[i%rnd.length],
-                                     (p[2]*L_noise/oct) * rnd[i%rnd.length]);
+        f   += (A_noise*oct) * noise((p[0]*L_noise/oct) * rnd[(i*3+0)%rnd.length],
+                                     (p[1]*L_noise/oct) * rnd[(i*3+0)%rnd.length],
+                                     (p[2]*L_noise/oct) * rnd[(i*3+0)%rnd.length]);
         oct /= 2.0;
     }
     
@@ -499,9 +518,34 @@ let save_obj = function ()
 
     objstring += "\n";
 
-    var blob = new Blob([objstring], {type: "text/plain"});
+    let blob = new Blob([objstring], {type: "text/plain"});
     saveAs(blob, 'marching_cubes.obj');
 };
+let save_vol = function ()
+{
+    let buffer = new ArrayBuffer(3*4 + Nx*Ny*Nz*4);
+    let view   = new DataView(buffer);
+    
+    view.setUint32(0, Nx);
+    view.setUint32(4, Ny);
+    view.setUint32(8, Nz);
+    
+    for (let i=0 ; i<Nx-1 ; ++i)
+    {
+        for (let j=0 ; j<Ny-1 ; ++j)
+        {
+            for (let k=0 ; k<Nz-1 ; ++k)
+            {
+                view.setFloat32(( i*(Ny*Nz) + j*(Nz) + k )*4, field[ i*(Ny*Nz) + j*(Nz) + k ]);
+            }
+        }
+    }
+
+    let blob = new Blob([buffer], {type: "model/gltf-binary"});
+    saveAs(blob, 'marching_cubes.vol');
+};
+
+
 let handle_key_down = function (event)
 {
     if (document.activeElement === Fdom) { return; }
@@ -533,6 +577,10 @@ let handle_key_down = function (event)
         ++obj;
         if (obj > 1) { obj = 0; }
         draw();
+    }
+    else if (event.key === "v" || event.key === "V")
+    {
+        save_vol();
     }
     else if (event.key === "s" || event.key === "S")
     {
@@ -737,7 +785,7 @@ let gpu_init = function (canvas_id)
 
     tribuf = gl.createBuffer();
     linbuf = gl.createBuffer();
-}
+};
 
 let init = function ()
 {
