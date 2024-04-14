@@ -5,8 +5,7 @@ let shaders = {
         precision : 'precision mediump float;\n',
         //precision : 'precision highp float;\n',
 
-        vs : `\
-
+        func: `\
 vec4 tr6pp (in vec4 position, in mat4 vm, in float rad, in float aspect, in float nn, in float ff)
 {
     vec4 v   = vm * position;
@@ -23,6 +22,39 @@ vec4 tr6pp (in vec4 position, in mat4 vm, in float rad, in float aspect, in floa
     
     return vec4(r.x / aspect, r.y, z, 1.0);
 }
+        `,
+        
+        vs0 : `\
+
+in      vec3  pos;
+uniform mat4  p;
+uniform mat4  vm;
+uniform int   proj;
+uniform float aspect;
+
+$FUNC$
+
+void main ()
+{
+    //gl_PointSize = pointsize;
+    if (proj == 0 || proj == 1)
+    {
+        gl_Position = p * vm * vec4(pos, 1.0);
+    }
+    else
+    {
+        gl_Position = tr6pp(vec4(pos, 1.0), // pos
+                            vm,             // vm
+                            1.4,            // rad
+                            aspect,         // aspect
+                            0.1,            // near
+                            1000.0          // far
+                            );
+    }
+}
+`,
+        
+        vs_tex : `\
 
 in      vec3  pos;
 in      vec2  tex;
@@ -31,6 +63,8 @@ uniform mat4  vm;
 uniform int   proj;
 uniform float aspect;
 out     vec2  texint;
+
+$FUNC$
 
 void main ()
 {
@@ -53,8 +87,18 @@ void main ()
     texint = tex;
 }
 `,
+        
+        fs0 : `\
+uniform vec3  col;
+out     vec4  fragcolor;
 
-        fs : `\
+void main ()
+{
+    fragcolor = vec4(col, 1.0);
+}
+`,
+        
+        fs_tex : `\
 uniform sampler2D texsampler;
 in      vec2  texint;
 out     vec4  fragcolor;

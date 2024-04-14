@@ -29,6 +29,7 @@ let alpha_dom = null;
 
 let menu_hidden = false;
 
+let objtype = 1;
 let proj = 0;
 let projmat, modlmat, viewmat;
 //let modinvmat;
@@ -41,7 +42,7 @@ let grabbed  = 0;
 
 let a = 1 / Math.sqrt(6);
 let camera = {
-    pos   : [5, 5, 5],
+    pos   : [5, 5, 9],
     look  : v3.normalize([-1, -1, -1]),
     up    : [-a, -a, 2*a],
     near  : 0.1,
@@ -112,8 +113,8 @@ let make_object = function ()
     if (model.lines.length > 0)
     {
         linbuf = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.lines), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, linbuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.lines), gl.STATIC_DRAW);
     }
     
     console.log("V", model.verts.length, "T", model.faces.length, "L", model.lines.length);
@@ -136,7 +137,6 @@ let draw = function ()
     {
         gl.disable(gl.BLEND);
     }
-    gl.depthMask(true);
     gl.enable(gl.DEPTH_TEST);
     
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -175,17 +175,14 @@ let draw = function ()
         gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 0*4, 0*4);
     }
     */
-    if (model.lines.length > 0)
+    if (objtype === 1 && model.lines.length > 0)
     {
-        gl.depthMask(true);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
-        //gl.lineWidth(20.0); wtf
-        gl.uniform3fv(glprog.col, lcol);
-        //gl.uniform1f(glprog.alpha, 1.0);
-        gl.drawElements(gl.LINES, model.lines.length, gl.UNSIGNED_SHORT, 0);
+        //gl.depthMask(true);
+        gl.bindBuffer(gl.ARRAY_BUFFER, linbuf);
+        gl.drawArrays(gl.LINES, 0, model.lines.length / 5);
     }
     
-    if (model.faces.length > 0)
+    if (objtype >= 2 && model.faces.length > 0)
     {
         //gl.depthMask(false);
         gl.enable(gl.POLYGON_OFFSET_FILL);
@@ -246,9 +243,10 @@ let handle_key_down = function ()
             document.getElementById("menu").className = "hidden";
         }
     }
-    else if (event.key === "h" || event.key === "H")
+    else if (event.key === "o" || event.key === "O")
     {
-        draw_coords = !draw_coords;
+        ++objtype;
+        if (objtype > 2) { objtype = 1; }
         draw();
     }
     else if (event.key === "i" || event.key === "I")
@@ -323,7 +321,8 @@ let gpu_init = function (canvas_id)
 {
     gl = gl_init.get_webgl2_context(canvas_id);
     
-    glprog = gl_init.create_glprog(gl, shaders.version + shaders.vs, shaders.version + shaders.precision + shaders.fs);
+    let vs_tex = shaders.vs_tex.replace('$FUNC$', shaders.func);
+    glprog = gl_init.create_glprog(gl, shaders.version + vs_tex, shaders.version + shaders.precision + shaders.fs_tex);
     
     glprog.pos = gl.getAttribLocation(glprog.bin, "pos");
     gl.enableVertexAttribArray(glprog.pos);

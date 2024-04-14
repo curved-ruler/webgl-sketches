@@ -51,19 +51,23 @@ let create = function (obj_str, y_up)
                     let v0 = parseInt( v_vt_vn[0] );
                     let vv = (v0 < 0) ? v.length + v0 : v0-1;
                     f.push(v[vv][0], v[vv][1], v[vv][2]);
+                    l.push(v[vv][0], v[vv][1], v[vv][2]);
                 
                     v0 = parseInt( v_vt_vn[1] );
                     vv = (v0 < 0) ? v.length + v0 : v0-1;
                     f.push(vt[vv][0], 1-vt[vv][1]);
+                    l.push(vt[vv][0], 1-vt[vv][1]);
                 
                 v_vt_vn = vind(tokens[end-1]);
                     v0 = parseInt( v_vt_vn[0] );
                     vv = (v0 < 0) ? v.length + v0 : v0-1;
                     f.push(v[vv][0], v[vv][1], v[vv][2]);
+                    l.push(v[vv][0], v[vv][1], v[vv][2]);
                 
                     v0 = parseInt( v_vt_vn[1] );
                     vv = (v0 < 0) ? v.length + v0 : v0-1;
                     f.push(vt[vv][0], 1-vt[vv][1]);
+                    l.push(vt[vv][0], 1-vt[vv][1]);
                 
                 v_vt_vn = vind(tokens[end]);
                     v0 = parseInt( v_vt_vn[0] );
