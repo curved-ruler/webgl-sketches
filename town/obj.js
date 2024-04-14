@@ -1,18 +1,19 @@
 
 let vind = function (str)
 {
-    let i = str.indexOf('/');
-    return str.substring(0, (i != -1) ? i : str.length);
+    let t = str.split('/');
+    return t;
 };
 
-let create = function (obj_str)
+let create = function (obj_str, y_up)
 {
     //let eol = /\r\n|\n\r|\r/g;
     let lines = obj_str.replace('\r','\n').split('\n');
     
-    let v = [];
-    let f = [];
-    let l = [];
+    let v  = [];
+    let vt = [];
+    let f  = [];
+    let l  = [];
     
     for (let i in lines)
     {
@@ -22,9 +23,23 @@ let create = function (obj_str)
         
         if (tokens[0] === 'v' || tokens[0] === 'V')
         {
-            v.push(parseFloat(tokens[1]),
-                   parseFloat(tokens[2]),
-                   parseFloat(tokens[3]));
+            if (!y_up)
+            {
+                v.push([parseFloat(tokens[1]),
+                        parseFloat(tokens[2]),
+                        parseFloat(tokens[3])]);
+            }
+            else
+            {
+                v.push([parseFloat(tokens[3]),
+                        parseFloat(tokens[1]),
+                        parseFloat(tokens[2])]);
+            }
+        }
+        else if (tokens[0] === 'vt' || tokens[0] === 'VT')
+        {
+            vt.push([parseFloat(tokens[1]),
+                     parseFloat(tokens[2])]);
         }
         else if (tokens[0] === 'f' || tokens[0] === 'F')
         {
@@ -32,9 +47,32 @@ let create = function (obj_str)
             
             for (let end = 3 ; end < tokens.length ; ++end)
             {
-                f.push(parseInt(vind(tokens[1]))     - 1,
-                       parseInt(vind(tokens[end-1])) - 1,
-                       parseInt(vind(tokens[end]))   - 1);
+                let v_vt_vn = vind(tokens[1]);
+                    let v0 = parseInt( v_vt_vn[0] );
+                    let vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    f.push(v[vv][0], v[vv][1], v[vv][2]);
+                
+                    v0 = parseInt( v_vt_vn[1] );
+                    vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    f.push(vt[vv][0], 1-vt[vv][1]);
+                
+                v_vt_vn = vind(tokens[end-1]);
+                    v0 = parseInt( v_vt_vn[0] );
+                    vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    f.push(v[vv][0], v[vv][1], v[vv][2]);
+                
+                    v0 = parseInt( v_vt_vn[1] );
+                    vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    f.push(vt[vv][0], 1-vt[vv][1]);
+                
+                v_vt_vn = vind(tokens[end]);
+                    v0 = parseInt( v_vt_vn[0] );
+                    vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    f.push(v[vv][0], v[vv][1], v[vv][2]);
+                
+                    v0 = parseInt( v_vt_vn[1] );
+                    vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    f.push(vt[vv][0], 1-vt[vv][1]);
             }
         }
         else if (tokens[0] === 'l' || tokens[0] === 'L')

@@ -9,6 +9,8 @@ let glprog  = null;
 let canvas  = null;
 let cwidth, cheight;
 
+let texture = null;
+
 let model  = { verts:[], faces:[], lines:[] };
 let vrtbuf = null;
 let tribuf = null;
@@ -79,14 +81,14 @@ let make_coordsys = function ()
     gl.bindBuffer(gl.ARRAY_BUFFER, coordbuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coordm), gl.STATIC_DRAW);
 };
-let fetch_objfile = function ()
+let fetch_objfile = function (y_up)
 {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function()
     {
         if (xhr.readyState === 4 && xhr.status === 200)
         {
-            model = obj.create(xhr.responseText);
+            model = obj.create(xhr.responseText, true);
             make_object();
             draw();
         }
@@ -96,15 +98,15 @@ let fetch_objfile = function ()
 }
 let make_object = function ()
 {
-    vrtbuf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts), gl.STATIC_DRAW);
+    //vrtbuf = gl.createBuffer();
+    //gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
+    //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts), gl.STATIC_DRAW);
     
     if (model.faces.length > 0)
     {
         tribuf = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tribuf);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.faces), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, tribuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.faces), gl.STATIC_DRAW);
     }
     
     if (model.lines.length > 0)
@@ -122,6 +124,8 @@ let draw = function ()
     if (!gl || !glprog.bin) return;
     
     gl.useProgram(glprog.bin);
+    
+    alpha = 1;
     
     if (alpha < 0.99)
     {
@@ -143,8 +147,16 @@ let draw = function ()
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
     
-    gl.uniform1f(glprog.alpha, alpha);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.uniform1i(glprog.sampler, 0);
     
+    gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 5*4, 0*4);
+    gl.vertexAttribPointer(glprog.tex, 2, gl.FLOAT, false, 5*4, 3*4);
+    
+    //gl.uniform1f(glprog.alpha, alpha);
+    
+    /*
     if (draw_coords)
     {
         gl.bindBuffer(gl.ARRAY_BUFFER, coordbuf);
@@ -162,7 +174,7 @@ let draw = function ()
         gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
         gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 0*4, 0*4);
     }
-    
+    */
     if (model.lines.length > 0)
     {
         gl.depthMask(true);
@@ -175,14 +187,12 @@ let draw = function ()
     
     if (model.faces.length > 0)
     {
-        gl.depthMask(false);
+        //gl.depthMask(false);
         gl.enable(gl.POLYGON_OFFSET_FILL);
         gl.polygonOffset(1, 1);
         
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, tribuf);
-        gl.uniform3fv(glprog.col, tcol);
-        //gl.uniform1f(glprog.alpha, alpha);
-        gl.drawElements(gl.TRIANGLES, model.faces.length, gl.UNSIGNED_SHORT, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, tribuf);
+        gl.drawArrays(gl.TRIANGLES, 0, model.faces.length / 5);
         
         gl.disable(gl.POLYGON_OFFSET_FILL);
     }
@@ -287,6 +297,28 @@ let resize = function ()
     gl.viewport(0, 0, canvas.width, canvas.height);
 };
 
+let load_texture = function (name)
+{
+    texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    
+    // Fill the texture with a 1x1 blue pixel.
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                  new Uint8Array([255, 255, 255, 255]));
+    
+    // Asynchronously load an image
+    let image = new Image();
+    image.addEventListener('load', function() {
+        // Now that the image has loaded make copy it to the texture.
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    });
+    image.src = name;
+};
+
 let gpu_init = function (canvas_id)
 {
     gl = gl_init.get_webgl2_context(canvas_id);
@@ -295,13 +327,14 @@ let gpu_init = function (canvas_id)
     
     glprog.pos = gl.getAttribLocation(glprog.bin, "pos");
     gl.enableVertexAttribArray(glprog.pos);
+    glprog.tex = gl.getAttribLocation(glprog.bin, "tex");
+    gl.enableVertexAttribArray(glprog.tex);
     
     glprog.p       = gl.getUniformLocation(glprog.bin, "p");
     glprog.vm      = gl.getUniformLocation(glprog.bin, "vm");
     glprog.proj    = gl.getUniformLocation(glprog.bin, "proj");
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
-    glprog.col     = gl.getUniformLocation(glprog.bin, "col");
-    glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
+    glprog.sampler = gl.getUniformLocation(glprog.bin, "texsampler");
 }
 
 let init = function ()
@@ -326,14 +359,11 @@ let init = function ()
         if (opts[i].value == 0.5) { opts.selectedIndex = i; }
     }
     
+    load_texture("citybits_texture.png");
+    
     resize();
     make_coordsys();
     fetch_objfile();
-    
-    console.log("lookup", v3.dot(camera.look, camera.up), v3.length(camera.up));
-    
-    //let m1 = [1,0,0,0,  1,0,0,0,  1,0,0,0,  0,0,0,1];
-    //console.log(m4.mul(m1, m1));
 };
 
 

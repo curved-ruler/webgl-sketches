@@ -25,10 +25,12 @@ vec4 tr6pp (in vec4 position, in mat4 vm, in float rad, in float aspect, in floa
 }
 
 in      vec3  pos;
+in      vec2  tex;
 uniform mat4  p;
 uniform mat4  vm;
 uniform int   proj;
 uniform float aspect;
+out     vec2  texint;
 
 void main ()
 {
@@ -47,18 +49,19 @@ void main ()
                             1000.0          // far
                             );
     }
+    
+    texint = tex;
 }
 `,
 
         fs : `\
-
-uniform vec3  col;
-uniform float alpha;
+uniform sampler2D texsampler;
+in      vec2  texint;
 out     vec4  fragcolor;
 
 void main ()
 {
-    fragcolor = vec4(col, alpha);
+    fragcolor = texture(texsampler, texint);
 }
 `
 
