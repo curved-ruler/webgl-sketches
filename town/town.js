@@ -597,19 +597,19 @@ let handle_vie_key_down = function (event)
 {
     if (event.key === "w" || event.key === "W")
     {
-        camera.move_ws = 1;
+        camera_vie.move_ws = 1;
     }
     else if (event.key === "s" || event.key === "S")
     {
-        camera.move_ws = -1;
+        camera_vie.move_ws = -1;
     }
     else if (event.key === "a" || event.key === "A")
     {
-        camera.move_ad = 1;
+        camera_vie.move_ad = 1;
     }
     else if (event.key === "d" || event.key === "D")
     {
-        camera.move_ad = -1;
+        camera_vie.move_ad = -1;
     }
     else if (event.key === "v" || event.key === "V")
     {
