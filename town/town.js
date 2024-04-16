@@ -11,9 +11,12 @@ let cwidth, cheight;
 
 let texture = null;
 
-let building_count = 8;
 let floater = -1;
 let floater_rot = 0;
+let highlight = null;
+let hmat = m4.init();
+
+let building_count = 8;
 let models = [
     { name : 'building_A.obj', tris:[], lines:[], tribuf:null, linbuf:null },
     { name : 'building_B.obj', tris:[], lines:[], tribuf:null, linbuf:null },
@@ -31,11 +34,14 @@ let models = [
     { name : 'road_straight.obj', tris:[], lines:[], tribuf:null, linbuf:null },
     { name : 'road_tsplit.obj', tris:[], lines:[], tribuf:null, linbuf:null }
 ];
+
 let grid   = { models:[], lines:[], buf:null };
 let limits = [0,0,0,0];
 
-let tribuf = null;
-let linbuf = null;
+// 0 - CLR
+// 1 - ADD
+// 2 - DEL
+let mode = 0;
 
 let draw_grid = true;
 
@@ -75,9 +81,9 @@ let compute_matrices = function ()
     modlmat = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis), modlmat);
     modlmat = m4.mul(tr.scale(scale), modlmat);
     
-    //modinvmat = tr.scale(1/scale);
-    //modinvmat = m4.mul(tr.rotz(-rotation), modinvmat);
-    //modinvmat = m4.mul(tr.roty(-axis), modinvmat);
+    modinvmat = tr.scale(1/scale);
+    modinvmat = m4.mul(tr.rotz(-rotation), modinvmat);
+    modinvmat = m4.mul(tr.roty(-axis), modinvmat);
     
     viewmat = tr.view(camera);
     projmat = m4.init();
@@ -89,6 +95,54 @@ let compute_matrices = function ()
     {
         projmat = tr.persp(camera);
     }
+};
+
+var ray_zero_plane = function (p, v)
+{
+    var z = v3.mmul(modlmat, [0,0,1]);
+    var lambda = -(p[0]*z[0]+p[1]*z[1]+p[2]*z[2]) / (v[0]*z[0]+v[1]*z[1]+v[2]*z[2]);
+    
+    return v3.mmul(modinvmat, v3.add(p, v3.cmul(v, lambda)));
+}
+
+var mouse_pointer = function (event)
+{
+    var rect = canvas.getBoundingClientRect();
+    var cw2  = cwidth/2;
+    var ch2  = cheight/2;
+    
+    var x = (           event.clientX - rect.left  - cw2) / ch2; // [-asp,asp] >
+    var y = (cheight - (event.clientY - rect.top)  - ch2) / ch2; // [ -1,  1]  ^
+    
+    var v = v3.init();
+    
+    if (proj === 0 || proj === 1)
+    {
+        var vx = v3.cmul(v3.cross(camera.look, camera.up), x * Math.tan(camera.fovy / 2 ));
+        var vy = v3.cmul(camera.up, y * Math.tan(camera.fovy / 2 ));
+        
+        v = v3.add(camera.look, v3.add(vx, vy));
+        let p = v3.add(camera.pos, v3.add(vx, vy));
+        
+        return (proj === 1) ? ray_zero_plane(camera.pos, v) : ray_zero_plane(p, v);
+    }
+    else if (proj === 2)
+    {
+        var rad = 0.8;
+        var l  = v3.length([x,y,0]);
+        //var p0 = ray_zero_plane(camera.pos, camera.look);
+        //var ll = v3.length(v3.sub(p0,camera.pos));
+        var k  = Math.tan(l/rad) / (l);
+        
+        var vx = v3.cmul(v3.cross(camera.look, camera.up), x * k);
+        var vy = v3.cmul(camera.up, y * k);
+        
+        v = v3.add(camera.look, v3.add(vx, vy));
+        
+        return ray_zero_plane(camera.pos, v);
+    }
+    
+    retrun [0,0,0];
 };
 
 let make_grid = function ()
@@ -161,13 +215,30 @@ let make_object = function (i, model)
     //console.log("V", model.verts.length, "T", model.faces.length, "L", model.lines.length);
 };
 
-let draw_one = function (i)
+let draw_floater = function (i)
 {
-    modlmat = tr.rotz(rotation);
-    modlmat = m4.mul(tr.rotz(floater_rot), modlmat);
-    modlmat = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis), modlmat);
-    modlmat = m4.mul(tr.scale(scale), modlmat);
-    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
+    let aaa = 1 / Math.sqrt(6);
+    let cam = {
+        pos   : [5, 5, 9],
+        look  : v3.normalize([-1, -1, -1]),
+        up    : [-aaa, -aaa, 2*aaa],
+        near  : 0.1,
+        median: 10,
+        far   : 1000,
+        fovy  : Math.PI / 3,
+        aspect: 1
+    };
+    
+    let vmm = tr.view(cam);
+    let pmm = tr.persp(cam);
+    
+    let mm = tr.rotz(rotation);
+    mm = m4.mul(tr.rotz(floater_rot), mm);
+    mm = m4.mul(tr.rot(v3.cross(cam.up, cam.look), axis), mm);
+    mm = m4.mul(tr.scale(5), mm);
+    
+    gl.uniformMatrix4fv(glprog.p,  true, pmm);
+    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(vmm, mm));
     
     if (objtype === 1)
     {
@@ -209,7 +280,6 @@ let draw = function ()
     
     compute_matrices();
     gl.uniformMatrix4fv(glprog.p,  true, projmat);
-    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
     
@@ -224,6 +294,8 @@ let draw = function ()
     
     if (draw_grid && grid.lines.length > 0)
     {
+        gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
+        
         gl.bindBuffer(gl.ARRAY_BUFFER, grid.buf);
         gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 5*4, 0*4);
         gl.vertexAttribPointer(glprog.tex, 2, gl.FLOAT, false, 5*4, 3*4);
@@ -254,22 +326,25 @@ let draw = function ()
     }
     */
     
+    if (true)
+    {
+        gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(viewmat, modlmat), hmat));
+        
+        gl.bindBuffer(gl.ARRAY_BUFFER, highlight);
+        gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 5*4, 0*4);
+        gl.vertexAttribPointer(glprog.tex, 2, gl.FLOAT, false, 5*4, 3*4);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+    
     if (floater >= 0)
     {
-        gl.viewport(0, 0, 200*camera.aspect, 200);
+        gl.viewport(0, 0, 200, 200);
         gl.clearColor(0, 0, 0, 1.0);
         gl.enable(gl.SCISSOR_TEST);
-        gl.scissor(0, 0, 200*camera.aspect, 200);
-
-        let oldscale = scale;
-        scale = 8;
-        compute_matrices();
+        gl.scissor(0, 0, 200, 200);
         
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        draw_one(floater);
-        
-        scale = oldscale;
-        compute_matrices();
+        draw_floater(floater);
         
         gl.disable(gl.SCISSOR_TEST);
         gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
@@ -307,6 +382,15 @@ let handle_mouse_move = function (event)
         axis = axis - Math.floor(axis/360.0)*360.0;
         rotation = rotation - Math.floor(rotation/360.0)*360.0;
         
+        draw();
+    }
+    else
+    {
+        if (!modlmat) return;
+        
+        let mp = mouse_pointer(event);
+        if (mp[0] > 1000 || mp[0] < -1000 || mp[1] > 1000 || mp[1] < -1000) return;
+        hmat = tr.translate( [Math.floor(mp[0]+0.5), Math.floor(mp[1]+0.5), 0] );
         draw();
     }
 };
@@ -451,6 +535,18 @@ let gpu_init = function (canvas_id)
     glprog.proj    = gl.getUniformLocation(glprog.bin, "proj");
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
     glprog.sampler = gl.getUniformLocation(glprog.bin, "texsampler");
+    
+    
+    let hgeom = [-0.5, -0.5, 0,   0.334371, 0.22,
+                  0.5, -0.5, 0,   0.334371, 0.219533,
+                  0.5,  0.5, 0,   0.334371, 0.22,
+                  0.5,  0.5, 0,   0.334371, 0.22,
+                 -0.5,  0.5, 0,   0.334371, 0.219533,
+                 -0.5, -0.5, 0,   0.334371, 0.22];
+    highlight = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, highlight);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(hgeom), gl.STATIC_DRAW);
+                 
 }
 
 let init = function ()
@@ -480,6 +576,8 @@ let init = function ()
     resize();
     make_grid();
     fetch_objfile();
+    
+    draw();
 };
 
 
