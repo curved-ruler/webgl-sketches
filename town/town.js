@@ -41,7 +41,7 @@ let limits = [0,0,0,0];
 // 0 - CLR
 // 1 - ADD
 // 2 - DEL
-// 3 - MOV
+// 3 - VIE
 let mode = 'CLR';
 
 let draw_grid = true;
@@ -74,6 +74,32 @@ let camera = {
     far   : 1000,
     fovy  : Math.PI / 3,
     aspect: 1
+};
+let camera_vie = {
+    pos   : [0, 0, 0.2],
+    look  : [1, 0, 0],
+    up    : [0, 0, 1],
+    near  : 0.1,
+    median: 10,
+    far   : 1000,
+    fovy  : Math.PI / 3,
+    aspect: 1,
+    
+    move_k : 0.01,
+    rot_k  : 0.1,
+    
+    move_ws : 0,
+    move_ad : 0
+};
+
+let cam_constrain = function ()
+{
+    camera_vie.look = v3.normalize(camera_vie.look);
+    
+    let up2 = v3.cross(camera_vie.look, camera_vie.up);
+    
+    camera_vie.up = v3.cross(up2, camera_vie.look);
+    camera_vie.up = v3.normalize(camera_vie.up);
 };
 
 let compute_matrices = function ()
@@ -262,18 +288,20 @@ let draw_floater = function (i)
         gl.disable(gl.POLYGON_OFFSET_FILL);
     }
 };
-let draw_piece = function (m)
+let draw_piece = function (m, c)
 {
-    let vmm = tr.view(camera);
-    let pmm = tr.persp(camera);
+    let vmm = tr.view(c);
+    let pmm = tr.persp(c);
     
     let mm = tr.rotz(rotation);
-    mm = m4.mul(tr.rotz(m.r), mm);
-    mm = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis), mm);
+    mm = m4.mul(tr.rotz(m.rot), mm);
+    mm = m4.mul(tr.rot(v3.cross(c.up, c.look), axis), mm);
     mm = m4.mul(tr.scale(scale), mm);
     
+    let rotm = tr.translate(m.pos);
+    
     gl.uniformMatrix4fv(glprog.p,  true, pmm);
-    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(vmm, mm), m.m));
+    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(vmm, mm), rotm));
     
     if (objtype === 1)
     {
@@ -296,7 +324,7 @@ let draw_piece = function (m)
         gl.disable(gl.POLYGON_OFFSET_FILL);
     }
 };
-let draw = function ()
+let draw_editor = function ()
 {
     if (!gl || !glprog.bin) return;
     
@@ -335,34 +363,10 @@ let draw = function ()
         gl.vertexAttribPointer(glprog.tex, 2, gl.FLOAT, false, 5*4, 3*4);
         gl.drawArrays(gl.LINES, 0, grid.lines.length / 5);
     }
-    /*
-    if (objtype === 1 && model.lines.length > 0)
-    {
-        //gl.depthMask(true);
-        gl.bindBuffer(gl.ARRAY_BUFFER, linbuf);
-        gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 5*4, 0*4);
-        gl.vertexAttribPointer(glprog.tex, 2, gl.FLOAT, false, 5*4, 3*4);
-        gl.drawArrays(gl.LINES, 0, model.lines.length / 5);
-    }
-    
-    if (objtype >= 2 && model.faces.length > 0)
-    {
-        //gl.depthMask(false);
-        gl.enable(gl.POLYGON_OFFSET_FILL);
-        gl.polygonOffset(1, 1);
-        
-        gl.bindBuffer(gl.ARRAY_BUFFER, tribuf);
-        gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 5*4, 0*4);
-        gl.vertexAttribPointer(glprog.tex, 2, gl.FLOAT, false, 5*4, 3*4);
-        gl.drawArrays(gl.TRIANGLES, 0, model.faces.length / 5);
-        
-        gl.disable(gl.POLYGON_OFFSET_FILL);
-    }
-    */
     
     for (let i=0 ; i<grid.models.length ; ++i)
     {
-        draw_piece(grid.models[i]);
+        draw_piece(grid.models[i], camera);
     }
     
     if (mode === 'ADD' || mode === 'DEL')
@@ -391,6 +395,80 @@ let draw = function ()
     }
 };
 
+let draw_vie_piece = function (m, c)
+{
+    let vmm = tr.view(c);
+    let pmm = tr.persp(c);
+    
+    let mm = tr.rotz(m.rot);
+    mm = m4.mul(tr.scale(1), mm);
+    
+    let rotm = tr.translate(m.pos);
+    
+    gl.uniformMatrix4fv(glprog.p,  true, pmm);
+    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(vmm, mm), rotm));
+    
+    if (objtype === 1)
+    {
+        gl.bindBuffer(gl.ARRAY_BUFFER, models[m.i].linbuf);
+        gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 5*4, 0*4);
+        gl.vertexAttribPointer(glprog.tex, 2, gl.FLOAT, false, 5*4, 3*4);
+        gl.drawArrays(gl.LINES, 0, models[m.i].lines.length / 5);
+    }
+    
+    if (objtype >= 2)
+    {
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(1, 1);
+        
+        gl.bindBuffer(gl.ARRAY_BUFFER, models[m.i].tribuf);
+        gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 5*4, 0*4);
+        gl.vertexAttribPointer(glprog.tex, 2, gl.FLOAT, false, 5*4, 3*4);
+        gl.drawArrays(gl.TRIANGLES, 0, models[m.i].tris.length / 5);
+        
+        gl.disable(gl.POLYGON_OFFSET_FILL);
+    }
+};
+let draw_vie = function ()
+{
+    if (!gl || !glprog.bin) return;
+    
+    gl.useProgram(glprog.bin);
+    
+    if (alpha < 0.99)
+    {
+        //gl.enable(gl.BLEND);
+        //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    }
+    
+    gl.disable(gl.BLEND);
+    gl.enable(gl.DEPTH_TEST);
+    
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
+    gl.uniform1i(glprog.proj, proj);
+    gl.uniform1f(glprog.aspect, camera.aspect);
+    
+    //if (!texture) { return; }
+    
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.uniform1i(glprog.sampler, 0);
+    
+    //gl.uniform1f(glprog.alpha, alpha);
+    
+    for (let i=0 ; i<grid.models.length ; ++i)
+    {
+        draw_vie_piece(grid.models[i], camera_vie);
+    }
+};
+
+let draw = function ()
+{
+    if (mode === 'VIE') draw_vie();
+    else                draw_editor();
+};
+
 let zoomin  = function () { scale *= 1.25; };
 let zoomout = function () { scale *= 0.8;  };
 let handle_wheel = function (event)
@@ -407,8 +485,30 @@ let handle_mouse_down = function (event)
     
     if (mode === 'ADD' && event.button === 0)
     {
-        grid.models.push( { i:floater, m:hmat, r:floater_rot } )
+        for (let i=0 ; i<grid.models.length ; ++i)
+        {
+            if (grid.models[i].pos[0] == hmat[3] && grid.models[i].pos[1] == hmat[7])
+            {
+                grid.models[i].i   = floater;
+                grid.models[i].rot = floater_rot;
+                draw();
+                return;
+            }
+        }
+        grid.models.push( { i:floater, pos:[hmat[3], hmat[7], 0], rot:floater_rot } )
         draw();
+    }
+    else if (mode === 'DEL' && event.button === 0)
+    {
+        for (let i=0 ; i<grid.models.length ; ++i)
+        {
+            if (grid.models[i].pos[0] == hmat[3] && grid.models[i].pos[1] == hmat[7])
+            {
+                grid.models.splice(i,1);
+                draw();
+                return;
+            }
+        }
     }
 };
 let handle_mouse_up = function (event)
@@ -418,6 +518,9 @@ let handle_mouse_up = function (event)
 
 let handle_mouse_move = function (event)
 {
+    if (mode !== 'VIE')
+    {
+    
     if (grabbed === 1)
     {
         axis -= event.movementY*0.25;
@@ -439,8 +542,82 @@ let handle_mouse_move = function (event)
         hmat = tr.translate( [Math.floor(mp[0]+0.5), Math.floor(mp[1]+0.5), 0] );
         draw();
     }
+    
+    }
+    else // VIE
+    {
+        
+    if (grabbed === 1)
+    {
+        let zi   = [0, 0, 1];
+        let left = v3.cross(camera_vie.up, camera_vie.look);
+        let qx = tr.rot(zi,   -camera_vie.rot_k*event.movementX);
+        let qy = tr.rot(left,  camera_vie.rot_k*event.movementY);
+        
+        let nu = v3.mmul(qy, camera_vie.up);
+        let nl = v3.mmul(qy, camera_vie.look);
+        
+        if (nu[2] > 0.001)
+        {
+            camera_vie.up   = nu;
+            camera_vie.look = nl;
+        }
+        
+        camera_vie.up   = v3.mmul(qx, camera.up);
+        camera_vie.look = v3.mmul(qx, camera.look);
+        
+        cam_constrain();
+    }
+    
+    }
 };
-let handle_key_down = function ()
+
+let handle_vie_key_up = function (event)
+{
+    if (mode !== 'VIE') return;
+    
+    if (event.key === "w" || event.key === "W")
+    {
+        camera_vie.move_ws = 0;
+    }
+    else if (event.key === "s" || event.key === "S")
+    {
+        camera_vie.move_ws = 0;
+    }
+    else if (event.key === "a" || event.key === "A")
+    {
+        camera_vie.move_ad = 0;
+    }
+    else if (event.key === "d" || event.key === "D")
+    {
+        camera_vie.move_ad = 0;
+    }
+};
+let handle_vie_key_down = function (event)
+{
+    if (event.key === "w" || event.key === "W")
+    {
+        camera.move_ws = 1;
+    }
+    else if (event.key === "s" || event.key === "S")
+    {
+        camera.move_ws = -1;
+    }
+    else if (event.key === "a" || event.key === "A")
+    {
+        camera.move_ad = 1;
+    }
+    else if (event.key === "d" || event.key === "D")
+    {
+        camera.move_ad = -1;
+    }
+    else if (event.key === "v" || event.key === "V")
+    {
+        mode = 'CLR';
+        draw();
+    }
+};
+let handle_key_down = function (event)
 {
     if (event.key === "m" || event.key === "M")
     {
@@ -467,7 +644,21 @@ let handle_key_down = function ()
         if (proj > 2) { proj = 0; }
         draw();
     }
-    else if (event.key === "b" || event.key === "B")
+    else if (event.key === "F8")
+    {
+        let image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        window.location.href=image;
+    }
+    
+    
+    
+    if (mode === 'VIE')
+    {
+        handle_vie_key_down(event);
+        return;
+    }
+    
+    if (event.key === "b" || event.key === "B")
     {
         mode = 'ADD';
         if (floater >= -1 && floater < building_count-1)
@@ -493,7 +684,7 @@ let handle_key_down = function ()
         }
         draw();
     }
-    else if (event.key === "d" || event.key === "D")
+    else if (event.key === "Delete")
     {
         mode = 'DEL'
         floater = -1;
@@ -505,16 +696,21 @@ let handle_key_down = function ()
         floater = -1;
         draw();
     }
+    else if (event.key === "v" || event.key === "V")
+    {
+        mode = 'VIE';
+        floater = -1;
+        camera_vie.pos  = [0, 0, 0.2];
+        camera_vie.look = [1, 0, 0];
+        camera_vie.up   = [0, 0, 1];
+        
+        window.requestAnimationFrame(tick);
+    }
     else if (event.key === " ")
     {
         floater_rot += 90;
         if (floater_rot > 360) floater_rot = 0;
         draw();
-    }
-    else if (event.key === "F8")
-    {
-        let image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-        window.location.href=image;
     }
     else if (event.key === "Enter")
     {
@@ -525,6 +721,34 @@ let handle_key_down = function ()
         draw();
     }
 };
+
+let cam_move = function ()
+{
+    if (camera_vie.move_ws)
+    {
+        camera_vie.pos[0] += camera_vie.look[0] * camera_vie.move_k*camera_vie.move_ws;
+        camera_vie.pos[1] += camera_vie.look[1] * camera_vie.move_k*camera_vie.move_ws;
+    }
+    
+    if (camera_vie.move_ad)
+    {
+        let d = v3.cross(camera_vie.up, camera_vie.look);
+        d[2] = 0;
+        d = v3.normalize(d);
+        camera_vie.pos = v3.add(camera_vie.pos, v3.cmul(d, camera_vie.move_k*camera_vie.move_ad));
+    }
+};
+
+let tick = function ()
+{
+    if (mode === 'VIE')
+    {
+        cam_move();
+        draw();
+        window.requestAnimationFrame(tick);
+    }
+};
+
 let set_alpha = function (strval)
 {
     let ival = Number(strval);
@@ -547,7 +771,8 @@ let resize = function ()
     canvas.height = window.innerHeight;
     cwidth  = canvas.width;
     cheight = canvas.height;
-    camera.aspect = cwidth / cheight;
+    camera.aspect     = cwidth / cheight;
+    camera_vie.aspect = cwidth / cheight;
     gl.viewport(0, 0, canvas.width, canvas.height);
 };
 
@@ -640,4 +865,5 @@ window.set_alpha = set_alpha;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
+document.addEventListener("keyup", handle_vie_key_up);
 window.addEventListener("resize", function() { resize(); draw(); });
