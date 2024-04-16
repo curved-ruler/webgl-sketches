@@ -41,7 +41,7 @@ let limits = [0,0,0,0];
 // 0 - CLR
 // 1 - ADD
 // 2 - DEL
-let mode = 0;
+let mode = 'CLR';
 
 let draw_grid = true;
 
@@ -326,7 +326,7 @@ let draw = function ()
     }
     */
     
-    if (true)
+    if (mode !== 'CLR')
     {
         gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(viewmat, modlmat), hmat));
         
@@ -387,7 +387,8 @@ let handle_mouse_move = function (event)
     else
     {
         if (!modlmat) return;
-        
+        if (mode === 'CLR') return;
+            
         let mp = mouse_pointer(event);
         if (mp[0] > 1000 || mp[0] < -1000 || mp[1] > 1000 || mp[1] < -1000) return;
         hmat = tr.translate( [Math.floor(mp[0]+0.5), Math.floor(mp[1]+0.5), 0] );
@@ -423,6 +424,7 @@ let handle_key_down = function ()
     }
     else if (event.key === "b" || event.key === "B")
     {
+        mode = 'ADD';
         if (floater >= -1 && floater < building_count-1)
         {
             ++floater;
@@ -435,6 +437,7 @@ let handle_key_down = function ()
     }
     else if (event.key === "r" || event.key === "R")
     {
+        mode = 'ADD';
         if (floater >= building_count && floater < models.length-1)
         {
             ++floater;
@@ -447,6 +450,13 @@ let handle_key_down = function ()
     }
     else if (event.key === "d" || event.key === "D")
     {
+        mode = 'DEL'
+        floater = -1;
+        draw();
+    }
+    else if (event.key === "c" || event.key === "C")
+    {
+        mode = 'CLR'
         floater = -1;
         draw();
     }
