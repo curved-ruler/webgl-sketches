@@ -41,6 +41,7 @@ let limits = [0,0,0,0];
 // 0 - CLR
 // 1 - ADD
 // 2 - DEL
+// 3 - MOV
 let mode = 'CLR';
 
 let draw_grid = true;
@@ -260,7 +261,41 @@ let draw_floater = function (i)
         
         gl.disable(gl.POLYGON_OFFSET_FILL);
     }
-}
+};
+let draw_piece = function (m)
+{
+    let vmm = tr.view(camera);
+    let pmm = tr.persp(camera);
+    
+    let mm = tr.rotz(rotation);
+    mm = m4.mul(tr.rotz(m.r), mm);
+    mm = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis), mm);
+    mm = m4.mul(tr.scale(scale), mm);
+    
+    gl.uniformMatrix4fv(glprog.p,  true, pmm);
+    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(vmm, mm), m.m));
+    
+    if (objtype === 1)
+    {
+        gl.bindBuffer(gl.ARRAY_BUFFER, models[m.i].linbuf);
+        gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 5*4, 0*4);
+        gl.vertexAttribPointer(glprog.tex, 2, gl.FLOAT, false, 5*4, 3*4);
+        gl.drawArrays(gl.LINES, 0, models[m.i].lines.length / 5);
+    }
+    
+    if (objtype >= 2)
+    {
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(1, 1);
+        
+        gl.bindBuffer(gl.ARRAY_BUFFER, models[m.i].tribuf);
+        gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 5*4, 0*4);
+        gl.vertexAttribPointer(glprog.tex, 2, gl.FLOAT, false, 5*4, 3*4);
+        gl.drawArrays(gl.TRIANGLES, 0, models[m.i].tris.length / 5);
+        
+        gl.disable(gl.POLYGON_OFFSET_FILL);
+    }
+};
 let draw = function ()
 {
     if (!gl || !glprog.bin) return;
@@ -290,7 +325,6 @@ let draw = function ()
     gl.uniform1i(glprog.sampler, 0);
     
     //gl.uniform1f(glprog.alpha, alpha);
-    
     
     if (draw_grid && grid.lines.length > 0)
     {
@@ -326,7 +360,12 @@ let draw = function ()
     }
     */
     
-    if (mode !== 'CLR')
+    for (let i=0 ; i<grid.models.length ; ++i)
+    {
+        draw_piece(grid.models[i]);
+    }
+    
+    if (mode === 'ADD' || mode === 'DEL')
     {
         gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(viewmat, modlmat), hmat));
         
@@ -365,6 +404,12 @@ let handle_mouse_down = function (event)
 {
     grabbed = 1;
     rotdir = (axis < 90) || (axis > 270);
+    
+    if (mode === 'ADD' && event.button === 0)
+    {
+        grid.models.push( { i:floater, m:hmat, r:floater_rot } )
+        draw();
+    }
 };
 let handle_mouse_up = function (event)
 {
