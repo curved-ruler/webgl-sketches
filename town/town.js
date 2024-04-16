@@ -76,12 +76,12 @@ let camera = {
     aspect: 1
 };
 let camera_vie = {
-    pos   : [0, 0, 0.2],
+    pos   : [0.5, 0.5, 0.2],
     look  : [1, 0, 0],
     up    : [0, 0, 1],
-    near  : 0.1,
+    near  : 0.01,
     median: 10,
-    far   : 1000,
+    far   : 100,
     fovy  : Math.PI / 3,
     aspect: 1,
     
@@ -294,11 +294,11 @@ let draw_piece = function (m, c)
     let pmm = tr.persp(c);
     
     let mm = m4.init();
-    mm = m4.mul(tr.rotz(rotation), mm);
     mm = m4.mul(tr.rotz(m.rot), mm);
+    mm = m4.mul(tr.translate(m.pos), mm);
+    mm = m4.mul(tr.rotz(rotation), mm);
     mm = m4.mul(tr.rot(v3.cross(c.up, c.look), axis), mm);
     mm = m4.mul(tr.scale(scale), mm);
-    mm = m4.mul(tr.translate(m.pos), mm);
     
     gl.uniformMatrix4fv(glprog.p,  true, pmm);
     gl.uniformMatrix4fv(glprog.vm, true, m4.mul(vmm, mm));
@@ -401,7 +401,7 @@ let draw_vie_piece = function (m, c)
     let pmm = tr.persp(c);
     
     let mm = tr.rotz(m.rot);
-    mm = m4.mul(tr.scale(1), mm);
+    //mm = m4.mul(tr.scale(1), mm);
     mm = m4.mul(tr.translate(m.pos), mm);
     
     gl.uniformMatrix4fv(glprog.p,  true, pmm);
@@ -699,7 +699,7 @@ let handle_key_down = function (event)
     {
         mode = 'VIE';
         floater = -1;
-        camera_vie.pos  = [0, 0, 0.2];
+        camera_vie.pos  = [0.5, 0.5, 0.2];
         camera_vie.look = [1, 0, 0];
         camera_vie.up   = [0, 0, 1];
         
