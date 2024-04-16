@@ -293,15 +293,15 @@ let draw_piece = function (m, c)
     let vmm = tr.view(c);
     let pmm = tr.persp(c);
     
-    let mm = tr.rotz(rotation);
+    let mm = m4.init();
+    mm = m4.mul(tr.rotz(rotation), mm);
     mm = m4.mul(tr.rotz(m.rot), mm);
     mm = m4.mul(tr.rot(v3.cross(c.up, c.look), axis), mm);
     mm = m4.mul(tr.scale(scale), mm);
-    
-    let rotm = tr.translate(m.pos);
+    mm = m4.mul(tr.translate(m.pos), mm);
     
     gl.uniformMatrix4fv(glprog.p,  true, pmm);
-    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(vmm, mm), rotm));
+    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(vmm, mm));
     
     if (objtype === 1)
     {
@@ -402,11 +402,10 @@ let draw_vie_piece = function (m, c)
     
     let mm = tr.rotz(m.rot);
     mm = m4.mul(tr.scale(1), mm);
-    
-    let rotm = tr.translate(m.pos);
+    mm = m4.mul(tr.translate(m.pos), mm);
     
     gl.uniformMatrix4fv(glprog.p,  true, pmm);
-    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(vmm, mm), rotm));
+    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(vmm, mm));
     
     if (objtype === 1)
     {
