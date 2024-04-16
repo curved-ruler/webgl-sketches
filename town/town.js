@@ -563,8 +563,8 @@ let handle_mouse_move = function (event)
             camera_vie.look = nl;
         }
         
-        camera_vie.up   = v3.mmul(qx, camera.up);
-        camera_vie.look = v3.mmul(qx, camera.look);
+        camera_vie.up   = v3.mmul(qx, camera_vie.up);
+        camera_vie.look = v3.mmul(qx, camera_vie.look);
         
         cam_constrain();
     }
