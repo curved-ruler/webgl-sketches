@@ -3,21 +3,23 @@ import { gl_init }    from "./gl_init.js";
 import { shaders }    from "./shaders.js";
 import { m4, v3, tr } from "./matvec.js";
 
+import { saveAs } from './FileSaver.js';
+
 let gl      = null;
 let glprog  = null;
 let canvas  = null;
 let cwidth, cheight;
 
 let times    = [];
-let arr      = [];
 let timesbuf = null;
-let arrbuf   = null;
-let show_arr = false;
 let visited  = [];
 let vis      = [];
-let multiplier = 3131;   // 18
-let modulus    = 5041; // 901
+let multiplier = 18;  //4509;  //3152; // 18;
+let modulus    = 901; //40319; //5041; // 901;
 let starter    = 1;
+
+let flip = false;
+let flip_dom = null;
 
 let addsub     = 1;
 let muldiv     = 1.5;
@@ -27,9 +29,11 @@ let modulus_dom    = null;
 let addsub_dom     = null;
 let muldiv_dom     = null;
 
-let circn = 200;
-let circ  = [];
+let circn = 5;
+let circ     = [];
+let circbase = [];
 let circbuf  = null;
+let shape_dom = null;
 
 let coli  = 0;
 let bcol  = [[0.2, 0.2, 0.2], [1.0, 1.0, 1.0]];
@@ -40,13 +44,14 @@ let alpha_dom = null;
 
 let menu_hidden = false;
 
+let then = 0;
+let fpsi = 0;
+let fpss = [...Array(1000)];
+
 let proj = 0;
 let projmat, modlmat, viewmat;
 //let modinvmat;
-let scale    = 4;
-let axis     = 0;
-let rotation = 0;
-let rotdir   = true;
+let scale    = 3;
 let grabbed  = 0;
 let pan      = [0, 0, 0];
 
@@ -61,35 +66,24 @@ let camera = {
     fovy  : Math.PI / 3,
     aspect: 1
 };
-//let campix = 
+
 
 let vposx = function (a) { return Math.sin(a); };
 let vposy = function (a) { return Math.cos(a); };
 let vposz = function (a) { return a*0; };
-let arrow = function (a, b)
-{
-    let va  = (a === b) ? [0,0,0] : [vposx(a), vposy(a), vposz(a)];
-    let vb  = [vposx(b), vposy(b), vposz(b)];
-    let vab = v3.sub(va, vb);
-        vab = v3.normalize(vab);
-    let vc  = v3.add(vb, v3.cmul(v3.mmul(tr.rotz( 10), vab), 0.9*Math.PI / modulus));
-    let vd  = v3.add(vb, v3.cmul(v3.mmul(tr.rotz(-10), vab), 0.9*Math.PI / modulus));
-    
-    arr.push(vb[0], vb[1], vb[2], 0, 0, 0);
-    arr.push(vc[0], vc[1], vc[2], 0, 0, 0);
-    arr.push(vd[0], vd[1], vd[2], 0, 0, 0);
-};
+
+
 let rainbow = function (t)
 {
     let t2 = (t / 2) * 6;
     let v   = [Math.abs(((0.0 + t2) % 6.0) - 3.0) - 1.0,
                Math.abs(((4.0 + t2) % 6.0) - 3.0) - 1.0,
                Math.abs(((2.0 + t2) % 6.0) - 3.0) - 1.0 ];
-    
+
     let rgb = [Math.min(Math.max(v[0], 0.0), 1.0),
                Math.min(Math.max(v[1], 0.0), 1.0),
                Math.min(Math.max(v[2], 0.0), 1.0) ];
-    
+
     return [0.9 * 0.1 + rgb[0]*0.9,
             0.9 * 0.1 + rgb[1]*0.9,
             0.9 * 0.1 + rgb[2]*0.9 ];
@@ -97,15 +91,14 @@ let rainbow = function (t)
 
 let compute_matrices = function ()
 {
-    modlmat = tr.rotz(rotation);
-    modlmat = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis), modlmat);
+    modlmat = m4.init();
     modlmat = m4.mul(tr.translate(pan), modlmat);
     modlmat = m4.mul(tr.scale(scale), modlmat);
-    
+
     //modinvmat = tr.scale(1/scale);
     //modinvmat = m4.mul(tr.rotz(-rotation), modinvmat);
     //modinvmat = m4.mul(tr.roty(-axis), modinvmat);
-    
+
     viewmat = tr.view(camera);
     projmat = m4.init();
     if (proj === 0)
@@ -117,77 +110,126 @@ let compute_matrices = function ()
         projmat = tr.persp(camera);
     }
 };
+
 let make_circ = function ()
 {
-    let a = 0;
-    let da = 2*Math.PI / circn;
-    
-    for (let i=0 ; i<circn ; ++i)
+    let delta = 2*Math.PI / circn;
+
+    circbase = [];
+    let a  = 0;
+    let da = 2*Math.PI / modulus;
+
+    for (let i=0 ; i<modulus ; ++i)
     {
-        circ.push(vposx(a),    vposy(a),    vposz(a),    0, 0, 0);
-        circ.push(vposx(a+da), vposy(a+da), vposz(a+da), 0, 0, 0);
+        let j = Math.floor(a/delta);
+
+        let x = [1, 0, Math.sin(a), Math.sin(j*delta), Math.sin((j+1)*delta)];
+        let y = [1, 0, Math.cos(a), Math.cos(j*delta), Math.cos((j+1)*delta)];
+
+        let pxn = (x[1]*y[2] - y[1]*x[2])*(x[3]-x[4]) - (x[1]-x[2])*(x[3]*y[4] - y[3]*x[4]);
+        let pyn = (x[1]*y[2] - y[1]*x[2])*(y[3]-y[4]) - (y[1]-y[2])*(x[3]*y[4] - y[3]*x[4]);
+        let den = (x[1]-x[2])*(y[3]-y[4]) - (y[1]-y[2])*(x[3]-x[4]);
+
+        if (circn > 2 && Math.abs(den) > 0.0001) circbase.push(pxn/den, pyn/den, 0);
+        else                                     circbase.push(Math.sin(a), Math.cos(a), 0);
         a += da;
     }
     
+    
+    if (flip)
+    {
+        let cbn = circbase.length/3;
+        let j = cbn-1;
+        for (let i=Math.floor(cbn/2) ; i<cbn ; ++i)
+        {
+            if (i >= j) break;
+            
+            let tmp = [circbase[i*3], circbase[i*3+1], circbase[i*3+2]];
+            circbase[i*3]   = circbase[(j)*3];
+            circbase[i*3+1] = circbase[(j)*3+1];
+            circbase[i*3+2] = circbase[(j)*3+2];
+            
+            circbase[(j)*3]   = tmp[0];
+            circbase[(j)*3+1] = tmp[1];
+            circbase[(j)*3+2] = tmp[2];
+            
+            --j;
+        }
+    }
+
+
+    circ = [];
+    let i=0;
+    for ( ; i<modulus-1 ; ++i)
+    {
+        circ.push(circbase[i*3],     circbase[i*3+1],     circbase[i*3+2],       0, 0, 0);
+        circ.push(circbase[(i+1)*3], circbase[(i+1)*3+1], circbase[(i+1)*3+2],   0, 0, 0);
+    }
+    circ.push(circbase[i*3],     circbase[i*3+1], circbase[i*3+2],  0, 0, 0);
+    circ.push(circbase[0],       circbase[0+1],   circbase[0+2],    0, 0, 0);
+
+    if (circbuf) gl.deleteBuffer(circbuf);
     circbuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, circbuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(circ), gl.STATIC_DRAW);
 };
+/*
+let make_circ = function ()
+{
+    if (circn < 0) make_circ_c();
+    else           make_circ_n();
+};
+*/
+
 let make_times = function ()
 {
+    make_circ();
+
     times = [];
     if (timesbuf) gl.deleteBuffer(timesbuf);
-    arr = [];
-    if (arrbuf) gl.deleteBuffer(arrbuf);
-    
+
     visited = [...Array(modulus)].map(x => false);
     vis     = [];
-    
+
     let X = starter % modulus;
     vis.push(X);
     let Y = Math.floor((X+10) * multiplier) % modulus;
-    
+
     do
     {
         visited[X] = true;
         visited[Y] = true;
         vis.push(Y);
-        
-        let a = X*2*Math.PI / modulus;
-        let b = Y*2*Math.PI / modulus;
-        times.push(vposx(a), vposy(a), vposz(a), 0, 0, 0);
-        times.push(vposx(b), vposy(b), vposz(b), 0, 0, 0);
-        arrow(a,b);
-        
+
+        times.push(circbase[X*3], circbase[X*3+1], circbase[X*3+2], 0, 0, 0);
+        times.push(circbase[Y*3], circbase[Y*3+1], circbase[Y*3+2], 0, 0, 0);
+        //arrow(a,b);
+
         X = Y;
         Y = Math.floor((X+10) * multiplier) % modulus;
     }
     while (!visited[Y]);
-    
+
     vis.push(Y);
-    let a = X*2*Math.PI / modulus;
-    let b = Y*2*Math.PI / modulus;
-    times.push(vposx(a), vposy(a), vposz(a), 0, 0, 0);
-    times.push(vposx(b), vposy(b), vposz(b), 0, 0, 0);
-    arrow(a,b);
-    
+    times.push(circbase[X*3], circbase[X*3+1], circbase[X*3+2], 0, 0, 0);
+    times.push(circbase[Y*3], circbase[Y*3+1], circbase[Y*3+2], 0, 0, 0);
+    //arrow(a,b);
+
+    console.log("L", times.length/6);
+
     timesbuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, timesbuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(times), gl.STATIC_DRAW);
-    
-    arrbuf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, arrbuf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW);
-    
+
     colour();
 };
 
 let colour = function ()
 {
     let c  = Math.floor(coli / 2);
-    
+
     gl.clearColor(bcol[c][0], bcol[c][1], bcol[c][2], 1.0);
-    
+
     for (let i=0 ; i<circ.length / 6 ; ++i)
     {
         circ[i*6 + 3] = ccol[c][0];
@@ -196,7 +238,7 @@ let colour = function ()
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, circbuf);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(circ), 0, circ.length);
-    
+
     if (coli % 2 === 0)
     {
         for (let i=0 ; i<times.length / 6 ; ++i)
@@ -204,13 +246,6 @@ let colour = function ()
             times[i*6 + 3] = lcol[c][0];
             times[i*6 + 4] = lcol[c][1];
             times[i*6 + 5] = lcol[c][2];
-        }
-        
-        for (let i=0 ; i<arr.length / 6 ; ++i)
-        {
-            arr[i*6 + 3] = lcol[c][0];
-            arr[i*6 + 4] = lcol[c][1];
-            arr[i*6 + 5] = lcol[c][2];
         }
     }
     else
@@ -220,47 +255,46 @@ let colour = function ()
             let va = [times[i*12 + 0], times[i*12 + 1], times[i*12 + 2]];
             let vb = [times[i*12 + 6], times[i*12 + 7], times[i*12 + 8]];
             let cc = rainbow(v3.length(v3.sub(va, vb)));
-            
+
             times[i*12 +  3] = cc[0];
             times[i*12 +  4] = cc[1];
             times[i*12 +  5] = cc[2];
             times[i*12 +  9] = cc[0];
             times[i*12 + 10] = cc[1];
             times[i*12 + 11] = cc[2];
-            
-            //arr[i*18 +  0] = cc[];
-            //arr[i*18 +  1] = cc[];
-            //arr[i*18 +  2] = cc[];
-            arr[i*18 +  3] = cc[0];
-            arr[i*18 +  4] = cc[1];
-            arr[i*18 +  5] = cc[2];
-            //arr[i*18 +  6] = cc[];
-            //arr[i*18 +  7] = cc[];
-            //arr[i*18 +  8] = cc[];
-            arr[i*18 +  9] = cc[0];
-            arr[i*18 + 10] = cc[1];
-            arr[i*18 + 11] = cc[2];
-            //arr[i*18 + 12] = cc[];
-            //arr[i*18 + 13] = cc[];
-            //arr[i*18 + 14] = cc[];
-            arr[i*18 + 15] = cc[0];
-            arr[i*18 + 16] = cc[1];
-            arr[i*18 + 17] = cc[2];
         }
     }
-    
+
     gl.bindBuffer(gl.ARRAY_BUFFER, timesbuf);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(times), 0, times.length);
-    gl.bindBuffer(gl.ARRAY_BUFFER, arrbuf);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(arr), 0, arr.length);
 };
 
-let draw = function ()
+let draw = function (now)
 {
     if (!gl || !glprog.bin) return;
-    
+
+    /*
+    //let now = Date.now();
+    //console.log("N", now);
+    now *= 0.001;
+    let deltaTime = now - then;          // compute time since last frame
+    then = now;                            // remember time for next frame
+    let fps = 1 / deltaTime;
+    fpss[fpsi] = fps;
+
+    ++fpsi;
+    if (fpsi >= 1000)
+    {
+        fpsi = 0;
+        let f = 0;
+        for (let i=0 ; i<1000 ; ++i) { f += fpss[i]; }
+        f /= 1000;
+        console.log("fps", f);
+    }
+    */
+
     gl.useProgram(glprog.bin);
-    
+
     if (alpha < 0.99)
     {
         gl.enable(gl.BLEND);
@@ -272,34 +306,30 @@ let draw = function ()
         gl.disable(gl.BLEND);
         gl.enable(gl.DEPTH_TEST);
     }
-    
+
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    
+
     compute_matrices();
     gl.uniformMatrix4fv(glprog.p,  true, projmat);
     gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
-    
+
     gl.uniform1f(glprog.alpha, alpha);
-    
+
+    /*
     gl.bindBuffer(gl.ARRAY_BUFFER, circbuf);
     gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 2*3*4, 0*3*4);
     gl.vertexAttribPointer(glprog.col, 3, gl.FLOAT, false, 2*3*4, 1*3*4);
     gl.drawArrays(gl.LINES, 0, circ.length / 6);
-    
+    */
+
     gl.bindBuffer(gl.ARRAY_BUFFER, timesbuf);
     gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 2*3*4, 0*3*4);
     gl.vertexAttribPointer(glprog.col, 3, gl.FLOAT, false, 2*3*4, 1*3*4);
     gl.drawArrays(gl.LINES, 0, times.length / 6);
-    
-    if (show_arr)
-    {
-        gl.bindBuffer(gl.ARRAY_BUFFER, arrbuf);
-        gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 2*3*4, 0*3*4);
-        gl.vertexAttribPointer(glprog.col, 3, gl.FLOAT, false, 2*3*4, 1*3*4);
-        gl.drawArrays(gl.TRIANGLES, 0, arr.length / 6);
-    }
+
+    //requestAnimationFrame(draw);
 };
 
 let zoomin  = function () { scale *= 1.25; };
@@ -308,13 +338,12 @@ let handle_wheel = function (event)
 {
     if (event.deltaY < 0) zoomin();
     else                  zoomout();
-    
+
     draw();
 }
 let handle_mouse_down = function (event)
 {
     grabbed = 1;
-    rotdir = (axis < 90) || (axis > 270);
 };
 let handle_mouse_up = function (event)
 {
@@ -325,27 +354,17 @@ let handle_mouse_move = function (event)
 {
     if (grabbed === 1)
     {
-        if (event.ctrlKey)
-        {
-            axis -= event.movementY*0.25;
-            rotation += rotdir ? event.movementX*0.25 : event.movementX*-0.25;
-            
-            // Ensure [0,360]
-            axis = axis - Math.floor(axis/360.0)*360.0;
-            rotation = rotation - Math.floor(rotation/360.0)*360.0;
-        }
-        else
-        {
-            pan[0] += event.movementX/(scale*60);
-            pan[1] -= event.movementY/(scale*60);
-        }
-        
+        pan[0] += event.movementX/(scale*60);
+        pan[1] -= event.movementY/(scale*60);
         draw();
     }
 };
 
 let handle_key_down = function ()
 {
+    if (event.ctrlKey) { return; }
+    
+    
     if (event.key === "m" || event.key === "M")
     {
         if (menu_hidden)
@@ -359,33 +378,28 @@ let handle_key_down = function ()
             document.getElementById("menu").className = "hidden";
         }
     }
-    else if (event.key === "a" || event.key === "A")
-    {
-        show_arr = !show_arr;
-        draw();
-    }
     else if (event.key === "c" || event.key === "C")
     {
         ++coli; if (coli >= 4) { coli = 0; }
         colour();
         draw();
     }
+    /*
     else if (event.key === "i" || event.key === "I")
     {
         ++proj;
         if (proj > 2) { proj = 0; }
         draw();
     }
+    */
     else if (event.key === "s" || event.key === "S")
     {
-        window.alert("Visits:\n" + vis.join(', '));
+        let blob = new Blob([vis.join('\n')], {type: "text/plain"});
+        saveAs(blob, 'times.txt');        
     }
     else if (event.key === "F1")
     {
-        axis     = 0;
-        rotation = 0;
-        rotdir   = true;
-        scale    = 4;
+        scale    = 3;
         pan      = [0, 0, 0];
         draw();
     }
@@ -406,25 +420,48 @@ let handle_key_down = function ()
         mo_add();
     }
 };
+
+let set_alpha = function (strval)
+{
+    let ival = Number(strval);
+
+    if (isNaN(ival) || ival === undefined || ival === null) return;
+    if (ival < 0)   ival = 0;
+    if (ival > 1.0) ival = 1.0;
+
+    alpha = ival;
+    alpha_dom.blur();
+
+    draw();
+};
+let set_shape = function (strval)
+{
+    let ival = parseInt(strval);
+
+    if (isNaN(ival) || ival === undefined || ival === null) return;
+
+    //console.log("circn", ival);
+    circn = ival;
+    shape_dom.blur();
+    
+    make_times();
+    draw();
+};
+let set_flip = function (strval)
+{
+    flip = !flip;
+    flip_dom.blur();
+    
+    make_times();
+    draw();
+};
+
 let iclear = function ()
 {
     multiplier_dom.value = multiplier;
     modulus_dom.value    = modulus;
     addsub_dom.value     = addsub;
     muldiv_dom.value     = muldiv;
-};
-let set_alpha = function (strval)
-{
-    let ival = Number(strval);
-    
-    if (isNaN(ival) || ival === undefined || ival === null) return;
-    if (ival < 0)   ival = 0;
-    if (ival > 1.0) ival = 1.0;
-    
-    alpha = ival;
-    alpha_dom.blur();
-    
-    draw();
 };
 let mp_div = function () { let v2 = Math.floor(multiplier / muldiv); if (v2 > 1)       { multiplier = v2; iclear(); make_times(); draw(); } };
 let mp_sub = function () { let v2 =           (multiplier - addsub); if (v2 > 1)       { multiplier = v2; iclear(); make_times(); draw(); } };
@@ -444,7 +481,7 @@ let set_muldiv = function (sv) { let v2 = parseFloat(sv); if (v2 > 1 && v2 < 90)
 let resize = function ()
 {
     if (!canvas || !gl) return;
-    
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     cwidth  = canvas.width;
@@ -453,61 +490,77 @@ let resize = function ()
     gl.viewport(0, 0, canvas.width, canvas.height);
 };
 
-let gpu_init = function (canvas_id)
+let ui_init = function ()
 {
-    gl = gl_init.get_webgl2_context(canvas_id);
-    
-    glprog = gl_init.create_glprog(gl, shaders.version + shaders.vs, shaders.version + shaders.precision + shaders.fs);
-    
-    glprog.pos = gl.getAttribLocation(glprog.bin, "pos");
-    gl.enableVertexAttribArray(glprog.pos);
-    glprog.col = gl.getAttribLocation(glprog.bin, "col");
-    gl.enableVertexAttribArray(glprog.col);
-    
-    glprog.p       = gl.getUniformLocation(glprog.bin, "p");
-    glprog.vm      = gl.getUniformLocation(glprog.bin, "vm");
-    glprog.proj    = gl.getUniformLocation(glprog.bin, "proj");
-    glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
-    glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
-    
-    multiplier_dom       = document.getElementById('mp');
-    modulus_dom          = document.getElementById('mo');
-    addsub_dom           = document.getElementById('addsub');
-    muldiv_dom           = document.getElementById('muldiv');
-    
-    iclear();
-}
-
-let init = function ()
-{
-    document.removeEventListener("DOMContentLoaded", init);
-    
-    canvas = document.getElementById('canvas');
-    gpu_init('canvas');
-    
-    canvas.addEventListener("mousedown", handle_mouse_down);
-    canvas.addEventListener("mouseup",   handle_mouse_up);
-    canvas.addEventListener("mousemove", handle_mouse_move);
-    canvas.addEventListener("wheel",     handle_wheel);
-    canvas.addEventListener("keydown", handle_key_down);
-    
-    alpha_dom = document.getElementById('alpha');
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
     {
         if (opts[i].value == alpha) { opts.selectedIndex = i; }
     }
     
-    resize();
-    make_circ();
-    make_times();
+    opts = shape_dom.options;
+    for (let i=0 ; i<opts.length ; ++i)
+    {
+        if (opts[i].value == circn) { opts.selectedIndex = i; }
+    }
     
-    draw();
+    flip_dom.checked = flip;
+};
+
+let gpu_init = function (canvas_id)
+{
+    gl = gl_init.get_webgl2_context(canvas_id);
+
+    glprog = gl_init.create_glprog(gl, shaders.version + shaders.vs, shaders.version + shaders.precision + shaders.fs);
+
+    glprog.pos = gl.getAttribLocation(glprog.bin, "pos");
+    gl.enableVertexAttribArray(glprog.pos);
+    glprog.col = gl.getAttribLocation(glprog.bin, "col");
+    gl.enableVertexAttribArray(glprog.col);
+
+    glprog.p       = gl.getUniformLocation(glprog.bin, "p");
+    glprog.vm      = gl.getUniformLocation(glprog.bin, "vm");
+    glprog.proj    = gl.getUniformLocation(glprog.bin, "proj");
+    glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
+    glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
+
+    multiplier_dom       = document.getElementById('mp');
+    modulus_dom          = document.getElementById('mo');
+    addsub_dom           = document.getElementById('addsub');
+    muldiv_dom           = document.getElementById('muldiv');
+
+    iclear();
+}
+
+let init = function ()
+{
+    document.removeEventListener("DOMContentLoaded", init);
+
+    canvas = document.getElementById('canvas');
+    gpu_init('canvas');
+
+    canvas.addEventListener("mousedown", handle_mouse_down);
+    canvas.addEventListener("mouseup",   handle_mouse_up);
+    canvas.addEventListener("mousemove", handle_mouse_move);
+    canvas.addEventListener("wheel",     handle_wheel);
+    canvas.addEventListener("keydown", handle_key_down);
+
+    alpha_dom = document.getElementById('alpha');
+    shape_dom = document.getElementById('shape');
+    flip_dom  = document.getElementById('flip');
+    ui_init();
+
+    resize();
+    make_times();
+
+    requestAnimationFrame(draw);
 };
 
 window.starter = starter;
 
-window.set_alpha     = set_alpha;
+window.set_alpha = set_alpha;
+window.set_shape = set_shape;
+window.set_flip  = set_flip;
 
 window.mp_div = mp_div;
 window.mp_sub = mp_sub;

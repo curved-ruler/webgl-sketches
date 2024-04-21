@@ -43,10 +43,6 @@
                 <td>Show/Hide Menu</td>
             </tr>
             <tr>
-                <td class="left">A:</td>
-                <td>Toggle arrows</td>
-            </tr>
-            <tr>
                 <td class="left">C:</td>
                 <td>Switch colour</td>
             </tr>
@@ -62,14 +58,6 @@
                 <td class="left">Mouse wheel / drag:</td>
                 <td>Scale / Pan</td>
             </tr>
-            <!--tr>
-                <td class="left">I:</td>
-                <td>Toggle projection</td>
-            </tr>
-            <tr>
-                <td class="left">Ctrl + Mouse drag:</td>
-                <td>3D rotate</td>
-            </tr-->
             <tr>
                 <td class="left">Multipier:</td>
                 <td>
@@ -100,6 +88,24 @@
                 <td class="left">* / amount</td>
                 <td>
                   <input id="muldiv" type="text" size="8" onchange="set_muldiv(this.value)"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Shape:</td>
+                <td>
+                    <select id="shape" onchange="set_shape(this.value)">
+                        <option value="-1">Circle</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Flip half:</td>
+                <td>
+                    <input id="flip" type="checkbox" onchange="set_flip(this.value)">
                 </td>
             </tr>
             <tr>
