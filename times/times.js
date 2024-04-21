@@ -10,11 +10,15 @@ let glprog  = null;
 let canvas  = null;
 let cwidth, cheight;
 
+let F    = null;
+let Fstr = "return x1 * mul;";
+let Fdom = null;
+
 let times    = [];
 let timesbuf = null;
 let visited  = [];
 let vis      = [];
-let multiplier = 18;  //4509;  //3152; // 18;
+let multiplier = 51;  //4509;  //3152; // 18;
 let modulus    = 901; //40319; //5041; // 901;
 let starter    = 1;
 
@@ -191,28 +195,40 @@ let make_times = function ()
     visited = [...Array(modulus)].map(x => false);
     vis     = [];
 
-    let X = starter % modulus;
-    vis.push(X);
-    let Y = Math.floor((X+10) * multiplier) % modulus;
+    let X0 = 0;
+    let X1 = starter % modulus;
+    vis.push(X1);
+    let X2 = 0;
+    try
+    {
+        X2 = Math.floor(F(X1, X0, multiplier, modulus)) % modulus;
+    }
+    catch (err)
+    {
+        console.error("Func error!", err.message);
+        alert(err.message);
+        return;
+    }
 
     do
     {
-        visited[X] = true;
-        visited[Y] = true;
-        vis.push(Y);
+        visited[X1] = true;
+        visited[X2] = true;
+        vis.push(X2);
 
-        times.push(circbase[X*3], circbase[X*3+1], circbase[X*3+2], 0, 0, 0);
-        times.push(circbase[Y*3], circbase[Y*3+1], circbase[Y*3+2], 0, 0, 0);
+        times.push(circbase[X1*3], circbase[X1*3+1], circbase[X1*3+2], 0, 0, 0);
+        times.push(circbase[X2*3], circbase[X2*3+1], circbase[X2*3+2], 0, 0, 0);
         //arrow(a,b);
 
-        X = Y;
-        Y = Math.floor((X+10) * multiplier) % modulus;
+        X0 = X1;
+        X1 = X2;
+        X2 = Math.floor(F(X1, X0, multiplier, modulus)) % modulus;
     }
-    while (!visited[Y]);
+    while (!visited[X2]);
 
-    vis.push(Y);
-    times.push(circbase[X*3], circbase[X*3+1], circbase[X*3+2], 0, 0, 0);
-    times.push(circbase[Y*3], circbase[Y*3+1], circbase[Y*3+2], 0, 0, 0);
+    vis.push(X2);
+    times.push(circbase[X1*3], circbase[X1*3+1], circbase[X1*3+2], 0, 0, 0);
+    times.push(circbase[X2*3], circbase[X2*3+1], circbase[X2*3+2], 0, 0, 0);
     //arrow(a,b);
 
     console.log("L", times.length/6);
@@ -362,6 +378,7 @@ let handle_mouse_move = function (event)
 
 let handle_key_down = function ()
 {
+    if (document.activeElement === Fdom) { return; }
     if (event.ctrlKey) { return; }
     
     
@@ -421,6 +438,26 @@ let handle_key_down = function ()
     }
 };
 
+
+let setf = function ()
+{
+    Fstr = Fdom.value;
+    console.log("FF", Fstr);
+    
+    try
+    {
+        F = Function('x1', 'x0', 'mul', 'mod', Fstr);
+    }
+    catch (err)
+    {
+        console.error("Func error!", err.message);
+        alert(err.message);
+        return;
+    }
+    
+    make_times();
+    draw();
+};
 let set_alpha = function (strval)
 {
     let ival = Number(strval);
@@ -505,6 +542,8 @@ let ui_init = function ()
     }
     
     flip_dom.checked = flip;
+    
+    Fdom.value = Fstr;
 };
 
 let gpu_init = function (canvas_id)
@@ -544,11 +583,14 @@ let init = function ()
     canvas.addEventListener("mousemove", handle_mouse_move);
     canvas.addEventListener("wheel",     handle_wheel);
     canvas.addEventListener("keydown", handle_key_down);
-
+    
+    Fdom      = document.getElementById("func");
     alpha_dom = document.getElementById('alpha');
     shape_dom = document.getElementById('shape');
     flip_dom  = document.getElementById('flip');
     ui_init();
+    
+    setf();
 
     resize();
     make_times();
@@ -561,6 +603,8 @@ window.starter = starter;
 window.set_alpha = set_alpha;
 window.set_shape = set_shape;
 window.set_flip  = set_flip;
+
+window.setf  = setf;
 
 window.mp_div = mp_div;
 window.mp_sub = mp_sub;

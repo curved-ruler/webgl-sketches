@@ -79,15 +79,23 @@
                 </td>
             </tr>
             <tr>
-                <td class="left">+ - amount</td>
+                <td class="left">+- amount</td>
                 <td>
                   <input id="addsub" type="text" size="8" onchange="set_addsub(this.value)"/>
                 </td>
             </tr>
             <tr>
-                <td class="left">* / amount</td>
+                <td class="left">*/ amount</td>
                 <td>
                   <input id="muldiv" type="text" size="8" onchange="set_muldiv(this.value)"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">F(x1,x0,mul,mod):</br>Javascript</td>
+                <td>
+                    <textarea id="func" type="text" rows="3" cols="30"></textarea>
+                    <br/>
+                    <button onclick="setf()">Set F()</button>
                 </td>
             </tr>
             <tr>
