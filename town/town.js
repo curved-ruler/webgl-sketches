@@ -54,7 +54,7 @@ let alpha_dom = null;
 
 let menu_hidden = false;
 
-let objtype = 1;
+let objtype = 2;
 let proj = 1;
 let projmat, modlmat, viewmat, modinvmat;
 let scale    = 1;
@@ -132,26 +132,40 @@ var ray_zero_plane = function (p, v)
     return v3.mmul(modinvmat, v3.add(p, v3.cmul(v, lambda)));
 }
 
-var mouse_pointer = function (event)
+let mouse_pointer = function (event)
 {
-    var rect = canvas.getBoundingClientRect();
-    var cw2  = cwidth/2;
-    var ch2  = cheight/2;
+    compute_matrices();
     
-    var x = (           event.clientX - rect.left  - cw2) / ch2; // [-asp,asp] >
-    var y = (cheight - (event.clientY - rect.top)  - ch2) / ch2; // [ -1,  1]  ^
+    let rect = canvas.getBoundingClientRect();
+    let cw2  = cwidth/2;
+    let ch2  = cheight/2;
     
-    var v = v3.init();
+    let x = (           event.clientX - rect.left  - cw2) / ch2; // [-asp,asp] >
+    let y = (cheight - (event.clientY - rect.top)  - ch2) / ch2; // [ -1,  1]  ^
+    
+    let v = v3.init();
     
     if (proj === 0 || proj === 1)
     {
-        var vx = v3.cmul(v3.cross(camera.look, camera.up), x * Math.tan(camera.fovy / 2 ));
-        var vy = v3.cmul(camera.up, y * Math.tan(camera.fovy / 2 ));
+        let look = v3.mmul(modinvmat, camera.look);
+        let up   = v3.mmul(modinvmat, camera.up);
+        let pos  = v3.mmul(modinvmat, camera.pos);
+        let vx = v3.cmul(v3.cross(look, up), x * Math.tan(camera.fovy / 2 ));
+        let vy = v3.cmul(up, y * Math.tan(camera.fovy / 2 ));
         
-        v = v3.add(camera.look, v3.add(vx, vy));
-        let p = v3.add(camera.pos, v3.add(vx, vy));
+        v = v3.add(look, v3.add(vx, vy));
         
-        return (proj === 1) ? ray_zero_plane(camera.pos, v) : ray_zero_plane(p, v);
+        if (proj === 0)
+        {
+            let p2 = v3.add(camera.pos, v3.add(vx, vy));
+            let lambda = -p2[2] / v[2];
+            return v3.add(pos, v3.cmul(v, lambda));
+        }
+        else
+        {
+            let lambda = -pos[2] / v[2];
+            return v3.add(pos, v3.cmul(v, lambda));
+        }
     }
     else if (proj === 2)
     {
@@ -345,8 +359,12 @@ let draw_editor = function ()
     gl.uniformMatrix4fv(glprog.p,  true, projmat);
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
-    
-    //if (!texture) { return; }
+    let bayer = [ 0/16,  8/16,  2/16, 10/16,
+                 12/16,  4/16, 14/16,  6/16,
+                  3/16, 11/16,  1/16,  9/16,
+                 15/16,  7/16, 13/16,  5/16];
+    gl.uniform1fv(glprog.bayer,  bayer);
+    //gl.uniform2fv(glprog.screen, [cwidth, cheight]);
     
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -814,6 +832,8 @@ let gpu_init = function (canvas_id)
     glprog.proj    = gl.getUniformLocation(glprog.bin, "proj");
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
     glprog.sampler = gl.getUniformLocation(glprog.bin, "texsampler");
+    glprog.bayer   = gl.getUniformLocation(glprog.bin, "bayer");
+    //glprog.screen  = gl.getUniformLocation(glprog.bin, "screen");
     
     
     let hgeom = [-0.5, -0.5, 0,   0.334371, 0.22,

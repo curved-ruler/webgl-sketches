@@ -100,12 +100,16 @@ void main ()
         
         fs_tex : `\
 uniform sampler2D texsampler;
+uniform float bayer[16];
 in      vec2  texint;
 out     vec4  fragcolor;
 
 void main ()
 {
-    fragcolor = texture(texsampler, texint);
+    vec4 col = texture(texsampler, texint);
+    int i = int(gl_FragCoord.y-0.5) % 4;
+    int j = int(gl_FragCoord.x-0.5) % 4;
+    fragcolor = floor(col*4.0 + bayer[i*4+j])/4.0;
 }
 `
 
