@@ -7,8 +7,8 @@ var menu_hidden = false;
 var grabbed  = -1;
 var mode     = 0;    // 0 - add, 1 - move, 2 - delete
 var curvemode  = 0;
-var curvemodes = ["Bezier", "Bezier4 patches", "Lagrange interpolaton"];
-var vectormode = [false, true, false];
+var curvemodes = ["Bezier", "Bezier4 patches", "Lagrange interpolaton", "Hermite", "Catmull-Rom"];
+var vectormode = [false, true, false, true, false];
 var canvas   = null;
 var context  = null;
 var pts = 20;
@@ -323,6 +323,60 @@ var calcLagrange = function ()
     calc_curvature();
 };
 
+let calcHermite = function ()
+{
+    curve = [];
+    
+    for (let i=0 ; i-1<controls.length/4 ; ++i)
+    {
+        let t   = 0;
+        let dt  = 1 / (pts-1);
+        
+        let m0x = controls[i*4+2] - controls[i*4];
+        let m0y = controls[i*4+3] - controls[i*4+1];
+        let m1x = controls[(i+1)*4+2] - controls[(i+1)*4];
+        let m1y = controls[(i+1)*4+3] - controls[(i+1)*4+1];
+        
+        for (let j=0 ; j<pts-1 ; ++j)
+        {
+            let cx = (2*t*t*t - 3*t*t + 1)*controls[(i)*4]   + (t*t*t - 2*t*t + t)*m0x + (-2*t*t*t + 3*t*t)*controls[(i+1)*4]   + (t*t*t - t*t)*m1x;
+            let cy = (2*t*t*t - 3*t*t + 1)*controls[(i)*4+1] + (t*t*t - 2*t*t + t)*m0y + (-2*t*t*t + 3*t*t)*controls[(i+1)*4+1] + (t*t*t - t*t)*m1y;
+            curve.push(cx);
+            curve.push(cy);
+            t += dt;
+        }
+    }
+    
+    calc_curvature();
+};
+
+let calcCatmullRom = function ()
+{
+    curve = [];
+    
+    for (let i=1 ; i-2<controls.length/2 ; ++i)
+    {
+        let t   = 0;
+        let dt  = 1 / (pts-1);
+        
+        let m0x = (controls[(i+1)*2]   - controls[(i-1)*2])   / 2;
+        let m0y = (controls[(i+1)*2+1] - controls[(i-1)*2+1]) / 2;
+        let m1x = (controls[(i+2)*2]   - controls[(i)*2])     / 2;
+        let m1y = (controls[(i+2)*2+1] - controls[(i)*2+1])   / 2;
+        
+        for (let j=0 ; j<pts-1 ; ++j)
+        {
+            let cx = (2*t*t*t - 3*t*t + 1)*controls[(i)*2]   + (t*t*t - 2*t*t + t)*m0x + (-2*t*t*t + 3*t*t)*controls[(i+1)*2]   + (t*t*t - t*t)*m1x;
+            let cy = (2*t*t*t - 3*t*t + 1)*controls[(i)*2+1] + (t*t*t - 2*t*t + t)*m0y + (-2*t*t*t + 3*t*t)*controls[(i+1)*2+1] + (t*t*t - t*t)*m1y;
+            curve.push(cx);
+            curve.push(cy);
+            t += dt;
+        }
+    }
+    
+    calc_curvature();
+};
+
 var calc_curve = function ()
 {
     switch (curvemode)
@@ -330,6 +384,8 @@ var calc_curve = function ()
         case 0 : calcBezier(); break;
         case 1 : calcB4(); break;
         case 2 : calcLagrange(); break;
+        case 3 : calcHermite(); break;
+        case 4 : calcCatmullRom(); break;
         default: break;
     }
 };
