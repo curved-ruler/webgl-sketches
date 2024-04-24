@@ -145,6 +145,52 @@ vec3 col(in float x, in float y)
 }
 `,
 
+groovy_a : `\
+vec3 col(in float x, in float y)
+{
+    float left  = sin(x) * sin(y/8.0) + cos(y/8.0) * 1.5;
+    return isint(left, 0.4) ? vec3(0.9,0.55,0.0) : vec3(0.11);
+}
+`,
+
+groovy_b : `\
+vec3 col(in float x, in float y)
+{
+    float left  = cos(x+y) / (sqrt(2.0) + cos(y-x));
+    float right = sin(y-x) / (sqrt(2.0) + cos(y-x));
+    return isint(left-right, 0.05) ? vec3(0.9,0.55,0.0) : vec3(0.11);
+}
+`,
+
+groovy_b_aa : `\
+// from @nex@chaos.social
+vec3 col(in float x, in float y)
+{
+    float left  = cos(x+y) / (sqrt(2.0) + cos(y-x));
+    float right = sin(y-x) / (sqrt(2.0) + cos(y-x));
+    float b = smoothstep(0.8, 1.0, sin((left - right)*5.0 + 1.5));
+    return vec3(0.9, 0.55, 0.16) * (b * 0.87 + 0.13);
+}
+`,
+
+groovy_c : `\
+// from @geoffl@mastodon.me.uk
+vec3 col(in float x, in float y)
+{
+        float s = 22.;
+        x=x/40.;
+        y=y/40.;
+        float c=(
+            cos(s*x*2.)
+           +cos(s*y)
+           +cos(s*sqrt(x*x/1.5+y*y))
+           +cos(s*(90.+sqrt(x*x*2.5+y*y*1.5)))
+           +cos(s*sqrt(x*x+y*y*3.))
+           );
+    return c-(floor(c*2.)/2.) < 0.1 ? vec3(0.9,0.55,0.0) : vec3(0.11);
+}
+`,
+
 cmp01 : `\
 // Complex phase diagram of fz = (z^3 - 1) * (z - 1)
 vec3 col(in float x, in float y)
