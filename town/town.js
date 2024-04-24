@@ -109,8 +109,8 @@ let compute_matrices = function ()
     modlmat = m4.mul(tr.scale(scale), modlmat);
     
     modinvmat = tr.scale(1/scale);
+    modinvmat = m4.mul(tr.rot(v3.cross(camera.up, camera.look), -axis), modinvmat);
     modinvmat = m4.mul(tr.rotz(-rotation), modinvmat);
-    modinvmat = m4.mul(tr.roty(-axis), modinvmat);
     
     viewmat = tr.view(camera);
     projmat = m4.init();
