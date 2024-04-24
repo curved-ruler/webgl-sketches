@@ -85,7 +85,7 @@ let camera_vie = {
     fovy  : Math.PI / 3,
     aspect: 1,
     
-    move_k : 0.01,
+    move_k : 0.003,
     rot_k  : 0.1,
     
     move_ws : 0,
@@ -817,7 +817,7 @@ let load_texture = function (name)
 
 let gpu_init = function (canvas_id)
 {
-    gl = gl_init.get_webgl2_context(canvas_id);
+    gl = gl_init.get_webgl2_context(canvas_id, {preserveDrawingBuffer: true, antialias: false});
     
     let vs_tex = shaders.vs_tex.replace('$FUNC$', shaders.func);
     glprog = gl_init.create_glprog(gl, shaders.version + vs_tex, shaders.version + shaders.precision + shaders.fs_tex);
