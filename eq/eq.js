@@ -92,8 +92,8 @@ let handle_mouse_move = function (event)
         mouse_pos.x = tr[0] * event.clientX + tr[1];
         mouse_pos.y = tr[2] * (cheight-event.clientY) + tr[3];
         
-        mouse_dom.x.innerHTML = mouse_pos.x;
-        mouse_dom.y.innerHTML = mouse_pos.y;
+        mouse_dom.x.innerHTML = mouse_pos.x.toFixed(9);
+        mouse_dom.y.innerHTML = mouse_pos.y.toFixed(9);
         draw();
     }
 };
