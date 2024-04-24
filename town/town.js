@@ -147,8 +147,8 @@ let mouse_pointer = function (event)
     
     if (proj === 0 || proj === 1)
     {
-        let look = v3.mmul(modinvmat, camera.look);
-        let up   = v3.mmul(modinvmat, camera.up);
+        let look = v3.normalize( v3.mmul(modinvmat, camera.look) );
+        let up   = v3.normalize( v3.mmul(modinvmat, camera.up) );
         let pos  = v3.mmul(modinvmat, camera.pos);
         let vx = v3.cmul(v3.cross(look, up), x * Math.tan(camera.fovy / 2 ));
         let vy = v3.cmul(up, y * Math.tan(camera.fovy / 2 ));
