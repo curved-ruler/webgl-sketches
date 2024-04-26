@@ -283,7 +283,7 @@ vec3 col(in float x, in float y)
         z = vec2(z.x*z.x - z.y*z.y + c.x, 2.0*z.x*z.y + c.y);
         if (length(z) > 2.0) break;
     }
-    float t = fract(float(i) / float(n) * 2.0);
+    float t = fract(float(i) / float(n) * 1.95);
     return hsv2rgb(vec3(0.1, 0.9, t)) + vec3(0.1*mand(x,y));
 }
 `,

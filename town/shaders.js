@@ -107,9 +107,9 @@ out     vec4  fragcolor;
 void main ()
 {
     vec4 col = texture(texsampler, texint);
-    int i = int(gl_FragCoord.y-0.5) % 4;
-    int j = int(gl_FragCoord.x-0.5) % 4;
-    fragcolor = floor(col + bayer[i*4+j]);
+    int i = int(gl_FragCoord.y) % 4;
+    int j = int(gl_FragCoord.x) % 4;
+    fragcolor = floor(col*4.0 + bayer[i*4+j]) / 4.0;
 }
 `
 
