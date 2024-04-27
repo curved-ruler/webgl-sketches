@@ -17,25 +17,25 @@ let highlight = null;
 let hmat = m4.init();
 
 let models = [
-    { type: 'B', name : 'building_A.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'B', name : 'building_B.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'B', name : 'building_C.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'B', name : 'building_D.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'B', name : 'building_E.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'B', name : 'building_F.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'B', name : 'building_G.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'B', name : 'building_H.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'B', name : 'tower_B.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'B', name : 'building_A.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'B', name : 'building_B.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'B', name : 'building_C.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'B', name : 'building_D.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'B', name : 'building_E.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'B', name : 'building_F.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'B', name : 'building_G.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'B', name : 'building_H.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 1, type: 'B', name : 'tower_B.obj', tris:[], lines:[], tribuf:null, linbuf:null },
     
-    { type: 'R', name : 'road_corner_curved.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'R', name : 'road_corner.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'R', name : 'road_junction.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'R', name : 'road_straight_crossing.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'R', name : 'road_straight.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'R', name : 'road_tsplit.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'R', name : 'road_corner_curved.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'R', name : 'road_corner.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'R', name : 'road_junction.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'R', name : 'road_straight_crossing.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'R', name : 'road_straight.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 0, type: 'R', name : 'road_tsplit.obj', tris:[], lines:[], tribuf:null, linbuf:null },
     
-    { type: 'T', name : 'trees_A.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { type: 'T', name : 'trees_B.obj', tris:[], lines:[], tribuf:null, linbuf:null }
+    { pack: 1, type: 'T', name : 'trees_A.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { pack: 1, type: 'T', name : 'trees_B.obj', tris:[], lines:[], tribuf:null, linbuf:null }
 ];
 
 let grid   = { models:[], lines:[], buf:null };
@@ -198,22 +198,22 @@ let make_grid = function ()
     {
         for (let x=limits[0]-1 ; x<=limits[1]+1 ; ++x)
         {
-            grid.lines.push(x-0.5,y-0.5,0,   0.334371, 0.22);
-            grid.lines.push(x+0.5,y-0.5,0,   0.334371, 0.219533);
+            grid.lines.push(x-0.5,y-0.5,0,   0.334371 * 0.5, 0.22);
+            grid.lines.push(x+0.5,y-0.5,0,   0.334371 * 0.5, 0.219533);
             
-            grid.lines.push(x-0.5,y-0.5,0,   0.334371, 0.22);
-            grid.lines.push(x-0.5,y+0.5,0,   0.334371, 0.219533);
+            grid.lines.push(x-0.5,y-0.5,0,   0.334371 * 0.5, 0.22);
+            grid.lines.push(x-0.5,y+0.5,0,   0.334371 * 0.5, 0.219533);
         }
     }
     for (let i=limits[0]-1 ; i<=limits[1]+1 ; ++i)
     {
-            grid.lines.push(i-0.5,limits[3]+1.5,0,   0.334371, 0.22);
-            grid.lines.push(i+0.5,limits[3]+1.5,0,   0.334371, 0.219533);
+            grid.lines.push(i-0.5,limits[3]+1.5,0,   0.334371 * 0.5, 0.22);
+            grid.lines.push(i+0.5,limits[3]+1.5,0,   0.334371 * 0.5, 0.219533);
     }
     for (let i=limits[2]-1 ; i<=limits[3]+1 ; ++i)
     {
-            grid.lines.push(limits[1]+1.5,i-0.5,0,   0.334371, 0.22);
-            grid.lines.push(limits[1]+1.5,i+0.5,0,   0.334371, 0.219533);
+            grid.lines.push(limits[1]+1.5,i-0.5,0,   0.334371 * 0.5, 0.22);
+            grid.lines.push(limits[1]+1.5,i+0.5,0,   0.334371 * 0.5, 0.219533);
     }
     
     grid.buf = gl.createBuffer();
@@ -221,7 +221,7 @@ let make_grid = function ()
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(grid.lines), gl.STATIC_DRAW);
 };
 
-let fetch_objfile = function (y_up)
+let fetch_objfile = function ()
 {
     for (let i=0 ; i<models.length ; ++i)
     {
@@ -230,7 +230,7 @@ let fetch_objfile = function (y_up)
         {
             if (xhr.readyState === 4 && xhr.status === 200)
             {
-                let model = obj.create(xhr.responseText, 0.5, true);
+                let model = obj.create(xhr.responseText, 0.5, true, models[i].pack);
                 make_object(i, model);
             }
         }
@@ -870,12 +870,12 @@ let gpu_init = function (canvas_id)
     //glprog.screen  = gl.getUniformLocation(glprog.bin, "screen");
     
     
-    let hgeom = [-0.5, -0.5, 0,   0.334371, 0.22,
-                  0.5, -0.5, 0,   0.334371, 0.219533,
-                  0.5,  0.5, 0,   0.334371, 0.22,
-                  0.5,  0.5, 0,   0.334371, 0.22,
-                 -0.5,  0.5, 0,   0.334371, 0.219533,
-                 -0.5, -0.5, 0,   0.334371, 0.22];
+    let hgeom = [-0.5, -0.5, 0,   0.334371 * 0.5, 0.22,
+                  0.5, -0.5, 0,   0.334371 * 0.5, 0.219533,
+                  0.5,  0.5, 0,   0.334371 * 0.5, 0.22,
+                  0.5,  0.5, 0,   0.334371 * 0.5, 0.22,
+                 -0.5,  0.5, 0,   0.334371 * 0.5, 0.219533,
+                 -0.5, -0.5, 0,   0.334371 * 0.5, 0.22];
     highlight = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, highlight);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(hgeom), gl.STATIC_DRAW);
@@ -904,7 +904,9 @@ let init = function ()
         if (opts[i].value == 0.5) { opts.selectedIndex = i; }
     }
     
-    load_texture("citybits_texture.png");
+    //load_texture("citybits_texture.png");
+    //load_texture("hexagons_medieval.png");
+    load_texture("tm.png");
     
     resize();
     make_grid();

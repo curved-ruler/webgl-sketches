@@ -5,7 +5,7 @@ let vind = function (str)
     return t;
 };
 
-let create = function (obj_str, scale, y_up)
+let create = function (obj_str, scale, y_up, pack)
 {
     //let eol = /\r\n|\n\r|\r/g;
     let lines = obj_str.replace('\r','\n').split('\n');
@@ -38,8 +38,16 @@ let create = function (obj_str, scale, y_up)
         }
         else if (tokens[0] === 'vt' || tokens[0] === 'VT')
         {
-            vt.push([parseFloat(tokens[1]),
-                     parseFloat(tokens[2])]);
+            if (pack === 0)
+            {
+                vt.push([parseFloat(tokens[1]) * 0.5,
+                         parseFloat(tokens[2])]);
+            }
+            else
+            {
+                vt.push([parseFloat(tokens[1]) * 0.5 + 0.5,
+                         parseFloat(tokens[2])]);
+            }
         }
         else if (tokens[0] === 'f' || tokens[0] === 'F')
         {
