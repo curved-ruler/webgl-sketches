@@ -16,23 +16,26 @@ let floater_rot = 0;
 let highlight = null;
 let hmat = m4.init();
 
-let building_count = 8;
 let models = [
-    { name : 'building_A.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'building_B.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'building_C.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'building_D.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'building_E.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'building_F.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'building_G.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'building_H.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'B', name : 'building_A.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'B', name : 'building_B.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'B', name : 'building_C.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'B', name : 'building_D.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'B', name : 'building_E.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'B', name : 'building_F.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'B', name : 'building_G.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'B', name : 'building_H.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'B', name : 'tower_B.obj', tris:[], lines:[], tribuf:null, linbuf:null },
     
-    { name : 'road_corner_curved.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'road_corner.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'road_junction.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'road_straight_crossing.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'road_straight.obj', tris:[], lines:[], tribuf:null, linbuf:null },
-    { name : 'road_tsplit.obj', tris:[], lines:[], tribuf:null, linbuf:null }
+    { type: 'R', name : 'road_corner_curved.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'R', name : 'road_corner.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'R', name : 'road_junction.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'R', name : 'road_straight_crossing.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'R', name : 'road_straight.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'R', name : 'road_tsplit.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    
+    { type: 'T', name : 'trees_A.obj', tris:[], lines:[], tribuf:null, linbuf:null },
+    { type: 'T', name : 'trees_B.obj', tris:[], lines:[], tribuf:null, linbuf:null }
 ];
 
 let grid   = { models:[], lines:[], buf:null };
@@ -678,26 +681,57 @@ let handle_key_down = function (event)
     if (event.key === "b" || event.key === "B")
     {
         mode = 'ADD';
-        if (floater >= -1 && floater < building_count-1)
-        {
-            ++floater;
-        }
-        else
+        
+        ++floater;
+        if (floater >= models.length || models[floater].type !== 'B')
         {
             floater = 0;
+            for (let i=0 ; i<models.length ; ++i)
+            {
+                if (models[i].type === 'B')
+                {
+                    floater = i;
+                    break;
+                }
+            }
         }
         draw();
     }
     else if (event.key === "r" || event.key === "R")
     {
         mode = 'ADD';
-        if (floater >= building_count && floater < models.length-1)
+        
+        ++floater;
+        if (floater >= models.length || models[floater].type !== 'R')
         {
-            ++floater;
+            floater = 0;
+            for (let i=0 ; i<models.length ; ++i)
+            {
+                if (models[i].type === 'R')
+                {
+                    floater = i;
+                    break;
+                }
+            }
         }
-        else
+        draw();
+    }
+    else if (event.key === "t" || event.key === "T")
+    {
+        mode = 'ADD';
+        
+        ++floater;
+        if (floater >= models.length || models[floater].type !== 'T')
         {
-            floater = building_count;
+            floater = 0;
+            for (let i=0 ; i<models.length ; ++i)
+            {
+                if (models[i].type === 'T')
+                {
+                    floater = i;
+                    break;
+                }
+            }
         }
         draw();
     }
