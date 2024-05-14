@@ -489,7 +489,7 @@ let einstein_hat_t = function (data_csv)
             let vv = [parseFloat(tokens[0]) * s, parseFloat(tokens[1]) * s, 0];
             
             let va = v3.sub(vv, cent);
-            let vb = v3.cmul(v3.normalize(v3.sub(cent, vv)), G);
+            let vb = v3.cmul(v3.normalize(va), G);
             let vc = v3.add(cent, v3.sub(va,vb));
             
             model_in.verts.push(vc[0]);
