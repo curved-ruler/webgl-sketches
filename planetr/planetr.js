@@ -101,6 +101,21 @@ let compute_matrices = function ()
 };
 
 
+let fetch_file = function (name, ready)
+{
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function()
+    {
+        if (xhr.readyState === 4 && xhr.status === 200)
+        {
+            ready(xhr.responseText);
+        }
+    }
+    xhr.open('GET', name, true);
+    xhr.send(null);
+};
+
+
 let square_t = function ()
 {
     model_in.verts = [...Array((N)*(N)*8)];
@@ -429,6 +444,84 @@ let cairo_t = function ()
     transform();
 };
 
+let einstein_hat_t = function (data_csv)
+{
+    model_in.verts = [];
+    model_in.lines = [];
+    
+    let lines = data_csv.split('\n');
+    
+    for (let i=0 ; i<lines.length/(14) ; ++i)
+    {
+        let gook  = true;
+        let max   = [100000,-100000,100000,-100000];
+        for (let j=0 ; j<14 ; ++j)
+        {
+            let tokens = lines[i*14 + j].split(',');
+            if (tokens.length < 2)
+            {
+                //console.error("Too few tokens in line");
+                gook = false;
+                break;
+            }
+            let vx = parseFloat(tokens[0]);
+            let vy = parseFloat(tokens[1]);
+            if (Math.abs(vx) > N*20 || Math.abs(vy) > N*20)
+            {
+                gook = false;
+                break;
+            }
+            
+            if (vx < max[0]) max[0] = vx;
+            if (vx > max[1]) max[1] = vx;
+            if (vy < max[2]) max[2] = vy;
+            if (vy > max[3]) max[3] = vy;
+        }
+        if (gook)
+        {
+        for (let j=0 ; j<14 ; ++j)
+        {
+            let s = A/50;
+            
+            let cent = [(max[1]*s-max[0]*s)/2+max[0]*s, (max[3]*s-max[2]*s)/2+max[2]*s, 0];
+            
+            let tokens = lines[i*14 + j].split(',');
+            let vv = [parseFloat(tokens[0]) * s, parseFloat(tokens[1]) * s, 0];
+            
+            let va = v3.sub(vv, cent);
+            let vb = v3.cmul(v3.normalize(v3.sub(cent, vv)), G);
+            let vc = v3.add(cent, v3.sub(va,vb));
+            
+            model_in.verts.push(vc[0]);
+            model_in.verts.push(vc[1]);
+        }
+        }
+    }
+    
+    for (let i=0 ; i<model_in.verts.length/28 ; ++i)
+    {
+        for (let j=0 ; j<14 ; ++j)
+        {
+            let jj = j===13 ? 0 : j+1;
+            model_in.lines.push(i*14+j);
+            model_in.lines.push(i*14+jj);
+        }
+    }
+        
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_in.verts), gl.DYNAMIC_DRAW);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(model_in.lines), gl.STATIC_DRAW);
+    
+    
+    console.log("V", model_in.verts.length, "L", model_in.lines.length);
+    
+    transform();
+    draw();
+};
+
 let set_tiling = function (t)
 {
     tiling = t;
@@ -452,6 +545,11 @@ let set_tiling = function (t)
     {
         cairo_t();
         draw();
+    }
+    else if (t == "4")
+    {
+        fetch_file("hats.csv", einstein_hat_t);
+        //draw();
     }
 };
 
@@ -593,7 +691,7 @@ let handle_wheel = function (event)
     
     transform();
     draw();
-}
+};
 let handle_mouse_down = function (event)
 {
     grabbed = 1;
@@ -609,7 +707,7 @@ let handle_mouse_move = function (event)
         //let y = 2 * Math.tan(camera.fovy/2) * camera.median;
         //let pixsize = (scale*y)/(cwidth*camera.aspect);
         
-        let lambda = (scale > 1) ? scale*0.0005 : scale*0.02;
+        let lambda = (scale > 1) ? scale*0.001 : scale*0.02;
         
         pan[0] += event.movementX * lambda;
         pan[1] -= event.movementY * lambda;
@@ -702,7 +800,7 @@ let set_col = function (bstr, lstr)
     lcol[0] = parseInt(lc[0]) / 255.0;
     lcol[1] = parseInt(lc[1]) / 255.0;
     lcol[2] = parseInt(lc[2]) / 255.0;
-}
+};
 let set_alpha = function (value)
 {
     let a2 = parseFloat(value);
@@ -718,7 +816,7 @@ let set_params = function ()
     set_col(Bcodom.value, Lcodom.value);
     set_alpha(Alfdom.value);
     set_tiling(tiling);
-}
+};
 
 let set_ui = function ()
 {
@@ -754,7 +852,7 @@ let gpu_init = function (canvas_id)
 
     vrtbuf = gl.createBuffer();
     linbuf = gl.createBuffer();
-}
+};
 
 let init = function ()
 {

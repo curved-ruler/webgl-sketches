@@ -30,7 +30,7 @@ let alpha_dom = null;
 
 let menu_hidden = false;
 
-let obj  = 2;
+let obj  = 1;
 let proj = 1;
 let projmat, modlmat, viewmat;
 let scale    = 1;
@@ -52,10 +52,7 @@ let camera = {
     rot_k  : 0.1,
     
     move_ws : 0,
-    move_ad : 0,
-    
-    move_touch : [0, 0],
-    look_touch : [0, 0]
+    move_ad : 0
 };
 let cam_constrain = function ()
 {
@@ -81,24 +78,6 @@ let cam_move = function ()
         d = v3.normalize(d);
         camera.pos = v3.add(camera.pos, v3.cmul(d, camera.move_k*camera.move_ad));
     }
-    
-    let a = camera.move_touch[0]-camera.move_touch[1];
-    if (a > 0.01 || a < -0.01)
-    {
-        camera.pos[0] += camera.look[0] * 0.0005*a;
-        camera.pos[1] += camera.look[1] * 0.0005*a;
-    }
-    
-    let b = camera.look_touch[0]-camera.look_touch[1];
-    if (b > 0.01 || b < -0.01)
-    {
-        let zi   = [0, 0, 1];
-        let qx = tr.rot(zi, 0.0005*b);
-        camera.up   = v3.mmul(qx, camera.up);
-        camera.look = v3.mmul(qx, camera.look);
-    }
-    
-    cam_constrain();
 };
 
 
@@ -255,7 +234,7 @@ let make_planet = function ()
         }
     }
     
-    let pldir = funk ? 'plfunk' : 'pl';
+    let pldir = funk ? 'plfunk4' : 'pl';
     fetch_terr(pldir + '/terr_ds_0_0.terr', 0, 0, planet.cx);
     fetch_terr(pldir + '/terr_ds_0_1.terr', 1, 0, planet.cx);
     fetch_terr(pldir + '/terr_ds_0_2.terr', 2, 0, planet.cx);
@@ -432,34 +411,6 @@ let handle_key_down = function (event)
         camera.move_ad = -1;
     }
 };
-
-let touchstart = function (event)
-{
-    if (event.touches.length === 1)
-    {
-        camera.look_touch = [event.touches[0].pageX, event.touches[0].pageX];
-        camera.move_touch = [event.touches[0].pageY, event.touches[0].pageY];
-    }
-};
-let touchend = function (event)
-{
-    camera.look_touch = [0, 0];
-    camera.move_touch = [0, 0];
-};
-let touchcancel = function (event)
-{
-    camera.look_touch = [0, 0];
-    camera.move_touch = [0, 0];
-};
-let touchmove = function (event)
-{
-    if (event.touches.length === 1)
-    {
-        camera.look_touch[1] = event.touches[0].pageX;
-        camera.move_touch[1] = event.touches[0].pageY;
-    }
-};
-
 let set_alpha = function (strval)
 {
     alpha = parseFloat(strval);
@@ -516,11 +467,6 @@ let init = function ()
     canvas.addEventListener("mousedown", handle_mouse_down);
     canvas.addEventListener("mouseup",   handle_mouse_up);
     canvas.addEventListener("mousemove", handle_mouse_move);
-    
-    canvas.addEventListener("touchstart",  touchstart);
-    canvas.addEventListener("touchend",    touchend);
-    canvas.addEventListener("touchcancel", touchcancel);
-    canvas.addEventListener("touchmove",   touchmove);
     
     alpha_dom = document.getElementById('alpha');
     let opts = alpha_dom.options;
