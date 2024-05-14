@@ -23,7 +23,7 @@ let get_webgl_context = function (canvas_id)
     return glc;
 };
 
-let get_webgl2_context = function (canvas_id)
+let get_webgl2_context = function (canvas_id, options)
 {
     let canvas = document.getElementById(canvas_id);
     let glc2;
@@ -36,7 +36,7 @@ let get_webgl2_context = function (canvas_id)
     }
     try
     {
-        glc2 = canvas.getContext('webgl2', {preserveDrawingBuffer: true});
+        glc2 = canvas.getContext('webgl2', options);
         //glc2 = canvas.getContext('webgl2');
     }
     catch (e)

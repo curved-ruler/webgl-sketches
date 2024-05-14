@@ -20,10 +20,24 @@ let planet = {
         }) )
 };
 
+let maps = [
+    {
+        N : 128,
+        F : ['pl/', 'plfunk/', 'terr_ds_'],
+        D : [3,3]
+    },
+    {
+        N : 128,
+        F : ['pl2/', 'plfunk2/', 'planet_'],
+        D : [5,5]
+    }
+];
+let mapi = 0;
+
 let funk = false;
 
 
-let bcol  = [0.2, 0.2, 0.2];
+let bcol  = [0.0, 0.0, 0.0];
 let tcol  = [1.0, 1.0, 1.0];
 let alpha = 1.0;
 let alpha_dom = null;
@@ -109,7 +123,7 @@ let getheight = function (pos)
     let i = clamp(Math.floor(pos[0] / planet.N), 0, planet.cx-1);
     let j = clamp(Math.floor(pos[1] / planet.N), 0, planet.cy-1);
     
-    if (planet.cells[j*3+i].tris.length < 1) return 0+camh;
+    if (planet.cells[j*planet.cx+i].tris.length < 1) return 0+camh;
     
     let x = pos[0] - Math.floor(pos[0]/planet.N)*planet.N;
     let y = pos[1] - Math.floor(pos[1]/planet.N)*planet.N;
@@ -118,10 +132,10 @@ let getheight = function (pos)
     let xx = x - Math.floor(x);
     let yy = y - Math.floor(y);
     
-    return planet.cells[j*3+i].tris[k*6*3 +    2]    * (1-xx) *   (yy) +
-           planet.cells[j*3+i].tris[k*6*3 +  6+2]    * (1-xx) * (1-yy) +
-           planet.cells[j*3+i].tris[k*6*3 + 12+2]    *   (xx) * (1-yy) +
-           planet.cells[j*3+i].tris[(k+1)*6*3 + 6+2] *   (xx) *   (yy);
+    return planet.cells[j*planet.cx+i].tris[k*6*3 +    2]    * (1-xx) *   (yy) +
+           planet.cells[j*planet.cx+i].tris[k*6*3 +  6+2]    * (1-xx) * (1-yy) +
+           planet.cells[j*planet.cx+i].tris[k*6*3 + 12+2]    *   (xx) * (1-yy) +
+           planet.cells[j*planet.cx+i].tris[(k+1)*6*3 + 6+2] *   (xx) *   (yy);
 };
 let cam_pos_h = function ()
 {
@@ -137,6 +151,8 @@ let fetch_terr = function (name, x, y, pnx)
     {
         if (xhr.readyState === 4 && xhr.status === 200)
         {
+            //console.log("XY", x, y);
+            
             let arrayBuffer = xhr.response;
             const view = new DataView(arrayBuffer);
             
@@ -217,33 +233,36 @@ let fetch_terr = function (name, x, y, pnx)
 
 let make_planet = function ()
 {
-    planet.ready = 0;
     for (let i=0 ; i<planet.cx*planet.cy ; ++i)
     {
-        planet.cells[i].tris   = [];
-        planet.cells[i].lines  = [];
-        //planet.cells[i].points = [];
         if (planet.cells[i].tbuf)
         {
             gl.deleteBuffer(planet.cells[i].tbuf);
             gl.deleteBuffer(planet.cells[i].lbuf);
             //gl.deleteBuffer(planet.cells[i].pbuf);
-            planet.cells[i].tbuf = null;
-            planet.cells[i].lbuf = null;
-            //planet.cells[i].pbuf = null;
         }
     }
     
-    let pldir = funk ? 'plfunk4' : 'pl';
-    fetch_terr(pldir + '/terr_ds_0_0.terr', 0, 0, planet.cx);
-    fetch_terr(pldir + '/terr_ds_0_1.terr', 1, 0, planet.cx);
-    fetch_terr(pldir + '/terr_ds_0_2.terr', 2, 0, planet.cx);
-    fetch_terr(pldir + '/terr_ds_1_0.terr', 0, 1, planet.cx);
-    fetch_terr(pldir + '/terr_ds_1_1.terr', 1, 1, planet.cx);
-    fetch_terr(pldir + '/terr_ds_1_2.terr', 2, 1, planet.cx);
-    fetch_terr(pldir + '/terr_ds_2_0.terr', 0, 2, planet.cx);
-    fetch_terr(pldir + '/terr_ds_2_1.terr', 1, 2, planet.cx);
-    fetch_terr(pldir + '/terr_ds_2_2.terr', 2, 2, planet.cx);
+    planet = {
+        N:       maps[mapi].N,
+        ready:   0,
+        cx:      maps[mapi].D[0],
+        cy:      maps[mapi].D[1],
+        cells: [...Array( maps[mapi].D[0] * maps[mapi].D[1] )].map( (i)=>(
+        {
+            tris:[],   lines:[],  points:[],
+            tbuf:null, lbuf:null, pbuf:null
+        }) )
+    };
+    
+    let pldir = funk ? maps[mapi].F[1] : maps[mapi].F[0];
+    for (let i=0 ; i<planet.cx ; ++i)
+    {
+        for (let j=0 ; j<planet.cy ; ++j)
+        {
+            fetch_terr(pldir + maps[mapi].F[2] + j + '_' + i + '.terr', i, j, planet.cx);
+        }
+    }
 }
 
 
@@ -276,7 +295,7 @@ let draw = function ()
     gl.uniform1f(glprog.aspect, camera.aspect);
     gl.uniform1f(glprog.alpha, alpha);
     
-    for (let i=0 ; i<9 ; ++i)
+    for (let i=0 ; i<planet.cx*planet.cy ; ++i)
     {
         if (planet.cells[i].lbuf !== null)
         {
@@ -381,6 +400,12 @@ let handle_key_down = function (event)
         ++obj;
         if (obj > 2) { obj = 1; }
     }
+    else if (event.key === "q" || event.key === "Q")
+    {
+        ++mapi;
+        if (mapi >= maps.length) { mapi = 0; }
+        make_planet();
+    }
     else if (event.key === "F8")
     {
         let image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
@@ -440,7 +465,7 @@ let resize = function ()
 
 let gpu_init = function (canvas_id)
 {
-    gl = gl_init.get_webgl2_context(canvas_id);
+    gl = gl_init.get_webgl2_context(canvas_id, {preserveDrawingBuffer: true, antialias: false});
     
     glprog = gl_init.create_glprog(gl, shaders.version + shaders.vs, shaders.version + shaders.precision + shaders.fs);
     
@@ -477,6 +502,7 @@ let init = function ()
     
     resize();
     
+    cam_constrain();
     make_planet();
 };
 
