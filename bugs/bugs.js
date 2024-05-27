@@ -196,8 +196,6 @@ let init_pos_2sq = function ()
         pos1[i*6 + 3*N*6 + 4] = N/4;
         pos1[i*6 + 3*N*6 + 5] = 0;
     }*/
-
-    //console.log("P", pos1);
 };
 let init_pos_circ = function ()
 {
@@ -220,6 +218,19 @@ let init_pos_circ2 = function ()
         pos1.push(5*Math.cos(2*Math.PI*i/N), 5*Math.sin(2*Math.PI*i/N), 0);
     }
 };
+let init_pos_grid = function ()
+{
+    pos1 = [...Array(N*N*3)];
+    pos2 = [...Array(N*N*3)];
+    
+    for (let i=0 ; i<N ; ++i)
+    for (let j=0 ; j<N ; ++j)
+    {
+        pos1[(i*N + j)*3 + 0] = -N/2 + i;
+        pos1[(i*N + j)*3 + 1] = -N/2 + j;
+        pos1[(i*N + j)*3 + 2] = 0;
+    }
+};
 
 let init_pos = function()
 {
@@ -234,12 +245,12 @@ let init_pos = function()
     else if (initpos === "circ")  { init_pos_circ(); }
     else if (initpos === "circ2") { init_pos_circ2(); }
     else if (initpos === "2sq")   { init_pos_2sq(); }
+    else if (initpos === "grid")  { init_pos_grid(); }
 }
 
 let step = function ()
 {
     let nn = pos1.length/3;
-    //console.log("N", nn);
     if (nn < 2) return;
 
     for (let i=0 ; i<nn ; ++i)
@@ -590,7 +601,6 @@ let set_n = function (strval)
     {
         if (nn > 1) N = nn;
     }
-    //console.log("N", N);
 };
 let toggle_click = function ()
 {
