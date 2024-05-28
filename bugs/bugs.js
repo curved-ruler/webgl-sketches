@@ -278,13 +278,20 @@ let step = function ()
                 pos1[3*i + 1] = pos2[3*i + 1] + dpos * v2[1];
                 pos1[3*i + 2] = pos2[3*i + 2] + dpos * v2[2];
                 break;
-
+            
             case "prop":
                 pos1[3*i    ] = pos2[3*i    ] + dpos * v[0];
                 pos1[3*i + 1] = pos2[3*i + 1] + dpos * v[1];
                 pos1[3*i + 2] = pos2[3*i + 2] + dpos * v[2];
                 break;
-
+            
+            case "propm":
+                if (vlen > 20) d = 0.1;
+                pos1[3*i    ] = pos2[3*i    ] + dpos*d * v[0];
+                pos1[3*i + 1] = pos2[3*i + 1] + dpos*d * v[1];
+                pos1[3*i + 2] = pos2[3*i + 2] + dpos*d * v[2];
+                break;
+            
             case "fixm":
                 if (dpos >  vlen) d = 1.0/vlen;
                 if (dpos < -vlen) d = 1.0/vlen;
@@ -293,14 +300,14 @@ let step = function ()
                 pos1[3*i + 2] = pos2[3*i + 2] + dpos*d * v2[2];
                 d = 1.0;
                 break;
-
+            
             case "fixs":
                 if (dpos >  vlen || dpos < -vlen) continue;
                 pos1[3*i    ] = pos2[3*i    ] + dpos * v2[0];
                 pos1[3*i + 1] = pos2[3*i + 1] + dpos * v2[1];
                 pos1[3*i + 2] = pos2[3*i + 2] + dpos * v2[2];
                 break;
-
+            
             default:
                 console.log("ERR step: " + steptype);
                 return;
