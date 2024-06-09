@@ -49,6 +49,26 @@ let q = {x:Math.abs(p.x+e)-e,
       length(Math.max(q.x, 0.0),Math.max(p.y, 0.0),Math.max(q.z, 0.0)) + Math.min(Math.max(q.x,p.y,q.z),0.0),
       length(Math.max(q.x, 0.0),Math.max(q.y, 0.0),Math.max(p.z, 0.0)) + Math.min(Math.max(q.x,q.y,p.z),0.0)
                  );`
+    },
+    
+    {
+        V: 0.0, Fstr:`\
+// https://iquilezles.org/articles/distfunctions/
+
+let cross = (a,b) => {
+    let p = [a,b];
+    let w = 10;
+    let r = 1;
+    p     = [Math.abs(p[0]), Math.abs(p[1])];
+    let m = Math.min(p[0]+p[1],w) * 0.5;
+    let l = [p[0]-m, p[1]-m];
+    return Math.sqrt(l[0]*l[0]+l[1]*l[1]) - r;
+};
+
+let p = [y,z,x];
+let o = 13;
+let q = [Math.sqrt(p[0]*p[0]+p[2]*p[2])-o, p[1]];
+return cross(q[0], q[1]);`
     }
 
 ];
@@ -75,7 +95,7 @@ let Fdom   = null;
 let Fstr   = FS[0].Fstr;
 
 let added_noise = 0;
-let warp        = false;
+let warp        = true;
 let A_noise     = 30;
 let L_noise     = 0.1;
 let rnd         = [];
@@ -159,7 +179,7 @@ let saturate = function (x)
     if (x > 1) return 1;
     if (x < 0) return 0;
     return x;
-}
+};
 
 let fxyz = function (x,y,z)
 {
@@ -168,15 +188,22 @@ let fxyz = function (x,y,z)
     
     if (warp)
     {
-        let p2 = [noise(p[0]*0.004 + x*0.004, p[1]*0.004, p[2]*0.004)*8,
-                  noise(p[0]*0.004, p[1]*0.004 + y*0.004, p[2]*0.004)*8,
-                  noise(p[0]*0.004, p[1]*0.004, p[2]*0.004 + z*0.004)*8];
+        let disp = [0.0, 5.2, 1.3,
+                    1.7, 9.2, 8.3,
+                    2.8, 1.1, 4.5,
+                    0.6, 3.9, 4.4,
+                    1.1, 5.0, 5.3,
+                    2.1, 1.9, 2.2];
+        let s = 0.04;
+        let p2 = [noise((p[0]+disp[0])*s, (p[1]+disp[1])*s, (p[2]+disp[2])*s)*8,
+                  noise((p[0]+disp[3])*s, (p[1]+disp[4])*s, (p[2]+disp[5])*s)*8,
+                  noise((p[0]+disp[6])*s, (p[1]+disp[7])*s, (p[2]+disp[8])*s)*8];
         p[0] = p2[0];
         p[1] = p2[1];
         p[2] = p2[2];
     }
     
-    //p[2] = saturate( (5-  p[2])*3 )*10; 
+    //p[2] = saturate( (3-  p[2]) )*10; 
     
     let oct = 1.0;
     for (let i=0 ; i<added_noise ; ++i)
