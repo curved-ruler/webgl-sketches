@@ -34,6 +34,17 @@ return [x+dt*dx, y+dt*dy, z+dt*dz];
     `,
     
     `\
+let dt = 0.02;
+let A  = 0.2;
+let B  = 0.2;
+let C  = 5.7;
+let dx = -y - z;
+let dy = x + A*y;
+let dz = B+z*(x-C);
+return [x+dt*dx, y+dt*dy, z+dt*dz];
+    `,
+    
+    `\
 return [x+Math.cos(x), y+Math.cos(y), z+Math.cos(z)];
     `
 ];
