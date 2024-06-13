@@ -45,7 +45,9 @@ return [x+dt*dx, y+dt*dy, z+dt*dz];
     `,
     
     `\
-return [x+Math.cos(x), y+Math.cos(y), z+Math.cos(z)];
+return [x + 10*Math.cos(x)*Math.sin(y),
+        y + 10*Math.cos(y)*Math.sin(z),
+        z + 10*Math.cos(z)*Math.sin(x)];
     `
 ];
 
@@ -439,6 +441,10 @@ let handle_mouse_move = function (event)
 };
 let handle_key_down = function (event)
 {
+    if (document.activeElement === Fdom) { return; }
+    if (event.ctrlKey) { return; }
+    
+    
     if (event.key === "m" || event.key === "M")
     {
         if (menu_hidden)
