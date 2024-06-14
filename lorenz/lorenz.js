@@ -64,6 +64,8 @@ let dd_dom = null;
 let Fdom   = null;
 let pr_dom = null;
 let alpha_dom = null;
+let bcol_dom  = null;
+let lcol_dom  = null;
 
 let menu_hidden = false;
 
@@ -382,6 +384,7 @@ let draw = function ()
         gl.enable(gl.DEPTH_TEST);
     }
     
+    gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     compute_matrices();
@@ -518,6 +521,30 @@ let set_pref = function (value)
     
     setf();
 };
+let set_bcol = function (str)
+{
+    let bc = str.split(',');
+    if (bc.length === 1) bc.push(bc[0], bc[0]);
+    if (bc.length === 2) bc.push(bc[1]);
+    
+    bcol[0] = parseInt(bc[0]) / 255.0;
+    bcol[1] = parseInt(bc[1]) / 255.0;
+    bcol[2] = parseInt(bc[2]) / 255.0;
+    
+    draw();
+};
+let set_lcol = function (str)
+{
+    let bc = str.split(',');
+    if (bc.length === 1) bc.push(bc[0], bc[0]);
+    if (bc.length === 2) bc.push(bc[1]);
+    
+    lcol[0] = parseInt(bc[0]) / 255.0;
+    lcol[1] = parseInt(bc[1]) / 255.0;
+    lcol[2] = parseInt(bc[2]) / 255.0;
+    
+    draw();
+};
 let set_alpha = function (strval)
 {
     let ival = Number(strval);
@@ -587,9 +614,6 @@ let init = function ()
     vrtbuf = gl.createBuffer();
     linbuf = gl.createBuffer();
     
-    gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
-    //gl.clearDepth(1); = default
-    
     canvas.addEventListener("mousedown", handle_mouse_down);
     canvas.addEventListener("mouseup",   handle_mouse_up);
     canvas.addEventListener("mousemove", handle_mouse_move);
@@ -600,6 +624,8 @@ let init = function ()
     Fdom   = document.getElementById("func");
     pr_dom = document.getElementById('presets');
     alpha_dom = document.getElementById('alpha');
+    bcol_dom  = document.getElementById('bcolin');
+    lcol_dom  = document.getElementById('lcolin');
     
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
@@ -607,6 +633,9 @@ let init = function ()
         if (opts[i].value == alpha) { opts.selectedIndex = i; }
     }
 
+    bcol_dom.value = "" + Math.floor(bcol[0]*255) + "," + Math.floor(bcol[1]*255) + "," + Math.floor(bcol[2]*255);
+    lcol_dom.value = "" + Math.floor(lcol[0]*255) + "," + Math.floor(lcol[1]*255) + "," + Math.floor(lcol[2]*255);
+    
     ip_dom.options.selectedIndex = 0;
     pr_dom.options.selectedIndex = 0;
     nn_dom.value = "" + N;
@@ -622,6 +651,8 @@ let init = function ()
 };
 
 
+window.set_bcol   = set_bcol;
+window.set_lcol   = set_lcol;
 window.set_alpha  = set_alpha;
 window.set_start  = set_start;
 window.set_n      = set_n;
