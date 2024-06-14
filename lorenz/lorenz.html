@@ -73,10 +73,20 @@
             <tr>
                 <td class="left">F presets:</td>
                 <td>
+                    <!-- from https://www.dynamicmath.xyz/strange-attractors/ -->
                     <select id="presets" onchange="set_pref(this.value)">
                         <option value="0">Lorenz</option>
                         <option value="1">Rössler</option>
-                        <option value="2">cos</option>
+                        <option value="2">Thomas</option>
+                        <option value="3">Langford</option>
+                        <option value="4">Dadras</option>
+                        <option value="5">Chen</option>
+                        <option value="6">Halvorsen</option>
+                        <option value="7">Rabinovich-Fabrikant</option>
+                        <option value="8">three-scroll</option>
+                        <option value="9">Sprott</option>
+                        <option value="10">four-wing</option>
+                        <option value="11">sin-cos</option>
                     </select>
                 </td>
             </tr>
@@ -92,11 +102,9 @@
                         <option value="2sq">sq 2</option>
                         <option value="grid">grid</option>
                     </select>
+                    N: <input id="nn" type="text" size="5" onchange="set_n(this.value)"/>
+                    Z: <input id="zz" type="text" size="5" onchange="set_z(this.value)"/>
                 </td>
-            </tr>
-            <tr>
-                <td class="left">N:</td>
-                <td><input id="nn" type="text" size="13" onchange="set_n(this.value)"/></td>
             </tr>
             <tr>
                 <td class="left">Back col: </td>

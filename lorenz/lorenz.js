@@ -17,6 +17,7 @@ let draw_pts   = true;
 let draw_lines = true;
 
 let N    = 30;
+let Z    = 0;
 let pos1 = [];
 let pos2 = [];
 
@@ -30,8 +31,7 @@ let C  = 28;
 let dx = A*(y - x);
 let dy = x*(C - z) - y;
 let dz = x*y - B*z;
-return [x+dt*dx, y+dt*dy, z+dt*dz];
-    `,
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
     
     `\
 let dt = 0.02;
@@ -41,14 +41,83 @@ let C  = 5.7;
 let dx = -y - z;
 let dy = x + A*y;
 let dz = B+z*(x-C);
-return [x+dt*dx, y+dt*dy, z+dt*dz];
-    `,
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
     
     `\
-return [x + 10*Math.cos(x)*Math.sin(y),
-        y + 10*Math.cos(y)*Math.sin(z),
-        z + 10*Math.cos(z)*Math.sin(x)];
-    `
+let dt = 0.2;
+let B  = 0.2;
+let dx = Math.sin(y) - B*x;
+let dy = Math.sin(z) - B*y;
+let dz = Math.sin(x) - B*z;
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
+    
+    `\
+let dt = 0.02;
+let dx = (z-0.7)*x - 3.5*y;
+let dy = 3.5*x + (z-0.7)*y;
+let dz = 0.6 + 0.95*z - z*z*z/3 -(x*x+y*y)*(1+0.25*z) + 0.1*z*x*x*x;
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
+    
+    `\
+let dt = 0.02;
+let dx = y - 3*x + 2.7*y*z;
+let dy = 1.7*y - x*z + z;
+let dz = 2*x*y - 9*z;
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
+    
+    `\
+let dt = 0.02;
+let dx = 5*x - y*z;
+let dy = -10*y + x*z;
+let dz = -0.38*z + x*y/3;
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
+    
+    `\
+let dt = 0.02;
+let A  = 1.89;
+let dx = -A*x - 4*y - 4*z - y*y;
+let dy = -A*y - 4*z - 4*x - z*z;
+let dz = -A*z - 4*x - 4*y - x*x;
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
+    
+    `\
+let dt = 0.02;
+let C  = 0.1;
+let dx = y*(z-1+x*x) + C*x;
+let dy = x*(3*z+1-x*x) + C*y;
+let dz = -2*z*(0.14 + x*y);
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
+    
+    `\
+let dt = 0.02;
+let dx = 32.48*(y-x) + 0.13*x*z;
+let dy = 45.84*x - x*z + 14.7*y;
+let dz = 1.18*z + x*y - 0.57*x*x;
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
+
+    `\
+let dt = 0.02;
+let A  = 2.07;
+let B  = 1.79;
+let dx = y + A*x*y + x*z;
+let dy = 1 - B*x*x + y*z;
+let dz = x - x*x - y*y;
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
+
+    `\
+let dt = 0.02;
+let A  = 0.2;
+let B  = 0.01;
+let C  = -0.4
+let dx = A*x + y*z;
+let dy = B*x + C*y - x*z;
+let dz = -z - x*y;
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
+    
+    `\
+return [x + 1*Math.cos(y)*Math.sin(z),
+        y + 1*Math.cos(z)*Math.sin(x),
+        z + 1*Math.cos(x)*Math.sin(y)];`
 ];
 
 
@@ -60,7 +129,7 @@ let alpha = 0.3;
 //let alpha_dom = null;
 let ip_dom = null;
 let nn_dom = null;
-let dd_dom = null;
+let zz_dom = null;
 let Fdom   = null;
 let pr_dom = null;
 let alpha_dom = null;
@@ -127,7 +196,7 @@ let init_pos_r = function ()
         let b = Math.random() * 10 - 5;
         pos1[3*i    ] = a;
         pos1[3*i + 1] = b;
-        pos1[3*i + 2] = 0;
+        pos1[3*i + 2] = Z;
     }
 };
 let init_pos_sq4 = function ()
@@ -137,21 +206,21 @@ let init_pos_sq4 = function ()
     pos1 = [...Array(nn*3)];
     pos2 = [...Array(nn*3)];
     
-    pos1[0] =  5;
-    pos1[1] =  5;
-    pos1[2] =  0;
+    pos1[0] =  N;
+    pos1[1] =  N;
+    pos1[2] =  Z;
     
-    pos1[3] = -5;
-    pos1[4] =  5;
-    pos1[5] =  0;
+    pos1[3] = -N;
+    pos1[4] =  N;
+    pos1[5] =  Z;
     
-    pos1[6] = -5;
-    pos1[7] = -5;
-    pos1[8] =  0;
+    pos1[6] = -N;
+    pos1[7] = -N;
+    pos1[8] =  Z;
     
-    pos1[9]  =  5;
-    pos1[10] = -5;
-    pos1[11] =  0;
+    pos1[9]  =  N;
+    pos1[10] = -N;
+    pos1[11] =  Z;
 };
 let init_pos_sq = function ()
 {
@@ -163,19 +232,19 @@ let init_pos_sq = function ()
 
     for (let i=0 ; i<nn ; ++i)
     {
-        pos1.push(5 - i*d, 5, 0);
+        pos1.push(5 - i*d, 5, Z);
     }
     for (let i=0 ; i<nn ; ++i)
     {
-        pos1.push(-5, 5 - i*d, 0);
+        pos1.push(-5, 5 - i*d, Z);
     }
     for (let i=0 ; i<nn ; ++i)
     {
-        pos1.push(-5 + i*d, -5, 0);
+        pos1.push(-5 + i*d, -5, Z);
     }
     for (let i=0 ; i<nn ; ++i)
     {
-        pos1.push(5, -5 + i*d, 0);
+        pos1.push(5, -5 + i*d, Z);
     }
 };
 let init_pos_2sq = function ()
@@ -187,42 +256,42 @@ let init_pos_2sq = function ()
     {
         pos1[i*6 + 0] = N/2 - i;
         pos1[i*6 + 1] = N/2;
-        pos1[i*6 + 2] = 0;
+        pos1[i*6 + 2] = Z;
         
         pos1[i*6 + 3] = -N/4;
         pos1[i*6 + 4] =  N/4 - i/2;
-        pos1[i*6 + 5] = 0;
+        pos1[i*6 + 5] = Z;
     }
     for (let i=0 ; i<N ; ++i)
     {
         pos1[i*6 + N*6 + 0] = -N/2;
         pos1[i*6 + N*6 + 1] =  N/2 - i;
-        pos1[i*6 + N*6 + 2] = 0;
+        pos1[i*6 + N*6 + 2] = Z;
         
         pos1[i*6 + N*6 + 3] = -N/4 + i/2;
         pos1[i*6 + N*6 + 4] = -N/4;
-        pos1[i*6 + N*6 + 5] = 0;
+        pos1[i*6 + N*6 + 5] = Z;
     }
     for (let i=0 ; i<N ; ++i)
     {
         pos1[i*6 + 2*N*6 + 0] = -N/2 + i;
         pos1[i*6 + 2*N*6 + 1] = -N/2;
-        pos1[i*6 + 2*N*6 + 2] = 0;
+        pos1[i*6 + 2*N*6 + 2] = Z;
         
         pos1[i*6 + 2*N*6 + 3] =  N/4;
         pos1[i*6 + 2*N*6 + 4] = -N/4 + i/2;
-        pos1[i*6 + 2*N*6 + 5] = 0;
+        pos1[i*6 + 2*N*6 + 5] = Z;
     }
     /*
     for (let i=0 ; i<N ; ++i)
     {
         pos1[i*6 + 3*N*6 + 0] =  N/2;
         pos1[i*6 + 3*N*6 + 1] = -N/2 + i;
-        pos1[i*6 + 3*N*6 + 2] = 0;
+        pos1[i*6 + 3*N*6 + 2] = Z;
         
         pos1[i*6 + 3*N*6 + 3] = N/4 - i/2;
         pos1[i*6 + 3*N*6 + 4] = N/4;
-        pos1[i*6 + 3*N*6 + 5] = 0;
+        pos1[i*6 + 3*N*6 + 5] = Z;
     }*/
 };
 let init_pos_circ = function ()
@@ -232,7 +301,7 @@ let init_pos_circ = function ()
 
     for (let i=0 ; i<N ; ++i)
     {
-        pos1.push(5*Math.cos(2*Math.PI*i/N), 5*Math.sin(2*Math.PI*i/N), 0);
+        pos1.push(5*Math.cos(2*Math.PI*i/N), 5*Math.sin(2*Math.PI*i/N), Z);
     }
 };
 let init_pos_circ2 = function ()
@@ -240,10 +309,10 @@ let init_pos_circ2 = function ()
     pos1 = [];
     pos2 = [];
 
-    pos1.push(0, 0, 0);
+    pos1.push(0, 0, Z);
     for (let i=0 ; i<N ; ++i)
     {
-        pos1.push(5*Math.cos(2*Math.PI*i/N), 5*Math.sin(2*Math.PI*i/N), 0);
+        pos1.push(5*Math.cos(2*Math.PI*i/N), 5*Math.sin(2*Math.PI*i/N), Z);
     }
 };
 let init_pos_grid = function ()
@@ -256,7 +325,7 @@ let init_pos_grid = function ()
     {
         pos1[(i*N + j)*3 + 0] = -N/2 + i;
         pos1[(i*N + j)*3 + 1] = -N/2 + j;
-        pos1[(i*N + j)*3 + 2] = 0;
+        pos1[(i*N + j)*3 + 2] = Z;
     }
 };
 
@@ -571,8 +640,14 @@ let set_n = function (strval)
     let nn = parseInt(strval);
     if (nn !== Infinity && !isNaN(nn))
     {
-        if (nn > 1) N = nn;
+        if (nn >= 1) N = nn;
     }
+};
+let set_z = function (strval)
+{
+    let zz = parseInt(strval);
+    if (isNaN(zz) || zz === undefined || zz === null) return;
+    Z = zz;
 };
 
 let resize = function ()
@@ -621,6 +696,7 @@ let init = function ()
 
     ip_dom = document.getElementById('start');
     nn_dom = document.getElementById('nn');
+    zz_dom = document.getElementById('zz');
     Fdom   = document.getElementById("func");
     pr_dom = document.getElementById('presets');
     alpha_dom = document.getElementById('alpha');
@@ -639,6 +715,7 @@ let init = function ()
     ip_dom.options.selectedIndex = 0;
     pr_dom.options.selectedIndex = 0;
     nn_dom.value = "" + N;
+    zz_dom.value = "" + Z;
     Fdom.value   = FS[0];
     
     setf();
@@ -656,6 +733,7 @@ window.set_lcol   = set_lcol;
 window.set_alpha  = set_alpha;
 window.set_start  = set_start;
 window.set_n      = set_n;
+window.set_z      = set_z;
 window.setf       = setf;
 window.set_pref   = set_pref;
 
