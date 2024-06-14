@@ -42,7 +42,7 @@ void main ()
     {
         gl_Position = tr6pp(vec4(pos, 1.0), // pos
                             vm,             // vm
-                            1.4,            // rad
+                            1.1,            // rad
                             aspect,         // aspect
                             0.1,            // near
                             1000.0          // far

@@ -76,13 +76,15 @@ let rotdir   = true;
 let grabbed  = 0;
 
 
+
 let camera = {
-    pos   : [0, 0, -20],
-    look  : [0, 0,   1],
-    up    : [0, 1,   0],
-    near  : 0.1,
-    median: 2,
-    far   : 100,
+    pos   : [50, 50, 50],
+    look  : v3.normalize([-1, -1, -1]),
+    up    : v3.normalize([-1, -1,  2]),
+    near  : 1.0,
+    median: 20,
+    //far   : 86,
+    far   : 200,
     fovy  : Math.PI / 3,
     aspect: 1
 };
@@ -467,6 +469,12 @@ let handle_key_down = function (event)
     else if (event.key === "o" || event.key === "O")
     {
         save_obj();
+    }
+    else if (event.key === "i" || event.key === "I")
+    {
+        ++proj;
+        if (proj > 2) proj = 0;
+        draw();
     }
     else if (event.key === "F8")
     {
