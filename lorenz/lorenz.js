@@ -63,6 +63,7 @@ let nn_dom = null;
 let dd_dom = null;
 let Fdom   = null;
 let pr_dom = null;
+let alpha_dom = null;
 
 let menu_hidden = false;
 
@@ -598,7 +599,13 @@ let init = function ()
     nn_dom = document.getElementById('nn');
     Fdom   = document.getElementById("func");
     pr_dom = document.getElementById('presets');
-    //console.log("B", cb_dom);
+    alpha_dom = document.getElementById('alpha');
+    
+    let opts = alpha_dom.options;
+    for (let i=0 ; i<opts.length ; ++i)
+    {
+        if (opts[i].value == alpha) { opts.selectedIndex = i; }
+    }
 
     ip_dom.options.selectedIndex = 0;
     pr_dom.options.selectedIndex = 0;

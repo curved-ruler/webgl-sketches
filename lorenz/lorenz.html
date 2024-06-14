@@ -10,12 +10,17 @@
   top:  0px;
   left: 0px;
 }
-#menu {
+#menu-ovf {
   position: absolute;
   top:  10px;
   left: 10px;
+  
+  height: 90%;
+  overflow-y: scroll;
+}
+#menu {
   padding: 10px;
-  background-color: rgb(20, 20, 20);
+  background-color: rgb(40, 40, 40);
   color: rgb(120, 255, 255);
 }
 .left {
@@ -31,6 +36,7 @@
     <body>
         <canvas id="canvas"></canvas>
         
+        <div id="menu-ovf">
         <table id="menu">
             <tr>
                 <td class="left">M:</td>
@@ -92,6 +98,26 @@
                 <td class="left">N:</td>
                 <td><input id="nn" type="text" size="13" onchange="set_n(this.value)"/></td>
             </tr>
+            <tr>
+                <td class="left">Alpha:</td>
+                <td>
+                    <select id="alpha" onchange="set_alpha(this.value)">
+                        <option value="0.005">0.005</option>
+                        <option value="0.01">0.01</option>
+                        <option value="0.02">0.02</option>
+                        <option value="0.03">0.03</option>
+                        <option value="0.04">0.04</option>
+                        <option value="0.05">0.05</option>
+                        <option value="0.1">0.1</option>
+                        <option value="0.2">0.2</option>
+                        <option value="0.3">0.3</option>
+                        <option value="0.4">0.4</option>
+                        <option value="0.5">0.5</option>
+                        <option value="1.0">1.0</option>
+                    </select>
+                </td>
+            </tr>
         </table>
+        </div>
     </body>
 </html>
