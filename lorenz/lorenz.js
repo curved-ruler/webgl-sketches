@@ -117,7 +117,7 @@ return [x + 1*Math.cos(y)*Math.sin(z),
 let initpos = "rnd";
 
 let bcol  = [0.1, 0.1, 0.1];
-let lcol  = [1.0, 1.0, 1.0];
+let lcol  = [1.0, 1.0, 0.0];
 let alpha = 0.3;
 //let alpha_dom = null;
 let ip_dom = null;
@@ -438,6 +438,7 @@ let draw = function ()
     {
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        //gl.blendFunc(gl.DST_ALPHA, gl.ONE_MINUS_DST_ALPHA);
         gl.disable(gl.DEPTH_TEST);
     }
     else
