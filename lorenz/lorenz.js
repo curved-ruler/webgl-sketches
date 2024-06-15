@@ -512,6 +512,7 @@ let handle_key_down = function (event)
     if (document.activeElement === Fdom) { return; }
     if (event.ctrlKey) { return; }
     
+    console.log("KEY", event.key);
     
     if (event.key === "m" || event.key === "M")
     {
@@ -550,6 +551,37 @@ let handle_key_down = function (event)
     else if (event.key === "Enter")
     {
         scale = 0.1;
+        axis     = 0;
+        rotation = 0;
+        rotdir   = true;
+        draw();
+    }
+    else if (event.key === "0")
+    {
+        camera.pos   = [50, 50, 50];
+        camera.look  = v3.normalize([-1, -1, -1]);
+        camera.up    = v3.normalize([-1, -1,  2]);
+        draw();
+    }
+    else if (event.key === "1")
+    {
+        camera.pos   = [70, 0, 0];
+        camera.look  = [-1, 0, 0];
+        camera.up    = [ 0, 0, 1];
+        draw();
+    }
+    else if (event.key === "2")
+    {
+        camera.pos   = [ 0,70, 0];
+        camera.look  = [ 0,-1, 0];
+        camera.up    = [ 0, 0, 1];
+        draw();
+    }
+    else if (event.key === "3")
+    {
+        camera.pos   = [ 0, 0,70];
+        camera.look  = [ 0, 0,-1];
+        camera.up    = [ 0, 1, 0];
         draw();
     }
 };
