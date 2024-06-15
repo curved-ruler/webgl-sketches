@@ -87,13 +87,6 @@ let dx = y*(z-1+x*x) + C*x;
 let dy = x*(3*z+1-x*x) + C*y;
 let dz = -2*z*(0.14 + x*y);
 return [x+dt*dx, y+dt*dy, z+dt*dz];`,
-    
-    `\
-let dt = 0.02;
-let dx = 32.48*(y-x) + 0.13*x*z;
-let dy = 45.84*x - x*z + 14.7*y;
-let dz = 1.18*z + x*y - 0.57*x*x;
-return [x+dt*dx, y+dt*dy, z+dt*dz];`,
 
     `\
 let dt = 0.02;

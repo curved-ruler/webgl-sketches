@@ -192,23 +192,24 @@ vec3 col(in float x, in float y)
 `,
 
 cmp01 : `\
-// Complex phase diagram of fz = (z^3 - 1) * (z - 1)
 vec3 col(in float x, in float y)
 {
-    float re = x*x*x*x - x*x*x - 6.0*x*x*y*y + 3.0*x*y*y - x + y*y*y*y + 1.0;
-    float im = 4.0*x*x*x*y - 3.0*x*x*y - 4.0*x*y*y*y + y*y*y - y;
-    float t = atan(im,re)/6.28 + 0.5;
+    vec2 z  = vec2(x,y);
+    vec2 z3 = z + cdiv(vec2(1.0, 0.0), z);
+    vec2 fz1 = vec2(1.0,0.0) - cmul(z3,z3)/2.0;
+    vec2 fz  = vec2(1.0,0.0) - cmul(fz1,fz1)/2.0;
+    float t = atan(fz.y,fz.x)/6.28 + 0.5;
     return geoffrey(t);
 }
 `,
 
 cmp01b : `\
-// complex phase diagram of fz = (z^3 - 1) * (z - 1)
 vec3 col (in float x, in float y)
 {
     vec2 z  = vec2(x,y);
-    vec2 z3 = cmul(cmul(z,z),z);
-    vec2 fz = cmul(z3 - vec2(1.0,0.0), z - vec2(1.0,0.0));
+    vec2 z3 = z + cdiv(vec2(1.0, 0.0), z);
+    vec2 fz1 = vec2(1.0,0.0) - cmul(z3,z3)/2.0;
+    vec2 fz = vec2(1.0,0.0) - cmul(fz1,fz1)/2.0;
     float t = atan(fz.y,fz.x)/6.28 + 0.5;
     return hsv2rgb(vec3(t,0.9,0.9));
 }
