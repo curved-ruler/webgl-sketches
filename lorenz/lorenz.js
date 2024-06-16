@@ -513,7 +513,7 @@ let handle_key_down = function (event)
     if (document.activeElement === Fdom) { return; }
     if (event.ctrlKey) { return; }
     
-    console.log("KEY", event.key);
+    //console.log("KEY", event.key);
     
     if (event.key === "m" || event.key === "M")
     {
@@ -557,28 +557,28 @@ let handle_key_down = function (event)
         rotdir   = true;
         draw();
     }
-    else if (event.key === "0")
+    else if (event.key === "w" || event.key === "W")
     {
         camera.pos   = [50, 50, 50];
         camera.look  = v3.normalize([-1, -1, -1]);
         camera.up    = v3.normalize([-1, -1,  2]);
         draw();
     }
-    else if (event.key === "1")
+    else if (event.key === "a" || event.key === "A")
     {
         camera.pos   = [70, 0, 0];
         camera.look  = [-1, 0, 0];
         camera.up    = [ 0, 0, 1];
         draw();
     }
-    else if (event.key === "2")
+    else if (event.key === "s" || event.key === "S")
     {
         camera.pos   = [ 0,70, 0];
         camera.look  = [ 0,-1, 0];
         camera.up    = [ 0, 0, 1];
         draw();
     }
-    else if (event.key === "3")
+    else if (event.key === "d" || event.key === "D")
     {
         camera.pos   = [ 0, 0,70];
         camera.look  = [ 0, 0,-1];
