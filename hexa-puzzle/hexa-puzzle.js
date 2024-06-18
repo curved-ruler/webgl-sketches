@@ -1,6 +1,8 @@
 
 import { vec2 } from "./matvec.js";
 
+import { saveAs } from './FileSaver.js';
+
 
 let menu_hidden = false;
 
@@ -28,6 +30,29 @@ let err = function (str)
     console.error('Error: ' + str);
     window.alert('Error:\n' + str);
 };
+let save_svg = function ()
+{
+    let objstring = `\
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+`;
+    let sc = scale;
+    let pl = [canvas.width / 2, canvas.height/2];
+    let cn = curve.length;
+        
+    for (let i=0 ; i<cn ; ++i)
+    {
+        if (curve[i][4] === 0) continue;
+        
+        objstring += `  <line x1="${curve[i][0]*sc+pl[0]}" y1="${curve[i][1]*sc+pl[1]}" x2="${curve[i][2]*sc+pl[0]}" y2="${curve[i][3]*sc+pl[1]}" stroke="black" stroke-width="2" />\n`;
+    }
+
+    objstring += "</svg>\n";
+
+    let blob = new Blob([objstring], {type: "text/plain"});
+    saveAs(blob, 'hexa-puzzle.svg');
+};
 
 let resize = function ()
 {
@@ -48,8 +73,8 @@ let draw = function ()
     
     for (let i=0 ; i<curve.length; ++i)
     {
-        if (curve[i][4] === 1) context.strokeStyle =`rgb(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256})`;
-        else                   context.strokeStyle =`rgba(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256}, 0.1)`;
+        if (curve[i][4] === 0) context.strokeStyle =`rgba(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256}, 0.1)`;
+        else                   context.strokeStyle =`rgb(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256})`;
         
         let p1 = scaleup([ curve[i][0], curve[i][1] ]);
         let p2 = scaleup([ curve[i][2], curve[i][3] ]);
@@ -101,10 +126,14 @@ let curve_insert = function (a,b,c,d)
 {
     for (let i=0 ; i<curve.length ; ++i)
     {
-        if (curve_check(curve[i], [a,b,c,d])) return;
-        if (curve_check(curve[i], [c,d,a,b])) return;
+        if (curve_check(curve[i], [a,b,c,d]) ||
+            curve_check(curve[i], [c,d,a,b]))
+        {
+            curve[i][4] = 1;
+            return;
+        }
     }
-    curve.push([a,b,c,d,1]);
+    curve.push([a,b,c,d,2]);
 };
 
 let calc_curve = function ()
@@ -156,8 +185,10 @@ let randomize_lines = function ()
 {
     for (let i=0 ; i<curve.length ; ++i)
     {
+        if (curve[i][4] === 2) continue;
+        
         let R = Math.random() * (P0+PL);
-        curve[i][4] =R < PL ? 1 : 0;
+        curve[i][4] = (R < PL) ? 1 : 0;
     }
     draw();
 }
@@ -174,7 +205,7 @@ let handleMouseDown = function (event)
     let p  = scaledn([event.clientX, event.clientY]);
     
     grab( p[0], p[1] );
-    if (grabbed >= 0)
+    if (grabbed >= 0 && curve[grabbed][4] != 2)
     {
         curve[grabbed][4] = (curve[grabbed][4] === 0) ? 1 : 0;
     }
@@ -189,6 +220,9 @@ let handleMouseUp = function (event)
 
 let handleKeyDown = function (event)
 {
+    if (event.ctrlKey) { return; }
+    
+    
     if (event.key === 'm' || event.key === 'M')
     {
         if (menu_hidden)
@@ -205,6 +239,10 @@ let handleKeyDown = function (event)
     else if (event.key === 'r' || event.key === 'R')
     {
         randomize_lines();
+    }
+    else if (event.key === 's' || event.key === 'S')
+    {
+        save_svg();
     }
 };
 
