@@ -16,9 +16,7 @@ let N = 3;
 let N_dom = null;
 let curve = [];
 
-let P0 = 1;
-let PL = 1;
-let P0_dom = null;
+let PL = 0.5;
 let PL_dom = null;
 
 let back_col = [1.0, 1.0, 1.0];
@@ -193,7 +191,7 @@ let randomize_lines = function ()
     {
         if (curve[i][4] === 2) continue;
         
-        let R = Math.random() * (P0+PL);
+        let R = Math.random();
         curve[i][4] = (R < PL) ? 1 : 0;
     }
     draw();
@@ -260,13 +258,12 @@ let handleWheel = function (event)
 
 
 
-let set_p = function ()
+let set_p = function (strval)
 {
-    let p0val = parseInt(P0_dom.value);
-    let plval = parseInt(PL_dom.value);
+    let plval = parseFloat(PL_dom.value);
     
-    if (isNaN(p0val) || p0val < 0 || isNaN(p0val) || p0val < 0) { return; }
-    P0 = p0val;
+    if (isNaN(plval) || plval < 0 || plval > 1) { return; }
+    
     PL = plval;
 };
 let set_n = function (strval)
@@ -274,6 +271,7 @@ let set_n = function (strval)
     let ival = parseInt(strval);
     
     if (isNaN(ival) || ival < 1) { return; }
+    
     N = ival;
     
     calc_curve();
@@ -294,8 +292,6 @@ let init = function ()
     
     N_dom = document.getElementById('n_in');
     N_dom.value = "" + N;
-    P0_dom = document.getElementById('p0_in');
-    P0_dom.value = "" + P0;
     PL_dom = document.getElementById('pl_in');
     PL_dom.value = "" + PL;
     
