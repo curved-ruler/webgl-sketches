@@ -14,8 +14,13 @@ let N = 3;
 let N_dom = null;
 let curve = [];
 
+let P0 = 1;
+let PL = 1;
+let P0_dom = null;
+let PL_dom = null;
+
 let back_col = [1.0, 1.0, 1.0];
-let line_col = [0.9, 0.5, 0.1];
+let line_col = [0.0, 0.0, 0.0];
 
 
 let err = function (str)
@@ -38,12 +43,15 @@ let draw = function ()
     context.fillStyle=`rgb(${back_col[0]*256}, ${back_col[1]*256}, ${back_col[2]*256})`;
     context.fillRect(0,0,canvas.width,canvas.height);
 
-    if (alpha > 0.98) context.strokeStyle =`rgb(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256})`;
-    else              context.strokeStyle =`rgba(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256}, ${alpha})`;
+    //if (alpha > 0.98) context.strokeStyle =`rgb(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256})`;
+    //else              context.strokeStyle =`rgba(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256}, ${alpha})`;
     
     for (let i=0 ; i<curve.length; ++i)
     {
-        let p1 = scaleup([ curve[i][0], curve[i][1]   ]);
+        if (curve[i][4] === 1) context.strokeStyle =`rgb(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256})`;
+        else                   context.strokeStyle =`rgba(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256}, 0.1)`;
+        
+        let p1 = scaleup([ curve[i][0], curve[i][1] ]);
         let p2 = scaleup([ curve[i][2], curve[i][3] ]);
             
         context.beginPath();
@@ -55,9 +63,9 @@ let draw = function ()
 
 let grab = function (x, y)
 {
-    let pixdiff = bog_size / scale;
+    let pixdiff = 1.0 / scale;
 
-    for (let i=0 ; i<controls.length/2 ; ++i)
+    for (let i=0 ; i<curve.length ; ++i)
     {
         if (Math.abs(controls[2*i]   - x) < pixdiff &&
             Math.abs(controls[2*i+1] - y) < pixdiff)
@@ -67,7 +75,24 @@ let grab = function (x, y)
     }
 };
 
-
+let curve_check  = function (la,lb)
+{
+    if (Math.abs(la[0]-lb[0]) < 0.001 &&
+        Math.abs(la[1]-lb[1]) < 0.001 &&
+        Math.abs(la[2]-lb[2]) < 0.001 &&
+        Math.abs(la[3]-lb[3]) < 0.001) { return true; }
+    
+    return false;
+};
+let curve_insert = function (a,b,c,d)
+{
+    for (let i=0 ; i<curve.length ; ++i)
+    {
+        if (curve_check(curve[i], [a,b,c,d])) return;
+        if (curve_check(curve[i], [c,d,a,b])) return;
+    }
+    curve.push([a,b,c,d,1]);
+};
 
 let calc_curve = function ()
 {
@@ -101,18 +126,28 @@ let calc_curve = function ()
         {
             for (let x=0 ; x < y ; ++x)
             {
-                curve.push([...vec2.add(v, va), ...vec2.add(v, vb), 1]);
-                curve.push([...vec2.add(v, vb), ...vec2.add(v, vc), 1]);
-                curve.push([...vec2.add(v, vc), ...vec2.add(v, vd), 1]);
-                curve.push([...vec2.add(v, vd), ...vec2.add(v, ve), 1]);
-                curve.push([...vec2.add(v, ve), ...vec2.add(v, vf), 1]);
-                curve.push([...vec2.add(v, vf), ...vec2.add(v, va), 1]);
+                curve_insert(...vec2.add(v, va), ...vec2.add(v, vb));
+                curve_insert(...vec2.add(v, vb), ...vec2.add(v, vc));
+                curve_insert(...vec2.add(v, vc), ...vec2.add(v, vd));
+                curve_insert(...vec2.add(v, vd), ...vec2.add(v, ve));
+                curve_insert(...vec2.add(v, ve), ...vec2.add(v, vf));
+                curve_insert(...vec2.add(v, vf), ...vec2.add(v, va));
                 
                 v = vec2.add(v, dv[dvi]);
             }
         }
     }
 };
+
+let randomize_lines = function ()
+{
+    for (let i=0 ; i<curve.length ; ++i)
+    {
+        let R = Math.random() * (P0+PL);
+        curve[i][4] =R < PL ? 1 : 0;
+    }
+    draw();
+}
 
 let scaledn = function (v) { return [(v[0] - (canvas.width/2)) / scale, (v[1] - (canvas.height/2)) / scale]; };
 let scaleup = function (v) { return [(v[0] * scale) + (canvas.width/2), (v[1] * scale) + (canvas.height/2)]; };
@@ -143,15 +178,7 @@ let handleMouseUp = function (event)
 
 let handleKeyDown = function (event)
 {
-    if (event.key === "w")
-    {
-        zoomin();
-    }
-    else if (event.key === "s")
-    {
-        zoomout();
-    }
-    else if (event.key === 'm' || event.key === 'M')
+    if (event.key === 'm' || event.key === 'M')
     {
         if (menu_hidden)
         {
@@ -164,6 +191,10 @@ let handleKeyDown = function (event)
             document.getElementById("menu").className = "hidden";
         }
     }
+    else if (event.key === 'r' || event.key === 'R')
+    {
+        randomize_lines();
+    }
 };
 
 let handleWheel = function (event)
@@ -174,6 +205,15 @@ let handleWheel = function (event)
 
 
 
+let set_p = function ()
+{
+    let p0val = parseInt(P0_dom.value);
+    let plval = parseInt(PL_dom.value);
+    
+    if (isNaN(p0val) || p0val < 0 || isNaN(p0val) || p0val < 0) { return; }
+    P0 = p0val;
+    PL = plval;
+};
 let set_n = function (strval)
 {
     let ival = parseInt(strval);
@@ -199,6 +239,10 @@ let init = function ()
     
     N_dom = document.getElementById('n_in');
     N_dom.value = "" + N;
+    P0_dom = document.getElementById('p0_in');
+    P0_dom.value = "" + P0;
+    PL_dom = document.getElementById('pl_in');
+    PL_dom.value = "" + PL;
     
     resize();
     
@@ -207,6 +251,7 @@ let init = function ()
 };
 
 window.set_n = set_n;
+window.set_p = set_p;
 
 document.addEventListener("mouseup", handleMouseUp);
 document.addEventListener("wheel", handleWheel);

@@ -41,9 +41,20 @@
                 <td>Zoom</td>
             <tr>
             <tr>
+                <td class="left">R:</td>
+                <td>
+                    Randomize
+                    <br/>
+                    P0: <input id="p0_in" type="text" size="5" onchange="set_p()" />
+                    PL: <input id="pl_in" type="text" size="5" onchange="set_p()" />
+                    <br/>
+                    ( P(line) = PL / (P0+PL) )
+                </td>
+            <tr>
+            <tr>
                 <td class="left">Size:</td>
                 <td>
-                    <input id="n_in" type="text" onchange="set_n(this.value)" />
+                    <input id="n_in" type="text" size="7" onchange="set_n(this.value)" />
                 </td>
             <tr>
         </table>
