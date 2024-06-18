@@ -160,6 +160,12 @@ let calc_curve = function ()
     let vfirst = [0, 0];
     let v = [];
     
+    curve_insert(...va, ...vb);
+    curve_insert(...vb, ...vc);
+    curve_insert(...vc, ...vd);
+    curve_insert(...vd, ...ve);
+    curve_insert(...ve, ...vf);
+    curve_insert(...vf, ...va);
     for (let y=1 ; y < N ; ++y)
     {
         v = vec2.cmul(dv[4],y);
