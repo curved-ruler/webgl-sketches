@@ -41,10 +41,10 @@ let draw = function ()
     if (alpha > 0.98) context.strokeStyle =`rgb(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256})`;
     else              context.strokeStyle =`rgba(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256}, ${alpha})`;
     
-    for (let i=0 ; i<curve.length-1; ++i)
+    for (let i=0 ; i<curve.length; ++i)
     {
-        let p1 = scaleup([ curve[i][0],   curve[i][1]   ]);
-        let p2 = scaleup([ curve[i+1][0], curve[i+1][1] ]);
+        let p1 = scaleup([ curve[i][0], curve[i][1]   ]);
+        let p2 = scaleup([ curve[i][2], curve[i][3] ]);
             
         context.beginPath();
         context.moveTo(p1[0], p1[1]);
@@ -101,12 +101,12 @@ let calc_curve = function ()
         {
             for (let x=0 ; x < y ; ++x)
             {
-                curve.push(vec2.add(v, va));
-                curve.push(vec2.add(v, vb));
-                curve.push(vec2.add(v, vc));
-                curve.push(vec2.add(v, vd));
-                curve.push(vec2.add(v, ve));
-                curve.push(vec2.add(v, vf));
+                curve.push([...vec2.add(v, va), ...vec2.add(v, vb), 1]);
+                curve.push([...vec2.add(v, vb), ...vec2.add(v, vc), 1]);
+                curve.push([...vec2.add(v, vc), ...vec2.add(v, vd), 1]);
+                curve.push([...vec2.add(v, vd), ...vec2.add(v, ve), 1]);
+                curve.push([...vec2.add(v, ve), ...vec2.add(v, vf), 1]);
+                curve.push([...vec2.add(v, vf), ...vec2.add(v, va), 1]);
                 
                 v = vec2.add(v, dv[dvi]);
             }
