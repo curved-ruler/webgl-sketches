@@ -61,14 +61,27 @@ let draw = function ()
     }
 };
 
+
+let line_segment_dist = function(a, b, p)
+{
+    let pa = vec2.sub(p, a)
+    let ba = vec2.sub(b, a);
+    let h  = vec2.dot(pa,ba) / vec2.dot(ba,ba);
+    if (h < 0) h = 0;
+    if (h > 1) h = 1;
+    return vec2.length( vec2.sub(pa, vec2.cmul(ba,h)) );
+};
 let grab = function (x, y)
 {
-    let pixdiff = 1.0 / scale;
+    let pixdiff = 5.0 / scale;
 
     for (let i=0 ; i<curve.length ; ++i)
     {
-        if (Math.abs(controls[2*i]   - x) < pixdiff &&
-            Math.abs(controls[2*i+1] - y) < pixdiff)
+        let len = line_segment_dist([ curve[i][0], curve[i][1] ],
+                                    [ curve[i][2], curve[i][3] ],
+                                    [ x, y ]);
+        
+        if (len < pixdiff)
         {
             grabbed = i;
         }
@@ -157,18 +170,16 @@ let zoomout = function () { scale *= 0.8;  draw(); };
 let handleMouseDown = function (event)
 {
     //console.log("E", event.clientX, event.clientY);
-    /*
+    
     let p  = scaledn([event.clientX, event.clientY]);
     
     grab( p[0], p[1] );
     if (grabbed >= 0)
     {
-        controls.splice(grabbed*2, 2);
+        curve[grabbed][4] = (curve[grabbed][4] === 0) ? 1 : 0;
     }
     grabbed = -1;
-    calc_curve();
     draw();
-    */
 };
 
 let handleMouseUp = function (event)
