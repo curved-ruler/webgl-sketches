@@ -10,7 +10,6 @@ let grabbed  = -1;
 let canvas   = null;
 let context  = null;
 let scale = 30;
-let alpha = 1.0;
 
 let N = 3;
 let N_dom = null;
@@ -22,9 +21,11 @@ let PL_dom = null;
 
 let debug = true;
 
-let back_col = [1.0, 1.0, 1.0];
-let line_col = [0.0, 0.0, 0.0];
-let noli_col = [0.9, 0.6, 0.1];
+let back_col = [255, 255, 255];
+let line_col = [  0,   0,   0];
+let noli_col = [220, 150,  25];
+let l1col_dom = null;
+let l2col_dom = null;
 
 let err = function (str)
 {
@@ -47,12 +48,12 @@ let save_svg = function ()
         if (lines[i].state === 0)
         {
             objstring += `  <line x1="${lines[i].pos[0]*sc+pl[0]}" y1="${lines[i].pos[1]*sc+pl[1]}" x2="${lines[i].pos[2]*sc+pl[0]}" y2="${lines[i].pos[3]*sc+pl[1]}"\
-            stroke="rgb(${noli_col[0]*255}, ${noli_col[1]*255}, ${noli_col[2]*255})" stroke-width="2" />\n`;
+            stroke="rgb(${noli_col[0]}, ${noli_col[1]}, ${noli_col[2]})" stroke-width="2" />\n`;
         }
         else
         {
             objstring += `  <line x1="${lines[i].pos[0]*sc+pl[0]}" y1="${lines[i].pos[1]*sc+pl[1]}" x2="${lines[i].pos[2]*sc+pl[0]}" y2="${lines[i].pos[3]*sc+pl[1]}"\
-            stroke="rgb(${line_col[0]*255}, ${line_col[1]*255}, ${line_col[2]*255})" stroke-width="2" />\n`;
+            stroke="rgb(${line_col[0]}, ${line_col[1]}, ${line_col[2]})" stroke-width="2" />\n`;
         }
     }
 
@@ -73,16 +74,13 @@ let draw = function ()
 {
     if (!canvas) return;
 
-    context.fillStyle=`rgb(${back_col[0]*255}, ${back_col[1]*255}, ${back_col[2]*255})`;
+    context.fillStyle=`rgb(${back_col[0]}, ${back_col[1]}, ${back_col[2]})`;
     context.fillRect(0,0,canvas.width,canvas.height);
 
-    //if (alpha > 0.98) context.strokeStyle =`rgb(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256})`;
-    //else              context.strokeStyle =`rgba(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256}, ${alpha})`;
-    
     for (let i=0 ; i<lines.length; ++i)
     {
-        if (lines[i].state === 0) context.strokeStyle =`rgb(${noli_col[0]*255}, ${noli_col[1]*255}, ${noli_col[2]*255})`;
-        else                      context.strokeStyle =`rgb(${line_col[0]*255}, ${line_col[1]*255}, ${line_col[2]*255})`;
+        if (lines[i].state === 0) context.strokeStyle =`rgb(${noli_col[0]}, ${noli_col[1]}, ${noli_col[2]})`;
+        else                      context.strokeStyle =`rgb(${line_col[0]}, ${line_col[1]}, ${line_col[2]})`;
         
         let p1 = scaleup([ lines[i].pos[0], lines[i].pos[1] ]);
         let p2 = scaleup([ lines[i].pos[2], lines[i].pos[3] ]);
@@ -95,7 +93,7 @@ let draw = function ()
     
     if (debug)
     {
-        context.fillStyle=`rgb(${noli_col[0]*255}, ${noli_col[1]*255}, ${noli_col[2]*255})`;
+        context.fillStyle=`rgb(${noli_col[0]}, ${noli_col[1]}, ${noli_col[2]})`;
         context.font = "20px Arial";
         let sc = scale;
         let pl = [canvas.width / 2-10, canvas.height/2+10];
@@ -361,6 +359,35 @@ let set_n = function (strval)
     calc_curve();
     draw();
 };
+let set_lcol = function (str)
+{
+    let bc = str.split(',');
+    if (bc.length === 1) bc.push(bc[0], bc[0]);
+    if (bc.length === 2) bc.push(bc[1]);
+    
+    line_col[0] = parseInt(bc[0]);
+    line_col[1] = parseInt(bc[1]);
+    line_col[2] = parseInt(bc[2]);
+    
+    draw();
+};
+let set_nolcol = function (str)
+{
+    let bc = str.split(',');
+    if (bc.length === 1) bc.push(bc[0], bc[0]);
+    if (bc.length === 2) bc.push(bc[1]);
+    
+    noli_col[0] = parseInt(bc[0]);
+    noli_col[1] = parseInt(bc[1]);
+    noli_col[2] = parseInt(bc[2]);
+    
+    draw();
+};
+let toggle_debug = function ()
+{
+    debug = !debug;
+    draw();
+};
 
 
 let init = function ()
@@ -378,6 +405,12 @@ let init = function ()
     N_dom.value = "" + N;
     PL_dom = document.getElementById('pl_in');
     PL_dom.value = "" + PL;
+    l1col_dom = document.getElementById('l1col_in');
+    l1col_dom.value = "" + line_col[0] + ", " + line_col[1] + ", " + line_col[2];
+    l2col_dom = document.getElementById('l2col_in');
+    l2col_dom.value = "" + noli_col[0] + ", " + noli_col[1] + ", " + noli_col[2];
+    
+    document.getElementById('deb_in').checked = debug;
     
     resize();
     
@@ -387,6 +420,9 @@ let init = function ()
 
 window.set_n = set_n;
 window.set_p = set_p;
+window.set_lcol = set_lcol;
+window.set_nolcol = set_nolcol;
+window.toggle_debug = toggle_debug;
 
 document.addEventListener("mouseup", handleMouseUp);
 document.addEventListener("wheel", handleWheel);
