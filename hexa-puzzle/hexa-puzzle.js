@@ -162,6 +162,7 @@ let curve_insert = function (a,b,c,d, cell)
 let calc_curve = function ()
 {
     lines = [];
+    cells = [];
     
     let A  = 1;
     let S3 = Math.sqrt(3.0)/2.0;
