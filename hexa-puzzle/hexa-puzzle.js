@@ -270,7 +270,17 @@ let comp_parts = function ()
 let cleanup = function ()
 {
     comp_parts();
-    //...
+    
+    for (let i=0 ; i<lines.length ; ++i)
+    {
+        if (lines[i].state === 1)
+        {
+            if (cells[lines[i].nb[0]][0] === cells[lines[i].nb[1]][0])
+            {
+                lines[i].state = 0;
+            }
+        }
+    }
 };
 
 let scaledn = function (v) { return [(v[0] - (canvas.width/2)) / scale, (v[1] - (canvas.height/2)) / scale]; };
