@@ -15,9 +15,13 @@ let alpha = 1.0;
 let N = 3;
 let N_dom = null;
 let curve = [];
+let cells = [];
+let parts = [];
 
 let PL = 0.5;
 let PL_dom = null;
+
+let debug = true;
 
 let back_col = [1.0, 1.0, 1.0];
 let line_col = [0.0, 0.0, 0.0];
@@ -89,6 +93,18 @@ let draw = function ()
         context.lineTo(p2[0], p2[1]);
         context.stroke();
     }
+    
+    if (debug)
+    {
+        context.fillStyle=`rgb(${noli_col[0]*255}, ${noli_col[1]*255}, ${noli_col[2]*255})`;
+        context.font = "20px Arial";
+        let sc = scale;
+        let pl = [canvas.width / 2-10, canvas.height/2+10];
+        for (let i=0 ; i<cells.length; ++i)
+        {
+            context.fillText("" + cells[i][0], cells[i][1]*sc+pl[0], cells[i][2]*sc+pl[1]);
+        }
+    }
 };
 
 
@@ -127,7 +143,7 @@ let curve_check  = function (la,lb)
     
     return false;
 };
-let curve_insert = function (a,b,c,d)
+let curve_insert = function (a,b,c,d, cell)
 {
     for (let i=0 ; i<curve.length ; ++i)
     {
@@ -135,10 +151,13 @@ let curve_insert = function (a,b,c,d)
             curve_check(curve[i], [c,d,a,b]))
         {
             curve[i][4] = 1;
+            cells[cell].push(i);
+            curve[i][5].push([cell])
             return;
         }
     }
-    curve.push([a,b,c,d,2]);
+    curve.push([a,b,c,d,2, [cell]]);
+    cells[cell].push(curve.length-1);
 };
 
 let calc_curve = function ()
@@ -163,14 +182,16 @@ let calc_curve = function ()
               [-A*1.5,    A*S3]];
     
     let vfirst = [0, 0];
-    let v = [];
+    let v  = [0,0];
+    let np = 0;
     
-    curve_insert(...va, ...vb);
-    curve_insert(...vb, ...vc);
-    curve_insert(...vc, ...vd);
-    curve_insert(...vd, ...ve);
-    curve_insert(...ve, ...vf);
-    curve_insert(...vf, ...va);
+    cells.push([-1, 0, 0]);
+    curve_insert(...va, ...vb, np);
+    curve_insert(...vb, ...vc, np);
+    curve_insert(...vc, ...vd, np);
+    curve_insert(...vd, ...ve, np);
+    curve_insert(...ve, ...vf, np);
+    curve_insert(...vf, ...va, np);
     for (let y=1 ; y < N ; ++y)
     {
         v = vec2.cmul(dv[4],y);
@@ -179,12 +200,14 @@ let calc_curve = function ()
         {
             for (let x=0 ; x < y ; ++x)
             {
-                curve_insert(...vec2.add(v, va), ...vec2.add(v, vb));
-                curve_insert(...vec2.add(v, vb), ...vec2.add(v, vc));
-                curve_insert(...vec2.add(v, vc), ...vec2.add(v, vd));
-                curve_insert(...vec2.add(v, vd), ...vec2.add(v, ve));
-                curve_insert(...vec2.add(v, ve), ...vec2.add(v, vf));
-                curve_insert(...vec2.add(v, vf), ...vec2.add(v, va));
+                ++np;
+                cells.push([-1, v[0], v[1]]);
+                curve_insert(...vec2.add(v, va), ...vec2.add(v, vb), np);
+                curve_insert(...vec2.add(v, vb), ...vec2.add(v, vc), np);
+                curve_insert(...vec2.add(v, vc), ...vec2.add(v, vd), np);
+                curve_insert(...vec2.add(v, vd), ...vec2.add(v, ve), np);
+                curve_insert(...vec2.add(v, ve), ...vec2.add(v, vf), np);
+                curve_insert(...vec2.add(v, vf), ...vec2.add(v, va), np);
                 
                 v = vec2.add(v, dv[dvi]);
             }
@@ -201,23 +224,60 @@ let randomize_lines = function ()
         let R = Math.random();
         curve[i][4] = (R < PL) ? 1 : 0;
     }
+    comp_parts();
+};
+
+let part_neighbours = function (celli, nump)
+{
+    for (let l=3 ; l<cells[celli].length ; ++l)
+    {
+        let line = curve[cells[celli][l]];
+        if (line[4] === 0)
+        {
+            if (line[5][0] === celli)
+            {
+                if (cells[line[5][1]][0] < 0)
+                {
+                    cells[line[5][1]][0] = nump;
+                    part_neighbours(line[5][1], nump);
+                }
+            }
+            else
+            {
+                if (cells[line[5][0]][0] < 0)
+                {
+                    cells[line[5][0]][0] = nump;
+                    part_neighbours(line[5][0], nump);
+                }
+            }
+        }
+    }
+};
+let comp_parts = function ()
+{
+    for (let i=0 ; i<cells.length ; ++i) { cells[i][0] = -1; }
+    
+    let nump = 0;
+    for (let i=0 ; i<cells.length ; ++i)
+    {
+        if (cells[i][0] >= 0) continue;
+        
+        cells[i][0] = nump;
+        part_neighbours(i, nump);
+        
+        ++nump;
+    }
 };
 
 let cleanup = function ()
 {
+    comp_parts();
     /*
-    let cut = false;
-    
-    do
+    for (let i=0 ; i<curve.length ; ++i)
     {
-        for (let i=0 ; i<curve.length ; ++i)
-        {
-            if (curve[i][4] === 2) continue;
-            
-            let R = Math.random();
-            curve[i][4] = (R < PL) ? 1 : 0;
-        }
-    } while (cut);
+        if (curve[i][4] === 2 || curve[i][4] === 0) continue;
+        if ()
+    }
     */
 };
 
