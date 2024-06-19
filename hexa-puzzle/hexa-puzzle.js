@@ -21,7 +21,7 @@ let PL_dom = null;
 
 let back_col = [1.0, 1.0, 1.0];
 let line_col = [0.0, 0.0, 0.0];
-
+let noli_col = [0.9, 0.6, 0.1];
 
 let err = function (str)
 {
@@ -41,9 +41,16 @@ let save_svg = function ()
         
     for (let i=0 ; i<cn ; ++i)
     {
-        if (curve[i][4] === 0) continue;
-        
-        objstring += `  <line x1="${curve[i][0]*sc+pl[0]}" y1="${curve[i][1]*sc+pl[1]}" x2="${curve[i][2]*sc+pl[0]}" y2="${curve[i][3]*sc+pl[1]}" stroke="black" stroke-width="2" />\n`;
+        if (curve[i][4] === 0)
+        {
+            objstring += `  <line x1="${curve[i][0]*sc+pl[0]}" y1="${curve[i][1]*sc+pl[1]}" x2="${curve[i][2]*sc+pl[0]}" y2="${curve[i][3]*sc+pl[1]}"\
+            stroke="rgb(${noli_col[0]*255}, ${noli_col[1]*255}, ${noli_col[2]*255})" stroke-width="2" />\n`;
+        }
+        else
+        {
+            objstring += `  <line x1="${curve[i][0]*sc+pl[0]}" y1="${curve[i][1]*sc+pl[1]}" x2="${curve[i][2]*sc+pl[0]}" y2="${curve[i][3]*sc+pl[1]}"\
+            stroke="rgb(${line_col[0]*255}, ${line_col[1]*255}, ${line_col[2]*255})" stroke-width="2" />\n`;
+        }
     }
 
     objstring += "</svg>\n";
@@ -63,7 +70,7 @@ let draw = function ()
 {
     if (!canvas) return;
 
-    context.fillStyle=`rgb(${back_col[0]*256}, ${back_col[1]*256}, ${back_col[2]*256})`;
+    context.fillStyle=`rgb(${back_col[0]*255}, ${back_col[1]*255}, ${back_col[2]*255})`;
     context.fillRect(0,0,canvas.width,canvas.height);
 
     //if (alpha > 0.98) context.strokeStyle =`rgb(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256})`;
@@ -71,8 +78,8 @@ let draw = function ()
     
     for (let i=0 ; i<curve.length; ++i)
     {
-        if (curve[i][4] === 0) context.strokeStyle =`rgba(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256}, 0.1)`;
-        else                   context.strokeStyle =`rgb(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256})`;
+        if (curve[i][4] === 0) context.strokeStyle =`rgb(${noli_col[0]*255}, ${noli_col[1]*255}, ${noli_col[2]*255})`;
+        else                   context.strokeStyle =`rgb(${line_col[0]*255}, ${line_col[1]*255}, ${line_col[2]*255})`;
         
         let p1 = scaleup([ curve[i][0], curve[i][1] ]);
         let p2 = scaleup([ curve[i][2], curve[i][3] ]);
@@ -194,8 +201,25 @@ let randomize_lines = function ()
         let R = Math.random();
         curve[i][4] = (R < PL) ? 1 : 0;
     }
-    draw();
-}
+};
+
+let cleanup = function ()
+{
+    /*
+    let cut = false;
+    
+    do
+    {
+        for (let i=0 ; i<curve.length ; ++i)
+        {
+            if (curve[i][4] === 2) continue;
+            
+            let R = Math.random();
+            curve[i][4] = (R < PL) ? 1 : 0;
+        }
+    } while (cut);
+    */
+};
 
 let scaledn = function (v) { return [(v[0] - (canvas.width/2)) / scale, (v[1] - (canvas.height/2)) / scale]; };
 let scaleup = function (v) { return [(v[0] * scale) + (canvas.width/2), (v[1] * scale) + (canvas.height/2)]; };
@@ -243,6 +267,12 @@ let handleKeyDown = function (event)
     else if (event.key === 'r' || event.key === 'R')
     {
         randomize_lines();
+        draw();
+    }
+    else if (event.key === 'c' || event.key === 'C')
+    {
+        cleanup();
+        draw();
     }
     else if (event.key === 's' || event.key === 'S')
     {
