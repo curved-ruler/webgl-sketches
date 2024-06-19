@@ -14,9 +14,8 @@ let alpha = 1.0;
 
 let N = 3;
 let N_dom = null;
-let curve = [];
+let lines = [];
 let cells = [];
-let parts = [];
 
 let PL = 0.5;
 let PL_dom = null;
@@ -41,18 +40,18 @@ let save_svg = function ()
 `;
     let sc = scale;
     let pl = [canvas.width / 2, canvas.height/2];
-    let cn = curve.length;
+    let cn = lines.length;
         
     for (let i=0 ; i<cn ; ++i)
     {
-        if (curve[i][4] === 0)
+        if (lines[i].state === 0)
         {
-            objstring += `  <line x1="${curve[i][0]*sc+pl[0]}" y1="${curve[i][1]*sc+pl[1]}" x2="${curve[i][2]*sc+pl[0]}" y2="${curve[i][3]*sc+pl[1]}"\
+            objstring += `  <line x1="${lines[i].pos[0]*sc+pl[0]}" y1="${lines[i].pos[1]*sc+pl[1]}" x2="${lines[i].pos[2]*sc+pl[0]}" y2="${lines[i].pos[3]*sc+pl[1]}"\
             stroke="rgb(${noli_col[0]*255}, ${noli_col[1]*255}, ${noli_col[2]*255})" stroke-width="2" />\n`;
         }
         else
         {
-            objstring += `  <line x1="${curve[i][0]*sc+pl[0]}" y1="${curve[i][1]*sc+pl[1]}" x2="${curve[i][2]*sc+pl[0]}" y2="${curve[i][3]*sc+pl[1]}"\
+            objstring += `  <line x1="${lines[i].pos[0]*sc+pl[0]}" y1="${lines[i].pos[1]*sc+pl[1]}" x2="${lines[i].pos[2]*sc+pl[0]}" y2="${lines[i].pos[3]*sc+pl[1]}"\
             stroke="rgb(${line_col[0]*255}, ${line_col[1]*255}, ${line_col[2]*255})" stroke-width="2" />\n`;
         }
     }
@@ -80,13 +79,13 @@ let draw = function ()
     //if (alpha > 0.98) context.strokeStyle =`rgb(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256})`;
     //else              context.strokeStyle =`rgba(${line_col[0]*256}, ${line_col[1]*256}, ${line_col[2]*256}, ${alpha})`;
     
-    for (let i=0 ; i<curve.length; ++i)
+    for (let i=0 ; i<lines.length; ++i)
     {
-        if (curve[i][4] === 0) context.strokeStyle =`rgb(${noli_col[0]*255}, ${noli_col[1]*255}, ${noli_col[2]*255})`;
-        else                   context.strokeStyle =`rgb(${line_col[0]*255}, ${line_col[1]*255}, ${line_col[2]*255})`;
+        if (lines[i].state === 0) context.strokeStyle =`rgb(${noli_col[0]*255}, ${noli_col[1]*255}, ${noli_col[2]*255})`;
+        else                      context.strokeStyle =`rgb(${line_col[0]*255}, ${line_col[1]*255}, ${line_col[2]*255})`;
         
-        let p1 = scaleup([ curve[i][0], curve[i][1] ]);
-        let p2 = scaleup([ curve[i][2], curve[i][3] ]);
+        let p1 = scaleup([ lines[i].pos[0], lines[i].pos[1] ]);
+        let p2 = scaleup([ lines[i].pos[2], lines[i].pos[3] ]);
             
         context.beginPath();
         context.moveTo(p1[0], p1[1]);
@@ -121,10 +120,10 @@ let grab = function (x, y)
 {
     let pixdiff = 5.0 / scale;
 
-    for (let i=0 ; i<curve.length ; ++i)
+    for (let i=0 ; i<lines.length ; ++i)
     {
-        let len = line_segment_dist([ curve[i][0], curve[i][1] ],
-                                    [ curve[i][2], curve[i][3] ],
+        let len = line_segment_dist([ lines[i].pos[0], lines[i].pos[1] ],
+                                    [ lines[i].pos[2], lines[i].pos[3] ],
                                     [ x, y ]);
         
         if (len < pixdiff)
@@ -145,24 +144,24 @@ let curve_check  = function (la,lb)
 };
 let curve_insert = function (a,b,c,d, cell)
 {
-    for (let i=0 ; i<curve.length ; ++i)
+    for (let i=0 ; i<lines.length ; ++i)
     {
-        if (curve_check(curve[i], [a,b,c,d]) ||
-            curve_check(curve[i], [c,d,a,b]))
+        if (curve_check(lines[i].pos, [a,b,c,d]) ||
+            curve_check(lines[i].pos, [c,d,a,b]))
         {
-            curve[i][4] = 1;
+            lines[i].state = 1;
             cells[cell].push(i);
-            curve[i][5].push([cell])
+            lines[i].nb.push(cell);
             return;
         }
     }
-    curve.push([a,b,c,d,2, [cell]]);
-    cells[cell].push(curve.length-1);
+    lines.push( { state:2, pos: [a,b,c,d], nb: [cell] } );
+    cells[cell].push(lines.length-1);
 };
 
 let calc_curve = function ()
 {
-    curve = [];
+    lines = [];
     
     let A  = 1;
     let S3 = Math.sqrt(3.0)/2.0;
@@ -217,12 +216,12 @@ let calc_curve = function ()
 
 let randomize_lines = function ()
 {
-    for (let i=0 ; i<curve.length ; ++i)
+    for (let i=0 ; i<lines.length ; ++i)
     {
-        if (curve[i][4] === 2) continue;
+        if (lines[i].state === 2) continue;
         
         let R = Math.random();
-        curve[i][4] = (R < PL) ? 1 : 0;
+        lines[i].state = (R < PL) ? 1 : 0;
     }
     comp_parts();
 };
@@ -231,23 +230,23 @@ let part_neighbours = function (celli, nump)
 {
     for (let l=3 ; l<cells[celli].length ; ++l)
     {
-        let line = curve[cells[celli][l]];
-        if (line[4] === 0)
+        let line = lines[cells[celli][l]];
+        if (line.state === 0)
         {
-            if (line[5][0] === celli)
+            if (line.nb[0] === celli)
             {
-                if (cells[line[5][1]][0] < 0)
+                if (cells[line.nb[1]][0] < 0)
                 {
-                    cells[line[5][1]][0] = nump;
-                    part_neighbours(line[5][1], nump);
+                    cells[line.nb[1]][0] = nump;
+                    part_neighbours(line.nb[1], nump);
                 }
             }
             else
             {
-                if (cells[line[5][0]][0] < 0)
+                if (cells[line.nb[0]][0] < 0)
                 {
-                    cells[line[5][0]][0] = nump;
-                    part_neighbours(line[5][0], nump);
+                    cells[line.nb[0]][0] = nump;
+                    part_neighbours(line.nb[0], nump);
                 }
             }
         }
@@ -272,13 +271,7 @@ let comp_parts = function ()
 let cleanup = function ()
 {
     comp_parts();
-    /*
-    for (let i=0 ; i<curve.length ; ++i)
-    {
-        if (curve[i][4] === 2 || curve[i][4] === 0) continue;
-        if ()
-    }
-    */
+    //...
 };
 
 let scaledn = function (v) { return [(v[0] - (canvas.width/2)) / scale, (v[1] - (canvas.height/2)) / scale]; };
@@ -293,9 +286,9 @@ let handleMouseDown = function (event)
     let p  = scaledn([event.clientX, event.clientY]);
     
     grab( p[0], p[1] );
-    if (grabbed >= 0 && curve[grabbed][4] != 2)
+    if (grabbed >= 0 && lines[grabbed].state != 2)
     {
-        curve[grabbed][4] = (curve[grabbed][4] === 0) ? 1 : 0;
+        lines[grabbed].state = (lines[grabbed].state === 0) ? 1 : 0;
     }
     grabbed = -1;
     draw();
