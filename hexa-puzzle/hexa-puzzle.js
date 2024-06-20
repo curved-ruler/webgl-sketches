@@ -10,6 +10,8 @@ let grabbed  = -1;
 let canvas   = null;
 let context  = null;
 let scale = 30;
+let pan   = [0,0];
+let start_pan = 0;
 
 let N = 3;
 let N_dom = null;
@@ -39,20 +41,19 @@ let save_svg = function ()
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 `;
-    let sc = scale;
-    let pl = [canvas.width / 2, canvas.height/2];
-    let cn = lines.length;
-        
-    for (let i=0 ; i<cn ; ++i)
+    for (let i=0 ; i<lines.length ; ++i)
     {
+        let l1 = scaleup([lines[i].pos[0], lines[i].pos[1]]);
+        let l2 = scaleup([lines[i].pos[2], lines[i].pos[3]]);
+        
         if (lines[i].state === 0)
         {
-            objstring += `  <line x1="${lines[i].pos[0]*sc+pl[0]}" y1="${lines[i].pos[1]*sc+pl[1]}" x2="${lines[i].pos[2]*sc+pl[0]}" y2="${lines[i].pos[3]*sc+pl[1]}"\
+            objstring += `  <line x1="${l1[0]}" y1="${l1[1]}" x2="${l2[0]}" y2="${l2[1]}"\
             stroke="rgb(${noli_col[0]}, ${noli_col[1]}, ${noli_col[2]})" stroke-width="2" />\n`;
         }
         else
         {
-            objstring += `  <line x1="${lines[i].pos[0]*sc+pl[0]}" y1="${lines[i].pos[1]*sc+pl[1]}" x2="${lines[i].pos[2]*sc+pl[0]}" y2="${lines[i].pos[3]*sc+pl[1]}"\
+            objstring += `  <line x1="${l1[0]}" y1="${l1[1]}" x2="${l2[0]}" y2="${l2[1]}"\
             stroke="rgb(${line_col[0]}, ${line_col[1]}, ${line_col[2]})" stroke-width="2" />\n`;
         }
     }
@@ -95,11 +96,11 @@ let draw = function ()
     {
         context.fillStyle=`rgb(${noli_col[0]}, ${noli_col[1]}, ${noli_col[2]})`;
         context.font = "20px Arial";
-        let sc = scale;
-        let pl = [canvas.width / 2-10, canvas.height/2+10];
+        
         for (let i=0 ; i<cells.length; ++i)
         {
-            context.fillText("" + cells[i][0], cells[i][1]*sc+pl[0], cells[i][2]*sc+pl[1]);
+            let p = scaleup([ cells[i][1], cells[i][2] ]);
+            context.fillText("" + cells[i][0], p[0]-10, p[1]+10);
         }
     }
 };
@@ -283,29 +284,51 @@ let cleanup = function ()
     }
 };
 
-let scaledn = function (v) { return [(v[0] - (canvas.width/2)) / scale, (v[1] - (canvas.height/2)) / scale]; };
-let scaleup = function (v) { return [(v[0] * scale) + (canvas.width/2), (v[1] * scale) + (canvas.height/2)]; };
+let scaledn = function (v)
+{
+    return [(v[0] - (canvas.width/2)  - pan[0]) / scale,
+            (v[1] - (canvas.height/2) - pan[1]) / scale];
+};
+let scaleup = function (v)
+{
+    return [(v[0] * scale) + (canvas.width/2)  + pan[0],
+            (v[1] * scale) + (canvas.height/2) + pan[1]];
+};
 let zoomin  = function () { scale *= 1.25; draw(); };
 let zoomout = function () { scale *= 0.8;  draw(); };
 
 let handleMouseDown = function (event)
 {
-    //console.log("E", event.clientX, event.clientY);
-    
-    let p  = scaledn([event.clientX, event.clientY]);
-    
-    grab( p[0], p[1] );
-    if (grabbed >= 0 && lines[grabbed].state != 2)
+    if (event.button === 0)
     {
-        lines[grabbed].state = (lines[grabbed].state === 0) ? 1 : 0;
+        let p  = scaledn([event.clientX, event.clientY]);
+        
+        grab( p[0], p[1] );
+        if (grabbed >= 0 && lines[grabbed].state != 2)
+        {
+            lines[grabbed].state = (lines[grabbed].state === 0) ? 1 : 0;
+        }
+        grabbed = -1;
+        draw();
     }
-    grabbed = -1;
-    draw();
+    else
+    {
+        start_pan = 1;
+    }
 };
-
 let handleMouseUp = function (event)
 {
     grabbed = -1;
+    start_pan = 0;
+};
+let handleMouseMove = function (event)
+{
+    if (start_pan === 1)
+    {
+        pan[0] += event.movementX;
+        pan[1] += event.movementY;
+        draw();
+    }
 };
 
 let handleKeyDown = function (event)
@@ -410,6 +433,7 @@ let init = function ()
     if (!context) { err('No 2d context'); return; }
     
     canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mousemove", handleMouseMove);
     
     N_dom = document.getElementById('n_in');
     N_dom.value = "" + N;
