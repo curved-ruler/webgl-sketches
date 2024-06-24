@@ -294,7 +294,10 @@ let cleanup = function ()
 
 let generate = function ()
 {
-    let cleared = 0;
+    for (let i=0 ; i<lines.length ; ++i)
+    {
+        if (lines[i].state === 0) lines[i].state = 1;
+    }
     comp_parts();
     
     for (let x=0 ; x<gen_n ; ++x)
