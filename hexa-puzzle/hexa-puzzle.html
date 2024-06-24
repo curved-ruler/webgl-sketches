@@ -42,23 +42,32 @@
             <tr>
                 <td class="left">M:</td>
                 <td>Show / hide menu</td>
-            <tr>
+            </tr>
             <tr>
                 <td class="left">Mouse click:</td>
                 <td>Remove / add edges</td>
-            <tr>
+            </tr>
             <tr>
                 <td class="left">Mouse wheel:</td>
                 <td>Zoom / pan</td>
-            <tr>
+            </tr>
             <tr>
                 <td class="left">S:</td>
                 <td>Save .svg</td>
-            <tr>
+            </tr>
             <tr>
                 <td class="left">C:</td>
                 <td>Clean</td>
+            </tr>
             <tr>
+                <td class="left">G:<br/>Tries:<br/>All lines:</td>
+                <td>Generate
+                <br/>
+                <input id="genn_in" type="text" size="7" onchange="set_genn(this.value)" />
+                <br/>
+                <span id="sum_in">0</span>
+                </td>
+            </tr>
             <tr>
                 <td class="left">R:<br/>P(line)</td>
                 <td>
@@ -66,13 +75,13 @@
                     <br/>
                     <input id="pl_in" type="text" size="7" onchange="set_p(this.value)" />
                 </td>
-            <tr>
+            </tr>
             <tr>
                 <td class="left">Size:</td>
                 <td>
                     <input id="n_in" type="text" size="7" onchange="set_n(this.value)" />
                 </td>
-            <tr>
+            </tr>
             <tr>
                 <td class="left">Line1 Col: </td>
                 <td>
@@ -90,7 +99,7 @@
                 <td>
                     <input id="deb_in" type="checkbox" size="7" onchange="toggle_debug()" />
                 </td>
-            <tr>
+            </tr>
         </table></div>
     </body>
 </html>

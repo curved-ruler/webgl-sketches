@@ -15,6 +15,10 @@ let start_pan = 0;
 
 let N = 3;
 let N_dom = null;
+let gen_n = 40;
+let genn_dom = null;
+let sum_lines = 0;
+let sum_dom = null;
 let lines = [];
 let cells = [];
 
@@ -151,6 +155,7 @@ let curve_insert = function (a,b,c,d, cell)
             lines[i].state = 1;
             cells[cell].push(i);
             lines[i].nb.push(cell);
+            sum_lines += 1;
             return;
         }
     }
@@ -162,6 +167,7 @@ let calc_curve = function ()
 {
     lines = [];
     cells = [];
+    sum_lines = 0;
     
     let A  = 1;
     let S3 = Math.sqrt(3.0)/2.0;
@@ -212,6 +218,8 @@ let calc_curve = function ()
             }
         }
     }
+    
+    sum_dom.innerHTML = "" + sum_lines;
 };
 
 let randomize_lines = function ()
@@ -283,6 +291,22 @@ let cleanup = function ()
         }
     }
 };
+
+let generate = function ()
+{
+    let cleared = 0;
+    comp_parts();
+    
+    for (let x=0 ; x<gen_n ; ++x)
+    {
+        let rndline = Math.floor(Math.random() * lines.length);
+        if (lines[rndline].state === 1)
+        {
+            lines[rndline].state = 0;
+            cleanup();
+        }
+    }
+}
 
 let scaledn = function (v)
 {
@@ -359,6 +383,11 @@ let handleKeyDown = function (event)
         cleanup();
         draw();
     }
+    else if (event.key === 'g' || event.key === 'G')
+    {
+        generate();
+        draw();
+    }
     else if (event.key === 's' || event.key === 'S')
     {
         save_svg();
@@ -391,6 +420,14 @@ let set_n = function (strval)
     
     calc_curve();
     draw();
+};
+let set_genn = function (strval)
+{
+    let ival = parseInt(strval);
+    
+    if (isNaN(ival) || ival < 1) { return; }
+    
+    gen_n = ival;
 };
 let set_lcol = function (str)
 {
@@ -439,6 +476,11 @@ let init = function ()
     N_dom.value = "" + N;
     PL_dom = document.getElementById('pl_in');
     PL_dom.value = "" + PL;
+    genn_dom = document.getElementById('genn_in');
+    genn_dom.value = "" + gen_n;
+    
+    sum_dom = document.getElementById('sum_in');
+    
     l1col_dom = document.getElementById('l1col_in');
     l1col_dom.value = "" + line_col[0] + ", " + line_col[1] + ", " + line_col[2];
     l2col_dom = document.getElementById('l2col_in');
@@ -454,6 +496,7 @@ let init = function ()
 
 window.set_n = set_n;
 window.set_p = set_p;
+window.set_genn = set_genn;
 window.set_lcol = set_lcol;
 window.set_nolcol = set_nolcol;
 window.toggle_debug = toggle_debug;
