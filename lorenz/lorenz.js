@@ -571,7 +571,7 @@ let handle_key_down = function (event)
         camera.up    = [ 0, 0, 1];
         draw();
     }
-    else if (event.key === "s" || event.key === "S")
+    else if (event.key === "x" || event.key === "X")
     {
         camera.pos   = [ 0,70, 0];
         camera.look  = [ 0,-1, 0];
