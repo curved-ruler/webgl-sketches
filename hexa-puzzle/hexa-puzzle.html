@@ -24,6 +24,11 @@
   padding: 10px;
   background-color: rgb(200, 200, 200);
   color: rgb(0, 5, 5);
+  border-spacing: 5px;
+}
+
+.bog {
+  border: 1px black;
 }
 
 .left {
@@ -59,7 +64,7 @@
                 <td class="left">C:</td>
                 <td>Clean</td>
             </tr>
-            <tr>
+            <tr style="outline: thin solid; margin: 1px;">
                 <td class="left">G:<br/>Max size:<br/>Tries:<br/>All lines:</td>
                 <td>Generate
                 <br/>
@@ -70,7 +75,7 @@
                 <span id="sum_in">0</span>
                 </td>
             </tr>
-            <tr>
+            <tr style="outline: thin solid; margin: 1px;">
                 <td class="left">R:<br/>P(line)</td>
                 <td>
                     Randomize
@@ -99,7 +104,11 @@
             <tr>
                 <td class="left">Debug:</td>
                 <td>
-                    <input id="deb_in" type="checkbox" size="7" onchange="toggle_debug()" />
+                    <select id="debug" onchange="set_deb(this.value)">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                    </select>
                 </td>
             </tr>
         </table></div>

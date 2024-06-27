@@ -28,7 +28,7 @@ let cellsize = [];
 let PL = 0.5;
 let PL_dom = null;
 
-let debug = true;
+let debug = 1;
 
 let back_col = [255, 255, 255];
 let line_col = [  0,   0,   0];
@@ -99,7 +99,7 @@ let draw = function ()
         context.stroke();
     }
     
-    if (debug)
+    if (debug > 0)
     {
         context.fillStyle=`rgb(${noli_col[0]}, ${noli_col[1]}, ${noli_col[2]})`;
         context.font = "20px Arial";
@@ -107,8 +107,14 @@ let draw = function ()
         for (let i=0 ; i<cells.length; ++i)
         {
             let p = scaleup([ cells[i][1], cells[i][2] ]);
-            //context.fillText("" + cells[i][0] + "(" + cellsize[cells[i][0]] + ")", p[0]-10, p[1]+10);
-            context.fillText("" + cells[i][0], p[0]-10, p[1]+10);
+            if (debug === 1)
+            {
+                context.fillText("" + cells[i][0], p[0]-10, p[1]+10);
+            }
+            else if (debug === 2)
+            {
+                context.fillText("" + cells[i][0] + "(" + cellsize[cells[i][0]] + ")", p[0]-10, p[1]+10);
+            }
         }
     }
 };
@@ -479,9 +485,11 @@ let set_nolcol = function (str)
     
     draw();
 };
-let toggle_debug = function ()
+let set_deb = function (strval)
 {
-    debug = !debug;
+    let ival = parseInt(strval);
+    if (isNaN(ival)) { return; }
+    debug = ival;
     draw();
 };
 
@@ -514,7 +522,11 @@ let init = function ()
     l2col_dom = document.getElementById('l2col_in');
     l2col_dom.value = "" + noli_col[0] + ", " + noli_col[1] + ", " + noli_col[2];
     
-    document.getElementById('deb_in').checked = debug;
+    let opts = document.getElementById('debug').options;
+    for (let i=0 ; i<opts.length ; ++i)
+    {
+        if (opts[i].value == debug) { opts.selectedIndex = i; break; }
+    }
     
     resize();
     
@@ -528,7 +540,7 @@ window.set_maxs = set_maxs;
 window.set_genn = set_genn;
 window.set_lcol = set_lcol;
 window.set_nolcol = set_nolcol;
-window.toggle_debug = toggle_debug;
+window.set_deb = set_deb;
 
 document.addEventListener("mouseup", handleMouseUp);
 document.addEventListener("wheel", handleWheel);
