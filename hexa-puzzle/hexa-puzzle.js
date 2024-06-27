@@ -13,14 +13,17 @@ let scale = 30;
 let pan   = [0,0];
 let start_pan = 0;
 
-let N = 3;
+let N = 4;
 let N_dom = null;
+let maxs = 10;
+let maxs_dom = null;
 let gen_n = 40;
 let genn_dom = null;
 let sum_lines = 0;
 let sum_dom = null;
 let lines = [];
 let cells = [];
+let cellsize = [];
 
 let PL = 0.5;
 let PL_dom = null;
@@ -104,6 +107,7 @@ let draw = function ()
         for (let i=0 ; i<cells.length; ++i)
         {
             let p = scaleup([ cells[i][1], cells[i][2] ]);
+            //context.fillText("" + cells[i][0] + "(" + cellsize[cells[i][0]] + ")", p[0]-10, p[1]+10);
             context.fillText("" + cells[i][0], p[0]-10, p[1]+10);
         }
     }
@@ -246,6 +250,7 @@ let part_neighbours = function (celli, nump)
                 if (cells[line.nb[1]][0] < 0)
                 {
                     cells[line.nb[1]][0] = nump;
+                    cellsize[nump] += 1;
                     part_neighbours(line.nb[1], nump);
                 }
             }
@@ -254,6 +259,7 @@ let part_neighbours = function (celli, nump)
                 if (cells[line.nb[0]][0] < 0)
                 {
                     cells[line.nb[0]][0] = nump;
+                    cellsize[nump] += 1;
                     part_neighbours(line.nb[0], nump);
                 }
             }
@@ -262,6 +268,7 @@ let part_neighbours = function (celli, nump)
 };
 let comp_parts = function ()
 {
+    cellsize = [];
     for (let i=0 ; i<cells.length ; ++i) { cells[i][0] = -1; }
     
     let nump = 0;
@@ -270,6 +277,7 @@ let comp_parts = function ()
         if (cells[i][0] >= 0) continue;
         
         cells[i][0] = nump;
+        cellsize.push(1);
         part_neighbours(i, nump);
         
         ++nump;
@@ -305,8 +313,15 @@ let generate = function ()
         let rndline = Math.floor(Math.random() * lines.length);
         if (lines[rndline].state === 1)
         {
-            lines[rndline].state = 0;
-            cleanup();
+            let i1 = lines[rndline].nb[0];
+            let i2 = lines[rndline].nb[1];
+            let s1 = cellsize[cells[i1][0]];
+            let s2 = cellsize[cells[i2][0]];
+            if (s1+s2 <= maxs)
+            {
+                lines[rndline].state = 0;
+                cleanup();
+            }
         }
     }
 }
@@ -432,6 +447,14 @@ let set_genn = function (strval)
     
     gen_n = ival;
 };
+let set_maxs = function (strval)
+{
+    let ival = parseInt(strval);
+    
+    if (isNaN(ival) || ival < 1) { return; }
+    
+    maxs = ival;
+};
 let set_lcol = function (str)
 {
     let bc = str.split(',');
@@ -481,6 +504,8 @@ let init = function ()
     PL_dom.value = "" + PL;
     genn_dom = document.getElementById('genn_in');
     genn_dom.value = "" + gen_n;
+    maxs_dom = document.getElementById('maxs_in');
+    maxs_dom.value = "" + maxs;
     
     sum_dom = document.getElementById('sum_in');
     
@@ -499,6 +524,7 @@ let init = function ()
 
 window.set_n = set_n;
 window.set_p = set_p;
+window.set_maxs = set_maxs;
 window.set_genn = set_genn;
 window.set_lcol = set_lcol;
 window.set_nolcol = set_nolcol;
