@@ -650,7 +650,7 @@ let handle_key_down = function (event)
     if (document.activeElement === Fdom) { return; }
     if (event.ctrlKey) { return; }
     
-    
+    //console.log("K", event.key);
     
     if (event.key === "m" || event.key === "M")
     {
@@ -678,6 +678,30 @@ let handle_key_down = function (event)
     {
         pan   = [0,0];
         scale = 1;
+        transform();
+        draw();
+    }
+    else if (event.key === "ArrowLeft")
+    {
+        pan[0] -= A/10;
+        transform();
+        draw();
+    }
+    else if (event.key === "ArrowRight")
+    {
+        pan[0] += A/10;
+        transform();
+        draw();
+    }
+    else if (event.key === "ArrowUp")
+    {
+        pan[1] -= A/10;
+        transform();
+        draw();
+    }
+    else if (event.key === "ArrowDown")
+    {
+        pan[1] += A/10;
         transform();
         draw();
     }
