@@ -83,6 +83,26 @@ vec3 parametric (in float u, in float v)
     );
 }`,
 
+shell2 : `\
+// http://jalape.no/math/shelltxt.htm
+
+const vec2 u_range = vec2(0.0, 2.0*PI);
+const vec2 v_range = vec2(0.0, 2.0*PI);
+
+vec3 parametric (in float u, in float v)
+{
+    float a = 0.2;
+    float b = 1.0;
+    float c = 0.1;
+    float n = 2.0;
+    
+    return vec3(
+        a*(1.0-v/(2.0*PI))*cos(n*v)*(1.0+cos(u))+c*cos(n*v),
+        a*(1.0-v/(2.0*PI))*sin(n*v)*(1.0+cos(u))+c*sin(n*v),
+        b*v/(2.0*PI)+a*(1.0-v/(2.0*PI))*sin(u)
+    );
+}`,
+
 torus : `\
 const vec2 u_range = vec2(0.0, 2.0*PI);
 const vec2 v_range = vec2(0.0, 2.0*PI);

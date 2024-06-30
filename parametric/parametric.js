@@ -370,6 +370,8 @@ let init = function ()
     Nudom  = document.getElementById('nuin');
     Nvdom  = document.getElementById('nvin');
     
+    document.getElementById('pres').options.selectedIndex = 0;
+    
     set_ui();
     gpu_init('canvas');
     
