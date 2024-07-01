@@ -131,6 +131,19 @@ vec3 parametric (in float u, in float v)
     );
 }`,
 
+moebius: `\
+const vec2 u_range = vec2( 0.0, 2.0*PI);
+const vec2 v_range = vec2(-0.3, 0.3);
+
+vec3 parametric (in float u, in float v)
+{
+    return vec3(
+        cos(u)+v*cos(u/2.0)*cos(u),
+        sin(u)+v*cos(u/2.0)*sin(u),
+        v*sin(u/2.0)
+    );
+}`,
+
 dini: `\
 const vec2 u_range = vec2(0.0, 4.0*PI);
 const vec2 v_range = vec2(0.0, 2.0);
