@@ -144,6 +144,22 @@ vec3 parametric (in float u, in float v)
     );
 }`,
 
+astroid: `\
+const vec2 u_range = vec2(-PI, PI);
+const vec2 v_range = vec2(-PI, PI);
+
+vec3 parametric (in float u, in float v)
+{
+    float a = cos(u)*cos(v);
+    float b = sin(u)*cos(v);
+    float c = sin(v);
+    return vec3(
+        a*a*a,
+        b*b*b,
+        c*c*c
+    );
+}`,
+
 dini: `\
 const vec2 u_range = vec2(0.0, 4.0*PI);
 const vec2 v_range = vec2(0.0, 2.0);
