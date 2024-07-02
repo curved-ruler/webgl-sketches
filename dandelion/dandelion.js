@@ -10,7 +10,7 @@ let cwidth, cheight;
 
 let model  = { verts:[], lines:[] };
 let sphere   = [];
-let sphere_n = 600;
+let sphere_n = 100;
 let disk_n   = 40;
 let vrtbuf = null;
 let linbuf = null;
