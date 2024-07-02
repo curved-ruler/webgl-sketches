@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script src="dandelion.js" type="module"></script>
+        <title>Base WebGL</title>
+
+        <style>
+#canvas {
+  position: absolute;
+  top:  0px;
+  left: 0px;
+}
+
+#menu {
+  position: absolute;
+  top:  10px;
+  left: 10px;
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  color: rgb(120, 255, 255);
+}
+
+.left {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.hidden {
+  display: none;
+}
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        
+        <table id="menu" class="hidden">
+            <tr>
+                <td class="left">M:</td>
+                <td>Show/Hide Menu</td>
+            </tr>
+            <tr>
+                <td class="left">I:</td>
+                <td>Toggle projection</td>
+            </tr>
+            <tr>
+                <td class="left">H:</td>
+                <td>Toggle coords</td>
+            </tr>
+            <tr>
+                <td class="left">Mouse wheel / drag:</td>
+                <td>Scale / Rotate</td>
+            </tr>
+            <tr>
+                <td class="left">Alpha:</td>
+                <td>
+                    <select id="alpha" onchange="set_alpha(this.value)">
+                        <option value="0.1">0.1</option>
+                        <option value="0.2">0.2</option>
+                        <option value="0.3">0.3</option>
+                        <option value="0.4">0.4</option>
+                        <option value="0.5">0.5</option>
+                        <option value="0.6">0.6</option>
+                        <option value="0.7">0.7</option>
+                        <option value="0.8">0.8</option>
+                        <option value="0.9">0.9</option>
+                        <option value="1.0">1.0</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>
