@@ -18,7 +18,7 @@
   top:  10px;
   left: 10px;
   padding: 10px;
-  background-color: rgb(50, 50, 50);
+  background-color: rgb(180, 180, 20);
   color: rgb(120, 255, 255);
 }
 
@@ -35,7 +35,7 @@
     <body>
         <canvas id="canvas"></canvas>
         
-        <table id="menu" class="hidden">
+        <table id="menu">
             <tr>
                 <td class="left">M:</td>
                 <td>Show/Hide Menu</td>
@@ -45,12 +45,16 @@
                 <td>Toggle projection</td>
             </tr>
             <tr>
-                <td class="left">H:</td>
-                <td>Toggle coords</td>
-            </tr>
-            <tr>
                 <td class="left">Mouse wheel / drag:</td>
                 <td>Scale / Rotate</td>
+            </tr>
+            <tr>
+                <td class="left">N1:</td>
+                <td><input id="n1" type="text" size="7" onchange="set_n1(this.value)"/></td>
+            </tr>
+            <tr>
+                <td class="left">N2:</td>
+                <td><input id="n2" type="text" size="7" onchange="set_n2(this.value)"/></td>
             </tr>
             <tr>
                 <td class="left">Alpha:</td>

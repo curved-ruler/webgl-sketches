@@ -10,8 +10,13 @@ let cwidth, cheight;
 
 let model  = { verts:[], lines:[] };
 let sphere   = [];
+
 let sphere_n = 100;
+let n1_dom   = null;
+
 let disk_n   = 40;
+let n2_dom   = null;
+
 let vrtbuf = null;
 let linbuf = null;
 let vbase = [0,0,0];
@@ -31,7 +36,7 @@ let menu_hidden = false;
 let proj = 0;
 let projmat, modlmat, viewmat;
 //let modinvmat;
-let scale    = 1;
+let scale    = 3;
 let axis     = 0;
 let rotation = 0;
 let rotdir   = true;
@@ -269,6 +274,25 @@ let handle_key_down = function ()
         draw();
     }
 };
+
+let set_n1 = function (strval)
+{
+    let nn = parseInt(strval);
+    if (nn === Infinity || isNaN(nn) || nn < 1) return;
+    sphere_n = nn;
+    
+    make_object();
+    draw();
+};
+let set_n2 = function (strval)
+{
+    let nn = parseInt(strval);
+    if (nn === Infinity || isNaN(nn) || nn < 1) return;
+    disk_n = nn;
+    
+    make_object();
+    draw();
+};
 let set_alpha = function (strval)
 {
     let ival = Number(strval);
@@ -327,11 +351,15 @@ let init = function ()
     canvas.addEventListener("mousemove", handle_mouse_move);
     canvas.addEventListener("wheel",     handle_wheel);
     
+    n1_dom    = document.getElementById('n1');
+    n2_dom    = document.getElementById('n2');
+    n1_dom.value = "" + sphere_n;
+    n2_dom.value = "" + disk_n;
     alpha_dom = document.getElementById('alpha');
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
     {
-        if (opts[i].value == 0.5) { opts.selectedIndex = i; }
+        if (opts[i].value == alpha) { opts.selectedIndex = i; }
     }
     
     resize();
@@ -345,6 +373,8 @@ let init = function ()
 };
 
 
+window.set_n1    = set_n1;
+window.set_n2    = set_n2;
 window.set_alpha = set_alpha;
 
 document.addEventListener("DOMContentLoaded", init);
