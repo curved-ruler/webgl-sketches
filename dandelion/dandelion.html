@@ -57,6 +57,15 @@
                 <td><input id="n2" type="text" size="7" onchange="set_n2(this.value)"/></td>
             </tr>
             <tr>
+                <td class="left">Placement:</td>
+                <td>
+                    <select id="placement" onchange="set_placement(this.value)">
+                        <option value="pl_rnd">RND</option>
+                        <option value="pl_spiral">Spiral</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
                 <td class="left">Alpha:</td>
                 <td>
                     <select id="alpha" onchange="set_alpha(this.value)">

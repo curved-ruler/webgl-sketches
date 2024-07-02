@@ -11,6 +11,9 @@ let cwidth, cheight;
 let model  = { verts:[], lines:[] };
 let sphere   = [];
 
+let placement = "pl_rnd";
+let pl_dom = null;
+
 let sphere_n = 100;
 let n1_dom   = null;
 
@@ -42,23 +45,11 @@ let rotation = 0;
 let rotdir   = true;
 let grabbed  = 0;
 
-/*
-let camera = {
-    pos   : [ 0,  0,  10 ],
-    look  : [ 0,  0, -10 ],
-    up    : [ 0,  1,   0 ],
-    near  : 0.1,
-    median: 10,
-    far   : 1000,
-    fovy  : Math.PI / 3,
-    aspect: 1
-};
-*/
-let a = 1 / Math.sqrt(6);
+
 let camera = {
     pos   : [5, 5, 5],
     look  : v3.normalize([-1, -1, -1]),
-    up    : [-a, -a, 2*a],
+    up    : v3.normalize([-1, -1,  2]),
     near  : 0.1,
     median: 10,
     far   : 1000,
@@ -108,11 +99,29 @@ let sample_sphere = function ()
         sphere[i*3 + 2] = z;
     }
 };
-let make_object = function ()
-{
-    //model.verts = [];
-    model.lines = [];
 
+let sample_sphere_spiral = function ()
+{
+    sphere = [...Array(sphere_n*3)];
+
+    let phi   = 0;
+    let theta = 0;
+    let r     = 1;
+    let rev   = 10;
+
+    for (let i=0 ; i<sphere_n ; ++i)
+    {
+        sphere[i*3 + 0] = r * Math.sin(theta) * Math.cos(phi);
+        sphere[i*3 + 1] = r * Math.sin(theta) * Math.sin(phi);
+        sphere[i*3 + 2] = r * Math.cos(theta);
+        
+        theta +=    Math.PI / sphere_n;
+        phi   += (2*Math.PI / sphere_n) * rev;
+    }
+};
+
+let make_object_rnd = function ()
+{
     let v0 = [0,0,1];
     let rr = 0.2;
     let rrd = 0.07;
@@ -145,7 +154,57 @@ let make_object = function ()
             model.lines.push(vv[0]+v[0]+vbase[0], vv[1]+v[1]+vbase[1], vv[2]+v[2]+vbase[2]);
         }
     }
-    
+};
+
+let make_object_spiral = function ()
+{
+    let v0 = [0,0,1];
+    let rr = 0.2;
+    let rrd = 0.07;
+
+    sample_sphere_spiral();
+
+    model.lines.push(0, 0, 0);
+    model.lines.push(vbase[0], vbase[1], vbase[2]);
+
+    for (let i=0 ; i<sphere_n ; ++i)
+    {
+        let v = [ sphere[i*3 + 0], sphere[i*3 + 1], sphere[i*3 + 2] ];
+        let a = Math.acos(v[2]);
+        let mr = m4.init();
+        if (v[2] < 0.99)
+        {
+            if (v[2] > -0.99) mr = tr.rot(v3.normalize(v3.cross(v0, v)), a);
+            else              mr = tr.rot([1, 0, 0], a);
+        }
+
+        model.lines.push(vbase[0], vbase[1], vbase[2]);
+        model.lines.push(v[0]+vbase[0], v[1]+vbase[1], v[2]+vbase[2]);
+
+        for (let j=0 ; j<disk_n ; ++j)
+        {
+            let vv = [rr*Math.sin(2*Math.PI*j/disk_n), rr*Math.cos(2*Math.PI*j/disk_n), rrd];
+            vv = v3.mmul(mr, vv);
+
+            model.lines.push(v[0]+vbase[0], v[1]+vbase[1], v[2]+vbase[2]);
+            model.lines.push(vv[0]+v[0]+vbase[0], vv[1]+v[1]+vbase[1], vv[2]+v[2]+vbase[2]);
+        }
+    }
+};
+
+let make_object = function ()
+{
+    //model.verts = [];
+    model.lines = [];
+
+    if (placement === "pl_rnd")
+    {
+        make_object_rnd();
+    }
+    else if (placement === "pl_spiral")
+    {
+        make_object_spiral();
+    }
 
     //vrtbuf = gl.createBuffer();
     //gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
@@ -270,7 +329,7 @@ let handle_key_down = function ()
         axis     = 0;
         rotation = 0;
         rotdir   = true;
-        scale    = 1;
+        scale    = 3;
         draw();
     }
 };
@@ -304,6 +363,14 @@ let set_alpha = function (strval)
     alpha = ival;
     alpha_dom.blur();
     
+    draw();
+};
+let set_placement = function (strval)
+{
+    placement = strval;
+    pl_dom.blur();
+    
+    make_object();
     draw();
 };
 
@@ -355,6 +422,10 @@ let init = function ()
     n2_dom    = document.getElementById('n2');
     n1_dom.value = "" + sphere_n;
     n2_dom.value = "" + disk_n;
+    
+    pl_dom = document.getElementById('placement');
+    pl_dom.options.selectedIndex = 0;
+    
     alpha_dom = document.getElementById('alpha');
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
@@ -365,17 +436,13 @@ let init = function ()
     resize();
     make_object();
     draw();
-    
-    console.log("lookup", v3.dot(camera.look, camera.up), v3.length(camera.up));
-    
-    //let m1 = [1,0,0,0,  1,0,0,0,  1,0,0,0,  0,0,0,1];
-    //console.log(m4.mul(m1, m1));
 };
 
 
 window.set_n1    = set_n1;
 window.set_n2    = set_n2;
 window.set_alpha = set_alpha;
+window.set_placement = set_placement;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
