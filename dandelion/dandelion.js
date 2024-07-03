@@ -11,12 +11,12 @@ let cwidth, cheight;
 let model  = { verts:[], lines:[] };
 let sphere   = [];
 
-let placement = "pl_rnd";
-let pl_dom = null;
+let placement = "pl_golden";
+let pl_dom    = null;
+let showbase  = true;
 
 let sphere_n = 100;
 let n1_dom   = null;
-
 let disk_n   = 40;
 let n2_dom   = null;
 
@@ -29,8 +29,11 @@ let coordm   = [];
 let coordbuf = null;
 let draw_coords = true;
 
-let bcol  = [0.85, 0.85, 0.05];
-let dcol  = [0.01, 0.01, 0.85];
+let col   = [0.85, 0.85, 0.05,    0.01, 0.01, 0.85,
+             0.01, 0.01, 0.85,    0.85, 0.85, 0.05];
+//             0,    0,    0,       1,    1,    1,
+//             1,    1,    1,       0,    0,    0];
+let col_i = 0;
 let alpha = 1.0;
 let alpha_dom = null;
 
@@ -107,7 +110,7 @@ let sample_sphere_spiral = function ()
     let phi   = 0;
     let theta = 0;
     let r     = 1;
-    let rev   = 10;
+    let rev   = 9;
 
     for (let i=0 ; i<sphere_n ; ++i)
     {
@@ -120,92 +123,54 @@ let sample_sphere_spiral = function ()
     }
 };
 
-let make_object_rnd = function ()
-{
-    let v0 = [0,0,1];
-    let rr = 0.2;
-    let rrd = 0.07;
-
-    sample_sphere();
-
-    model.lines.push(0, 0, 0);
-    model.lines.push(vbase[0], vbase[1], vbase[2]);
-
-    for (let i=0 ; i<sphere_n ; ++i)
-    {
-        let v = [ sphere[i*3 + 0], sphere[i*3 + 1], sphere[i*3 + 2] ];
-        let a = Math.acos(v[2]);
-        let mr = m4.init();
-        if (v[2] < 0.99)
-        {
-            if (v[2] > -0.99) mr = tr.rot(v3.normalize(v3.cross(v0, v)), a);
-            else              mr = tr.rot([1, 0, 0], a);
-        }
-
-        model.lines.push(vbase[0], vbase[1], vbase[2]);
-        model.lines.push(v[0]+vbase[0], v[1]+vbase[1], v[2]+vbase[2]);
-
-        for (let j=0 ; j<disk_n ; ++j)
-        {
-            let vv = [rr*Math.sin(2*Math.PI*j/disk_n), rr*Math.cos(2*Math.PI*j/disk_n), rrd];
-            vv = v3.mmul(mr, vv);
-
-            model.lines.push(v[0]+vbase[0], v[1]+vbase[1], v[2]+vbase[2]);
-            model.lines.push(vv[0]+v[0]+vbase[0], vv[1]+v[1]+vbase[1], vv[2]+v[2]+vbase[2]);
-        }
-    }
-};
-
-let make_object_spiral = function ()
-{
-    let v0 = [0,0,1];
-    let rr = 0.2;
-    let rrd = 0.07;
-
-    sample_sphere_spiral();
-
-    model.lines.push(0, 0, 0);
-    model.lines.push(vbase[0], vbase[1], vbase[2]);
-
-    for (let i=0 ; i<sphere_n ; ++i)
-    {
-        let v = [ sphere[i*3 + 0], sphere[i*3 + 1], sphere[i*3 + 2] ];
-        let a = Math.acos(v[2]);
-        let mr = m4.init();
-        if (v[2] < 0.99)
-        {
-            if (v[2] > -0.99) mr = tr.rot(v3.normalize(v3.cross(v0, v)), a);
-            else              mr = tr.rot([1, 0, 0], a);
-        }
-
-        model.lines.push(vbase[0], vbase[1], vbase[2]);
-        model.lines.push(v[0]+vbase[0], v[1]+vbase[1], v[2]+vbase[2]);
-
-        for (let j=0 ; j<disk_n ; ++j)
-        {
-            let vv = [rr*Math.sin(2*Math.PI*j/disk_n), rr*Math.cos(2*Math.PI*j/disk_n), rrd];
-            vv = v3.mmul(mr, vv);
-
-            model.lines.push(v[0]+vbase[0], v[1]+vbase[1], v[2]+vbase[2]);
-            model.lines.push(vv[0]+v[0]+vbase[0], vv[1]+v[1]+vbase[1], vv[2]+v[2]+vbase[2]);
-        }
-    }
-};
-
 let make_object = function ()
 {
     //model.verts = [];
     model.lines = [];
-
-    if (placement === "pl_rnd")
+    
+    let v0 = [0,0,1];
+    let rr = 0.2;
+    let rrd = 0.07;
+    
+    if (placement === "pl_golden")
     {
-        make_object_rnd();
+        sample_sphere();
     }
     else if (placement === "pl_spiral")
     {
-        make_object_spiral();
+        sample_sphere_spiral();
     }
 
+    model.lines.push(0, 0, 0);
+    model.lines.push(vbase[0], vbase[1], vbase[2]);
+
+    for (let i=0 ; i<sphere_n ; ++i)
+    {
+        let v = [ sphere[i*3 + 0], sphere[i*3 + 1], sphere[i*3 + 2] ];
+        let a = Math.acos(v[2]);
+        let mr = m4.init();
+        if (v[2] < 0.99)
+        {
+            if (v[2] > -0.99) mr = tr.rot(v3.normalize(v3.cross(v0, v)), a);
+            else              mr = tr.rot([1, 0, 0], a);
+        }
+
+        if (showbase)
+        {
+            model.lines.push(vbase[0], vbase[1], vbase[2]);
+            model.lines.push(v[0]+vbase[0], v[1]+vbase[1], v[2]+vbase[2]);
+        }
+
+        for (let j=0 ; j<disk_n ; ++j)
+        {
+            let vv = [rr*Math.sin(2*Math.PI*j/disk_n), rr*Math.cos(2*Math.PI*j/disk_n), rrd];
+            vv = v3.mmul(mr, vv);
+
+            model.lines.push(v[0]+vbase[0], v[1]+vbase[1], v[2]+vbase[2]);
+            model.lines.push(vv[0]+v[0]+vbase[0], vv[1]+v[1]+vbase[1], vv[2]+v[2]+vbase[2]);
+        }
+    }
+    
     //vrtbuf = gl.createBuffer();
     //gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
     //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.verts), gl.STATIC_DRAW);
@@ -235,6 +200,7 @@ let draw = function ()
     }
     gl.enable(gl.DEPTH_TEST);
     
+    gl.clearColor(col[col_i], col[col_i+1], col[col_i+2], 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     compute_matrices();
@@ -254,7 +220,7 @@ let draw = function ()
     {
         gl.bindBuffer(gl.ARRAY_BUFFER, linbuf);
         //gl.lineWidth(20.0); wtf
-        gl.uniform3fv(glprog.col, dcol);
+        gl.uniform3fv(glprog.col, [ col[col_i+3], col[col_i+4], col[col_i+5] ]);
         gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 0*4, 0*4);
         gl.drawArrays(gl.LINES, 0, model.lines.length/3);
     }
@@ -308,15 +274,16 @@ let handle_key_down = function ()
             document.getElementById("menu").className = "hidden";
         }
     }
-    else if (event.key === "h" || event.key === "H")
-    {
-        draw_coords = !draw_coords;
-        draw();
-    }
     else if (event.key === "i" || event.key === "I")
     {
         ++proj;
         if (proj > 2) { proj = 0; }
+        draw();
+    }
+    else if (event.key === "c" || event.key === "C")
+    {
+        col_i += 6;
+        if ((col_i+5) >= col.length) { col_i = 0; }
         draw();
     }
     else if (event.key === "F8")
@@ -348,6 +315,14 @@ let set_n2 = function (strval)
     let nn = parseInt(strval);
     if (nn === Infinity || isNaN(nn) || nn < 1) return;
     disk_n = nn;
+    
+    make_object();
+    draw();
+};
+let set_base = function (val)
+{
+    //console.log("B", val);
+    showbase = val;
     
     make_object();
     draw();
@@ -410,9 +385,6 @@ let init = function ()
     canvas = document.getElementById('canvas');
     gpu_init('canvas');
     
-    gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
-    //gl.clearDepth(1); = default
-    
     canvas.addEventListener("mousedown", handle_mouse_down);
     canvas.addEventListener("mouseup",   handle_mouse_up);
     canvas.addEventListener("mousemove", handle_mouse_move);
@@ -425,6 +397,8 @@ let init = function ()
     
     pl_dom = document.getElementById('placement');
     pl_dom.options.selectedIndex = 0;
+    
+    document.getElementById('showbase').checked = showbase;
     
     alpha_dom = document.getElementById('alpha');
     let opts = alpha_dom.options;
@@ -441,6 +415,7 @@ let init = function ()
 
 window.set_n1    = set_n1;
 window.set_n2    = set_n2;
+window.set_base  = set_base;
 window.set_alpha = set_alpha;
 window.set_placement = set_placement;
 

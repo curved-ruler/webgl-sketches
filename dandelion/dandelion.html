@@ -19,7 +19,7 @@
   left: 10px;
   padding: 10px;
   background-color: rgb(180, 180, 20);
-  color: rgb(120, 255, 255);
+  color: rgb(90, 255, 255);
 }
 
 .left {
@@ -45,6 +45,10 @@
                 <td>Toggle projection</td>
             </tr>
             <tr>
+                <td class="left">C:</td>
+                <td>Colscheme</td>
+            </tr>
+            <tr>
                 <td class="left">Mouse wheel / drag:</td>
                 <td>Scale / Rotate</td>
             </tr>
@@ -60,10 +64,14 @@
                 <td class="left">Placement:</td>
                 <td>
                     <select id="placement" onchange="set_placement(this.value)">
-                        <option value="pl_rnd">RND</option>
+                        <option value="pl_golden">Phyllotaxis</option>
                         <option value="pl_spiral">Spiral</option>
                     </select>
                 </td>
+            </tr>
+            <tr>
+                <td class="left">Show base:</td>
+                <td><input id="showbase" type="checkbox" onchange="set_base(this.checked)"></td>
             </tr>
             <tr>
                 <td class="left">Alpha:</td>
