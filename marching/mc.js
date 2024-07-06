@@ -69,6 +69,35 @@ let p = [y,z,x];
 let o = 13;
 let q = [Math.sqrt(p[0]*p[0]+p[2]*p[2])-o, p[1]];
 return cross(q[0], q[1]);`
+    },
+    
+    {
+        V: 0.0, Fstr:`\
+// https://iquilezles.org/articles/distfunctions/
+
+let length = (p)   => { return Math.sqrt(p[0]*p[0]+p[1]*p[1]); };
+let moon   = (a,b) => {
+    let p  = [a,Math.abs(b)];
+    let d  = 3;
+    let ra = 10;
+    let rb = 8;
+    let aa = (ra*ra - rb*rb + d*d)/(2*d);
+    let bb = Math.sqrt(Math.max(ra*ra-aa*aa, 0.0));
+    
+    if (d*(p[0]*bb-p[1]*aa) > d*d*Math.max(bb-p[1],0.0))
+    {
+        return length([p[0]-aa,p[1]-bb]);
+    }
+    return Math.max(
+         length(p)-ra,
+        -(length([p[0]-d, p[1]])-rb)
+    );
+};
+
+let p = [y,z,x];
+let o = 13;
+let q = [Math.sqrt(p[0]*p[0]+p[2]*p[2])-o, p[1]];
+return moon(q[0], q[1]);`
     }
 
 ];
