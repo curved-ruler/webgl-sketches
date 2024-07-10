@@ -191,17 +191,17 @@ let generate = function ()
         {
             if (horizontal)
             {
-                wires.push([lines[i].pos[0]-0.5,
+                wires.push([lines[i].pos[0]-0.3,
                             lines[i].pos[1] + S+nn*0.1,
-                            lines[i].pos[2]+0.5,
+                            lines[i].pos[2]+0.3,
                             lines[i].pos[1] + S+nn*0.1]);
             }
             else
             {
                 wires.push([lines[i].pos[0] + S+nn*0.1,
-                            lines[i].pos[1]-0.5,
+                            lines[i].pos[1]-0.3,
                             lines[i].pos[0] + S+nn*0.1,
-                            lines[i].pos[3]+0.5]);
+                            lines[i].pos[3]+0.3]);
             }
         }
     }
