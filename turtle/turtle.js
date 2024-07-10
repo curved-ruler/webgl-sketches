@@ -38,7 +38,7 @@ let Presets = [
 return {
     N  : 1500,
     fi : [ 0, 100],
-    dfi: [39,  20]
+    dfi: [42,  20]
 };`
 ];
 
