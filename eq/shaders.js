@@ -95,6 +95,22 @@ vec2 cdiv (in vec2 z1, in vec2 z2)
     );
 }
 
+// complex cos
+vec2 ccos(in vec2 z)
+{
+    vec2 eiz  = vec2( exp(-z.y)*cos(z.x),  exp(-z.y)*sin(z.x) );
+    vec2 emiz = vec2( exp( z.y)*cos(z.x), -exp( z.y)*sin(z.x) );
+    return (eiz+emiz)/2.0;
+}
+
+// complex sin
+vec2 csin(in vec2 z)
+{
+    vec2 eiz  = vec2( exp(-z.y)*cos(z.x),  exp(-z.y)*sin(z.x) );
+    vec2 emiz = vec2( exp( z.y)*cos(z.x), -exp( z.y)*sin(z.x) );
+    return cdiv(eiz-emiz, vec2(0.0, 2.0));
+}
+
 // complex cartesian to polar // z(a,b):a+bi to p(r,φ):r*(cosφ+isinφ)
 vec2 ztop (in vec2 z)
 {
