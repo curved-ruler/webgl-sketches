@@ -173,7 +173,7 @@ let randomize_lines = function ()
         if (lines[i].N === -1) continue;
         
         let R = Math.random();
-        lines[i].N = Math.floor(R*10);
+        lines[i].N = Math.floor(R*4);
     }
 };
 
@@ -191,21 +191,64 @@ let generate = function ()
         {
             if (horizontal)
             {
-                wires.push([lines[i].pos[0]-0.3,
+                wires.push([lines[i].pos[0]-0.5,
                             lines[i].pos[1] + S+nn*0.1,
-                            lines[i].pos[2]+0.3,
+                            lines[i].pos[2]+0.5,
                             lines[i].pos[1] + S+nn*0.1]);
             }
             else
             {
                 wires.push([lines[i].pos[0] + S+nn*0.1,
-                            lines[i].pos[1]-0.3,
+                            lines[i].pos[1]-0.5,
                             lines[i].pos[0] + S+nn*0.1,
-                            lines[i].pos[3]+0.3]);
+                            lines[i].pos[3]+0.5]);
             }
         }
     }
-}
+};
+
+let pcalc_lines = function ()
+{
+    let dtor = Math.PI / 180;
+    for (let i=0 ; i<lines.length ; ++i)
+    {
+        if (lines[i].N === -1) continue;
+        
+        //let horizontal = (lines[i].pos[0] === lines[i].pos[2]) ? true : false;
+        let P = Math.floor( Math.abs(((lines[i].pos[0] + lines[i].pos[1]))) ) % 10;
+        lines[i].N = P;
+    }
+};
+
+let pattern = function ()
+{
+    wires = [];
+    pcalc_lines();
+    
+    for (let i=0 ; i<lines.length ; ++i)
+    {
+        let horizontal = (lines[i].pos[0] === lines[i].pos[2]) ? true : false;
+        let S = 0.5-((lines[i].N-1)/2)*0.1;
+        
+        for (let nn = 0 ; nn<lines[i].N ; ++nn)
+        {
+            if (horizontal)
+            {
+                wires.push([lines[i].pos[0]-0.5,
+                            lines[i].pos[1] + S+nn*0.1,
+                            lines[i].pos[2]+0.5,
+                            lines[i].pos[1] + S+nn*0.1]);
+            }
+            else
+            {
+                wires.push([lines[i].pos[0] + S+nn*0.1,
+                            lines[i].pos[1]-0.5,
+                            lines[i].pos[0] + S+nn*0.1,
+                            lines[i].pos[3]+0.5]);
+            }
+        }
+    }
+};
 
 let scaledn = function (v)
 {
@@ -272,6 +315,11 @@ let handleKeyDown = function (event)
     else if (event.key === 'g' || event.key === 'G')
     {
         generate();
+        draw();
+    }
+    else if (event.key === 'p' || event.key === 'P')
+    {
+        pattern();
         draw();
     }
     else if (event.key === 's' || event.key === 'S')
