@@ -13,19 +13,40 @@ let scale = 30;
 let pan   = [0,0];
 let start_pan = 0;
 
-let N = 8;
+let N = 100;
 let N_dom = null;
 let lines = [];
 let wires = [];
 //let cells = [];
 
-let debug = 0;
+let debug = 1;
 
 let back_col = [255, 255, 255];
-let line_col = [  0,   0,   0];
-let noli_col = [220, 150,  25];
+let line_col = [255, 255, 255];
+let noli_col = [  0,   0,   0];
 let l1col_dom = null;
 let l2col_dom = null;
+
+let P = null;
+let P_dom = null;
+let Pstrings = [
+    `\
+let x2 = (x/5)*(x/5);
+let y2 = (y/5)*(y/5);
+return Math.sqrt(x2+y2) % 6;
+`,
+    `\
+let length = (p) => { return Math.sqrt(p[0]*p[0]+p[1]*p[1]); };
+let z = [0,0];
+let j = 0;
+for (j=0 ; j<10 ; ++j)
+{
+    z = [ z[0]*z[0] - z[1]*z[1] + (x/20), 2.0*z[0]*z[1] + (y/20) ];
+    if (length(z) > 2.0) break;
+}
+return j;
+`
+];
 
 let err = function (str)
 {
@@ -215,14 +236,22 @@ let pcalc_lines = function ()
         if (lines[i].N === -1) continue;
         
         //let horizontal = (lines[i].pos[0] === lines[i].pos[2]) ? true : false;
-        let P = Math.floor( Math.abs(((lines[i].pos[0] + lines[i].pos[1]))) ) % 10;
-        lines[i].N = P;
+        //let S = Math.sin( lines[i].pos[0]*5*dtor ) + Math.cos( lines[i].pos[1] * 5*dtor );
+        let x = (lines[i].pos[0] + lines[i].pos[2]) / 2;
+        let y = (lines[i].pos[1] + lines[i].pos[3]) / 2;
+        
+        let s = P(x, y);
+        
+        //let s = Math.sqrt(x*x+y*y);
+        let p = Math.floor( Math.abs( ( s ) ) );
+        lines[i].N = p;
     }
 };
 
 let pattern = function ()
 {
     wires = [];
+    set_p();
     pcalc_lines();
     
     for (let i=0 ; i<lines.length ; ++i)
@@ -296,6 +325,7 @@ let handleMouseMove = function (event)
 
 let handleKeyDown = function (event)
 {
+    if (document.activeElement === P_dom) { return; }
     if (event.ctrlKey) { return; }
     
     
@@ -334,6 +364,20 @@ let handleWheel = function (event)
     else                  zoomout();
 };
 
+
+let set_p = function ()
+{
+    let Pstr = P_dom.value;
+    try
+    {
+        P = Function('x', 'y', Pstr);
+    }
+    catch (e)
+    {
+        err(e.message);
+        return;
+    }
+};
 
 
 let set_n = function (strval)
@@ -395,6 +439,8 @@ let init = function ()
     
     N_dom = document.getElementById('n_in');
     N_dom.value = "" + N;
+    P_dom = document.getElementById('func');
+    P_dom.value = Pstrings[0];
     
     l1col_dom = document.getElementById('l1col_in');
     l1col_dom.value = "" + line_col[0] + ", " + line_col[1] + ", " + line_col[2];
