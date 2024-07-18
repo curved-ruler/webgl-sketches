@@ -191,7 +191,7 @@ let randomize_lines = function ()
 {
     for (let i=0 ; i<lines.length ; ++i)
     {
-        if (lines[i].N === -1) continue;
+        if (lines[i].N < 0) continue;
         
         let R = Math.random();
         lines[i].N = Math.floor(R*4);
@@ -242,9 +242,7 @@ let pcalc_lines = function ()
         
         let s = P(x, y);
         
-        //let s = Math.sqrt(x*x+y*y);
-        let p = Math.floor( Math.abs( ( s ) ) );
-        lines[i].N = p;
+        lines[i].N = Math.floor( s );
     }
 };
 
