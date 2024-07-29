@@ -36,9 +36,10 @@ let P_dom = null;
 let Presets = [
     `\
 return {
-    N  : 1500,
-    fi : [ 0, 100],
-    dfi: [42,  20]
+    N  : 2000,
+    Fi : [ 0, 100],
+    dFi: [42,  20],
+    R  : (i) => (1)
 };`
 ];
 
@@ -116,9 +117,10 @@ let make_object = function ()
 
     for (let i=0 ; i<Params.N ; ++i)
     {
-        let ii = i % Params.fi.length;
-        v1[0] = v0[0] + Math.cos(Params.fi[ii]*dtor);
-        v1[1] = v0[1] + Math.sin(Params.fi[ii]*dtor);
+        let ii = i % Params.Fi.length;
+        let R  = Params.R(i);
+        v1[0] = v0[0] + R*Math.cos(Params.Fi[ii]*dtor);
+        v1[1] = v0[1] + R*Math.sin(Params.Fi[ii]*dtor);
         //v1[2] =
 
         model.lines.push(v0[0], v0[1], v0[2]);
@@ -128,7 +130,7 @@ let make_object = function ()
         v0[1] = v1[1];
         //v0[2] = v1[2];
 
-        Params.fi[ii] += Params.dfi[ii];
+        Params.Fi[ii] += Params.dFi[ii];
     }
     
 
@@ -220,14 +222,17 @@ let handle_mouse_move = function (event)
         rotation = rotation - Math.floor(rotation/360.0)*360.0;
         */
 
-        camera.pos[0] -= event.movementX*0.05*scale;
-        camera.pos[1] += event.movementY*0.05*scale;
+        camera.pos[0] -= event.movementX*(0.05*scale);
+        camera.pos[1] += event.movementY*(0.05*scale);
 
         draw();
     }
 };
 let handle_key_down = function ()
 {
+    if (document.activeElement === P_dom) { return; }
+    if (event.ctrlKey) { return; }
+    
     if (event.key === "m" || event.key === "M")
     {
         if (menu_hidden)
