@@ -14,11 +14,11 @@ let model  = { verts:[], lines:[] };
 let spiral = [];
 let vrtbuf = null;
 let linbuf = null;
-let vbase = [0,0,0];
 
-let bcol  = [0.0, 0.0, 0.0];
-let dcol  = [1.0, 1.0, 1.0];
-let alpha = 1.0;
+let cols  = [0, 0, 0,   1, 1, 1,
+             1, 1, 1,   0, 0, 0];
+let curr_col = 0;
+let alpha    = 1.0;
 let alpha_dom = null;
 
 let menu_hidden = false;
@@ -165,6 +165,7 @@ let draw = function ()
         gl.disable(gl.DEPTH_TEST);
     }
     
+    gl.clearColor(cols[curr_col*6], cols[curr_col*6+1], cols[curr_col*6+2], 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     compute_matrices();
@@ -175,16 +176,11 @@ let draw = function ()
     
     gl.uniform1f(glprog.alpha, alpha);
     
-    //gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
-    //gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 0*4, 0*4);
-    //gl.uniform3fv(glprog.col, dcol);
-    //gl.drawArrays(gl.POINTS, 0, model.verts.length/3);
-    
     if (model.lines.length > 0)
     {
         gl.bindBuffer(gl.ARRAY_BUFFER, linbuf);
         //gl.lineWidth(20.0); wtf
-        gl.uniform3fv(glprog.col, dcol);
+        gl.uniform3fv(glprog.col, [ cols[curr_col*6+3], cols[curr_col*6+4], cols[curr_col*6+5] ]);
         gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 0*4, 0*4);
         gl.drawArrays(gl.LINES, 0, model.lines.length/3);
     }
@@ -246,6 +242,12 @@ let handle_key_down = function ()
             document.getElementById("menu").className = "hidden";
         }
     }
+    if (event.key === "c" || event.key === "C")
+    {
+        curr_col += 1;
+        if (curr_col >= cols.length/6) { curr_col = 0; }
+        draw();
+    }
     else if (event.key === "F8")
     {
         let image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
@@ -253,10 +255,8 @@ let handle_key_down = function ()
     }
     else if (event.key === "Enter")
     {
-        axis     = 0;
-        rotation = 0;
-        rotdir   = true;
         scale    = 1;
+        camera.pos = [ 0,  0,  10 ];
         draw();
     }
 };
@@ -309,9 +309,6 @@ let init = function ()
     
     canvas = document.getElementById('canvas');
     gpu_init('canvas');
-    
-    gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
-    //gl.clearDepth(1); = default
     
     canvas.addEventListener("mousedown", handle_mouse_down);
     canvas.addEventListener("mouseup",   handle_mouse_up);
