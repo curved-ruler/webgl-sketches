@@ -24,10 +24,7 @@ let vrtbuf = null;
 let linbuf = null;
 let vbase = [0,0,0];
 
-let coordlen = 20;
-let coordm   = [];
-let coordbuf = null;
-let draw_coords = true;
+let view_half = false;
 
 let col   = [0.85, 0.85, 0.05,    0.01, 0.01, 0.85,
              0.01, 0.01, 0.85,    0.85, 0.85, 0.05];
@@ -53,9 +50,9 @@ let camera = {
     pos   : [5, 5, 5],
     look  : v3.normalize([-1, -1, -1]),
     up    : v3.normalize([-1, -1,  2]),
-    near  : 0.1,
-    median: 10,
-    far   : 1000,
+    near  : 0.02,
+    median: 8,
+    far   : 50,
     fovy  : Math.PI / 3,
     aspect: 1
 };
@@ -284,6 +281,12 @@ let handle_key_down = function ()
     {
         col_i += 6;
         if ((col_i+5) >= col.length) { col_i = 0; }
+        draw();
+    }
+    else if (event.key === "v" || event.key === "V")
+    {
+        view_half = !view_half;
+        camera.far = view_half ? 9 : 50;
         draw();
     }
     else if (event.key === "F8")
