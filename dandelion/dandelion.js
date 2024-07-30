@@ -3,6 +3,8 @@ import { gl_init }    from "./gl_init.js";
 import { shaders }    from "./shaders.js";
 import { m4, v3, tr } from "./matvec.js";
 
+import { saveAs } from './FileSaver.js';
+
 let gl      = null;
 let glprog  = null;
 let canvas  = null;
@@ -37,7 +39,6 @@ return [x,y,z];
     }
 ];
 
-let placement = "pl_golden";
 let pl_dom    = null;
 let showbase  = true;
 
@@ -102,6 +103,82 @@ let compute_matrices = function ()
     {
         projmat = tr.persp(camera);
     }
+};
+
+let rgb2hex = function (r,g,b)
+{
+    let to_hex = (c) => {
+        var hex = c.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
+    return "#" + to_hex(Math.floor(r*255)) + to_hex(Math.floor(g*255)) + to_hex(Math.floor(b*255));
+};
+
+let save_obj = function ()
+{
+    let objstring = "\n";
+    let sc = 5.0;
+    
+    let vn = model.lines.length / 6;
+        
+    for (let i=0 ; i<vn ; ++i)
+    {
+        objstring += "v " + model.lines[i*6 + 0] * sc + " " + model.lines[i*6 + 1] * sc + " " + model.lines[i*6 + 2] * sc + "\n";
+        objstring += "v " + model.lines[i*6 + 3] * sc + " " + model.lines[i*6 + 4] * sc + " " + model.lines[i*6 + 5] * sc + "\n";
+        objstring += "l -1 -2\n";
+    }
+
+    objstring += "\n";
+
+    let blob = new Blob([objstring], {type: "text/plain"});
+    saveAs(blob, 'dandelion.obj');
+};
+let cputrans = function (v)
+{
+    compute_matrices();
+    let vm = m4.mul(viewmat, modlmat);
+    let v2 = v3.mmul(projmat, v3.mmul(vm, v));
+    return [v2[0]*cwidth/2 + cwidth/2, v2[1]*cheight/2 + cheight/2, v2[2]];
+};
+let save_svg = function ()
+{
+    let bc = rgb2hex(col[col_i],   col[col_i+1], col[col_i+2]);
+    let dc = rgb2hex(col[col_i+3], col[col_i+4], col[col_i+5]);
+    
+    let objstring = `\
+<svg width="${cwidth}" height="${cheight}" viewBox="0 0 ${cwidth} ${cheight}" \
+stroke="${dc}" stroke-width="1"
+xmlns="http://www.w3.org/2000/svg">
+
+  <rect x="0" y="0" width="${cwidth}" height="${cheight}" fill="${bc}" />
+`;
+    //let dmin = 100; let dmax = -100;
+    for (let i=0 ; i<model.lines.length / 6 ; ++i)
+    {
+        let l1 = cputrans([model.lines[i*6+0], model.lines[i*6+1], model.lines[i*6+2]]);
+        let l2 = cputrans([model.lines[i*6+3], model.lines[i*6+4], model.lines[i*6+5]]);
+        
+        //if (l1[2] > dmax) dmax = l1[2];
+        //if (l1[2] < dmin) dmin = l1[2];
+        //if (l2[2] > dmax) dmax = l2[2];
+        //if (l2[2] < dmin) dmin = l2[2];
+        if (view_half)
+        {
+            if (l1[2] < -1 || l1[2] > 1 || l2[2] < -1 || l2[2] > 1)
+            {
+                continue;
+            }
+        }
+        
+        objstring += `  <line x1="${l1[0]}" y1="${l1[1]}" x2="${l2[0]}" y2="${l2[1]}" />\n`;
+    }
+
+    objstring += "</svg>\n";
+
+    //console.log("D", dmin, dmax);
+    
+    let blob = new Blob([objstring], {type: "text/plain"});
+    saveAs(blob, 'dandelion.svg');
 };
 
 let err = function (str)
@@ -298,6 +375,14 @@ let handle_key_down = function ()
         view_half = !view_half;
         camera.far = view_half ? 9 : 50;
         draw();
+    }
+    else if (event.key === "s" || event.key === "S")
+    {
+        save_svg();
+    }
+    else if (event.key === "o" || event.key === "O")
+    {
+        save_obj();
     }
     else if (event.key === "F8")
     {
