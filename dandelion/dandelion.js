@@ -11,6 +11,32 @@ let cwidth, cheight;
 let model  = { verts:[], lines:[] };
 let sphere   = [];
 
+let F    = null;
+let Fdom = null;
+let FS = [
+    { PL : 'golden', Fstr: `\
+let phi    = Math.PI * (Math.sqrt(5.0) - 1.0);
+let y      = 1.0 - (i / (N - 1.0)) * 2.0; // y goes from 1 to -1
+let radius = Math.sqrt(1 - y * y); // radius at y
+let theta  = phi * i; // golden angle increment
+
+let x = Math.cos(theta) * radius;
+let z = Math.sin(theta) * radius;
+return [x,y,z];
+`
+    },
+    { PL : 'spiral', Fstr: `\
+let rev   = 9;
+let theta = i*Math.PI / N;
+let phi   = i*(2*rev*Math.PI / N);
+let x     = Math.sin(theta) * Math.cos(phi);
+let y     = Math.sin(theta) * Math.sin(phi);
+let z     = Math.cos(theta);
+return [x,y,z];
+`
+    }
+];
+
 let placement = "pl_golden";
 let pl_dom    = null;
 let showbase  = true;
@@ -78,45 +104,32 @@ let compute_matrices = function ()
     }
 };
 
+let err = function (str)
+{
+    console.error('Error: ' + str);
+    window.alert('Error:\n' + str);
+};
+
 let sample_sphere = function ()
 {
     sphere = [...Array(sphere_n*3)];
 
-    let phi = Math.PI * (Math.sqrt(5.0) - 1.0);
-
     for (let i=0 ; i<sphere_n ; ++i)
     {
-        let y = 1.0 - (i / (sphere_n - 1.0)) * 2.0; // # y goes from 1 to -1
-        let radius = Math.sqrt(1 - y * y); // # radius at y
+        let v = [0,0,0];
+        try
+        {
+            v = F(i, sphere_n);
+        }
+        catch (e)
+        {
+            err(e.message);
+            return;
+        }
 
-        let theta = phi * i; // # golden angle increment
-
-        let x = Math.cos(theta) * radius;
-        let z = Math.sin(theta) * radius;
-
-        sphere[i*3 + 0] = x;
-        sphere[i*3 + 1] = y;
-        sphere[i*3 + 2] = z;
-    }
-};
-
-let sample_sphere_spiral = function ()
-{
-    sphere = [...Array(sphere_n*3)];
-
-    let phi   = 0;
-    let theta = 0;
-    let r     = 1;
-    let rev   = 9;
-
-    for (let i=0 ; i<sphere_n ; ++i)
-    {
-        sphere[i*3 + 0] = r * Math.sin(theta) * Math.cos(phi);
-        sphere[i*3 + 1] = r * Math.sin(theta) * Math.sin(phi);
-        sphere[i*3 + 2] = r * Math.cos(theta);
-        
-        theta +=    Math.PI / sphere_n;
-        phi   += (2*Math.PI / sphere_n) * rev;
+        sphere[i*3 + 0] = v[0];
+        sphere[i*3 + 1] = v[1];
+        sphere[i*3 + 2] = v[2];
     }
 };
 
@@ -129,14 +142,7 @@ let make_object = function ()
     let rr = 0.2;
     let rrd = 0.07;
     
-    if (placement === "pl_golden")
-    {
-        sample_sphere();
-    }
-    else if (placement === "pl_spiral")
-    {
-        sample_sphere_spiral();
-    }
+    sample_sphere();
 
     model.lines.push(0, 0, 0);
     model.lines.push(vbase[0], vbase[1], vbase[2]);
@@ -258,6 +264,10 @@ let handle_mouse_move = function (event)
 };
 let handle_key_down = function ()
 {
+    if (document.activeElement === Fdom) { return; }
+    if (event.ctrlKey) { return; }
+    
+    
     if (event.key === "m" || event.key === "M")
     {
         if (menu_hidden)
@@ -345,9 +355,28 @@ let set_alpha = function (strval)
 };
 let set_placement = function (strval)
 {
-    placement = strval;
+    for (let i=0 ; i<FS.length ; ++i)
+    {
+        if (FS[i].PL === strval)
+        {
+            pl_dom.blur();
+            Fdom.value = FS[i].Fstr;
+            setf();
+        }
+    }
     pl_dom.blur();
-    
+};
+let setf = function ()
+{
+    try
+    {
+        F = Function('i', 'N', Fdom.value);
+    }
+    catch (err)
+    {
+        err(err.message);
+        return;
+    }
     make_object();
     draw();
 };
@@ -401,6 +430,10 @@ let init = function ()
     pl_dom = document.getElementById('placement');
     pl_dom.options.selectedIndex = 0;
     
+    Fdom = document.getElementById("func");
+    Fdom.value = FS[0].Fstr;
+    setf();
+    
     document.getElementById('showbase').checked = showbase;
     
     alpha_dom = document.getElementById('alpha');
@@ -416,6 +449,7 @@ let init = function ()
 };
 
 
+window.setf      = setf;
 window.set_n1    = set_n1;
 window.set_n2    = set_n2;
 window.set_base  = set_base;
