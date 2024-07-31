@@ -326,6 +326,27 @@ vec3 col(in float x, in float y)
 }
 `,
 
+julia_2_m: `\
+// derived from equation by @Peter_Stampfli@mathstodon.xy
+vec3 col(in float x, in float y)
+{
+    vec2 z  = vec2(x,y);
+    int i = 0;
+    int n = 64;
+    for (i=0 ; i<n ; ++i)
+    {
+        vec2 z5 = cmul(z,cmul(z,cmul(z,cmul(z,z))));
+        vec2 a  = z5-vec2(mouse.x, 0.0);
+        vec2 b  = z5+vec2(2.0*mouse.x, 2.0*mouse.y);
+        vec2 c  = z5+vec2(mouse.x, mouse.y);
+        z = 0.72*cdiv(a,cdiv(b,cdiv(c,z)));
+        if (length(z) > 10.0) break;
+    }
+    float t = fract(float(i) / float(n)*16.0);
+    return hsv2rgb(vec3(0.1, 0.9, t));
+}
+`,
+
 nr_bad : `\
 vec3 col(in float x, in float y)
 {
