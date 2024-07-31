@@ -99,7 +99,7 @@ let compute_matrices = function ()
     {
         projmat = tr.axon(camera);
     }
-    else if (proj === 1)
+    else
     {
         projmat = tr.persp(camera);
     }
