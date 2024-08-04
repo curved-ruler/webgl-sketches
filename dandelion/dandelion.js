@@ -39,7 +39,7 @@ return [x,y,z];
     },
     
     { PL : 'chebysev', Fstr: `\
-    let a = 0.5;
+let a = 0.5;
 let rev = 7;
 
 let fi = (u,v) => [Math.cos(v)*Math.cos(u),
@@ -65,12 +65,11 @@ return [(a*fiu(uu,vv)[0] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)
     },
     
     { PL : 'rnd', Fstr: `\
-let theta = i*Math.PI / N;
-let phi   = i*(2*rev*Math.PI / N);
-let x     = Math.sin(theta) * Math.cos(phi);
-let y     = Math.sin(theta) * Math.sin(phi);
-let z     = Math.cos(theta);
-return [x,y,z];
+let u = Math.acos(2*Math.random() - 1);
+let v = 2*Math.PI*Math.random();
+return [Math.sin(u) * Math.cos(v),
+        Math.sin(u) * Math.sin(v),
+        Math.cos(u)];
 `
     }
 ];
