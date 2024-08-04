@@ -36,6 +36,42 @@ let y     = Math.sin(theta) * Math.sin(phi);
 let z     = Math.cos(theta);
 return [x,y,z];
 `
+    },
+    
+    { PL : 'chebysev', Fstr: `\
+    let a = 0.5;
+let rev = 7;
+
+let fi = (u,v) => [Math.cos(v)*Math.cos(u),
+                   Math.cos(v)*Math.sin(u),
+                   Math.sin(v)];
+
+let fiu = (u,v) => [-Math.cos(v)*Math.sin(u),
+                     Math.cos(v)*Math.cos(u),
+                     0];
+
+let fiv = (u,v) => [-Math.sin(v)*Math.cos(u),
+                    -Math.sin(v)*Math.sin(u),
+                     Math.cos(v)];
+
+let i2 = i % Math.floor(N / rev);
+let uu =  i * 2*Math.PI / N + i2*2*Math.PI / rev;
+let vv =  i * 2*Math.PI / N;
+
+return [(a*fiu(uu,vv)[0] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[0] ) / 2,
+        (a*fiu(uu,vv)[1] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[1] ) / 2,
+        (a*fiu(uu,vv)[2] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[2] ) / 2];
+`
+    },
+    
+    { PL : 'rnd', Fstr: `\
+let theta = i*Math.PI / N;
+let phi   = i*(2*rev*Math.PI / N);
+let x     = Math.sin(theta) * Math.cos(phi);
+let y     = Math.sin(theta) * Math.sin(phi);
+let z     = Math.cos(theta);
+return [x,y,z];
+`
     }
 ];
 
