@@ -11,6 +11,7 @@ let screen_quad_buffer = null;
 let F = null;
 let R = null;
 let N = null;
+let Fill = null;
 
 let col_channels = { r: 0.0, g:1.0, b: 0.0 };
 
@@ -18,6 +19,7 @@ let col_channels = { r: 0.0, g:1.0, b: 0.0 };
 let first_d = null;
 let rule_d  = null;
 let n_d     = null;
+let fill_d  = null;
 
 let X = 0;
 let Y = 0;
@@ -58,14 +60,27 @@ let start = Math.floor(middle - (sn/2)*gap);
 for (let i=0 ; i<sn ; ++i)
 {
     first[start + i*gap] = 1;
-}
-`,
+}`,
       Rstr: `\
 // prev row cells: p[0] p[1] p[2] p[3] p[4]
 // current row:              curr
-return Math.floor(1.7*p[1] + 0*p[2] + 1.7*p[3]) % N;
-`,
+return Math.floor(1.7*p[1] + 0*p[2] + 1.7*p[3]) % N;`,
       N: 7,
+      Fill: 0,
+      RGB: [1.0, 1.0, 1.0]
+    },
+    
+    { Fstr: `\
+for (let i=0 ; i<xmax ; ++i)
+{
+    first[i] = 2;
+}`,
+      Rstr: `\
+// prev row cells: p[0] p[1] p[2] p[3] p[4]
+// current row:              curr
+return Math.floor(p[1] * p[2] * p[3]) % N;`,
+      N: 7,
+      Fill: 1,
       RGB: [1.0, 1.0, 1.0]
     },
     
@@ -78,6 +93,7 @@ first[middle] = 1;
 return ( p[1] + (1-p[2]) + p[3] ) % 2;
 `,
       N: 2,
+      Fill: 0,
       RGB: [1.0, 1.0, 1.0]
     },
     
@@ -90,12 +106,12 @@ let start = Math.floor(middle - (sn/2)*gap);
 for (let i=0 ; i<sn ; ++i)
 {
     first[start + i*gap] = 1;
-}
-`,
+}`,
       Rstr: `\
 return (0.1*p[1] + p[2] + 0.1*p[3] +1) % 2;
 `,
       N: 2,
+      Fill: 0,
       RGB: [0.0, 1.0, 1.0]
     },
     
@@ -110,6 +126,7 @@ for (let i=0 ; i<xmax ; ++i)
 return Math.floor(1.5*p[1] + -1*p[2] + 1.5*p[3]) % 2;
 `,
       N: 11,
+      Fill: 0,
       RGB: [0.0, 1.0, 0.0]
     },
 
@@ -199,8 +216,7 @@ let seed_data = function ()
         field.im[i*4+3] = 255;
     }
     
-    //field.data[Math.floor(field.x / 2)] = 1;
-    let farr = [...Array(field.x)].map(i => 0);
+    let farr = [...Array(field.x)].map(i => Fill);
     
     try {
         F(farr, field.x, N);
@@ -236,11 +252,11 @@ let calc_data = function ()
     {
         for (let i=0 ; i<field.x ; ++i)
         {
-            let prev = [(i-2)<0  ? 0 : field.data[(j-1)*field.x + (i-2)],
-                        (i-1)<0  ? 0 : field.data[(j-1)*field.x + (i-1)],
+            let prev = [(i-2)<0  ? Fill : field.data[(j-1)*field.x + (i-2)],
+                        (i-1)<0  ? Fill : field.data[(j-1)*field.x + (i-1)],
                         field.data[(j-1)*field.x + (i)],
-                        (i+1)>fx ? 0 : field.data[(j-1)*field.x + (i+1)],
-                        (i+2)>fx ? 0 : field.data[(j-1)*field.x + (i+2)]];
+                        (i+1)>fx ? Fill : field.data[(j-1)*field.x + (i+1)],
+                        (i+2)>fx ? Fill : field.data[(j-1)*field.x + (i+2)]];
             
             try
             {
@@ -354,6 +370,7 @@ let initf = function (strval)
     first_d.value  = presets[i].Fstr;
     rule_d.value   = presets[i].Rstr;
     n_d.value      = presets[i].N;
+    fill_d.value   = presets[i].Fill;
     col_channels.r = presets[i].RGB[0];
     col_channels.g = presets[i].RGB[1];
     col_channels.b = presets[i].RGB[2];
@@ -377,6 +394,15 @@ let setf = function ()
         return;
     }
     N = n2;
+    
+    n2 = Number(fill_d.value);
+    if (isNaN(n2) || n2 === undefined || n2 === null)
+    {
+        console.error("Couldn't parse Fill");
+        alert("Couldn't parse Fill");
+        return;
+    }
+    Fill = n2;
     
     let Fstr = first_d.value;
     try
@@ -443,6 +469,7 @@ let init = function ()
     first_d = document.getElementById("firstr");
     rule_d  = document.getElementById("rule");
     n_d     = document.getElementById("n");
+    fill_d  = document.getElementById("fill");
     
     initf(0);
     
