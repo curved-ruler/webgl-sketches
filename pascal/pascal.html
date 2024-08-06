@@ -10,13 +10,18 @@
   top: 0px;
   left: 0px;
 }
-
-#menu {
+#menu-ovf {
   position: absolute;
-  top: 10px;
+  top:  10px;
   left: 10px;
-  color: white;
-  background-color: rgb(30, 30, 30);
+  
+  height: 90%;
+  overflow-y: scroll;
+}
+#menu {
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  color: rgb(120, 255, 255);
 }
 
 .left {
@@ -32,7 +37,7 @@
     </head>
     <body>
         <canvas id="canvas"></canvas>
-        <table id="menu">
+        <div id="menu-ovf"><table id="menu">
             <tr>
                 <td class="left">M:</td>
                 <td>Show / hide menu</td>
@@ -91,6 +96,6 @@
                   </select>
                 </td>
             </tr>
-        </table>
+        </table></div>
     </body>
 </html>

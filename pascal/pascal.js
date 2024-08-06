@@ -71,15 +71,19 @@ return Math.floor(1.7*p[1] + 0*p[2] + 1.7*p[3]) % N;`,
     },
     
     { Fstr: `\
-for (let i=0 ; i<xmax ; ++i)
+let middle = xmax / 2;
+let gap = 4;
+let sn  = 18;
+let start = Math.floor(middle - (sn/2)*gap);
+for (let i=0 ; i<sn ; ++i)
 {
-    first[i] = 2;
+    first[start + i*gap] = 6;
 }`,
       Rstr: `\
 // prev row cells: p[0] p[1] p[2] p[3] p[4]
 // current row:              curr
-return Math.floor(p[1] * p[2] * p[3]) % N;`,
-      N: 7,
+return Math.floor(p[1] * p[2] * p[3] + 1) % N;`,
+      N: 256,
       Fill: 1,
       RGB: [1.0, 1.0, 1.0]
     },
