@@ -488,9 +488,14 @@ let einstein_hat_t = function (data_csv)
             let tokens = lines[i*14 + j].split(',');
             let vv = [parseFloat(tokens[0]) * s, parseFloat(tokens[1]) * s, 0];
             
+            //let va = v3.sub(vv, cent);
+            //let vb = v3.cmul(v3.normalize(va), G);
+            //let vc = v3.add(cent, v3.sub(va,vb));
+            
+            let m  = tr.scale((max[1]*s-cent[0]-G) / (max[1]*s-cent[0]));
             let va = v3.sub(vv, cent);
-            let vb = v3.cmul(v3.normalize(va), G);
-            let vc = v3.add(cent, v3.sub(va,vb));
+            let vb = v3.mmul(m, va);
+            let vc = v3.add(cent, vb);
             
             model_in.verts.push(vc[0]);
             model_in.verts.push(vc[1]);
@@ -728,13 +733,8 @@ let handle_mouse_move = function (event)
 {
     if (grabbed === 1)
     {
-        //let y = 2 * Math.tan(camera.fovy/2) * camera.median;
-        //let pixsize = (scale*y)/(cwidth*camera.aspect);
-        
-        let lambda = (scale > 1) ? scale*0.001 : scale*0.02;
-        
-        pan[0] += event.movementX * lambda;
-        pan[1] -= event.movementY * lambda;
+        pan[0] += event.movementX * 0.003;
+        pan[1] -= event.movementY * 0.003;
         transform();
         draw();
     }
