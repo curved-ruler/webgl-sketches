@@ -104,7 +104,7 @@ return moon(q[0], q[1]);`
 let Pstr = `\
 // F - field val
 // V - level set
-return Math.min(1/(F-V+0.0001), 20);`;
+return Math.min(1/(V-F+0.0001), 20);`;
 
 let gl      = null;
 let glprog  = null;
@@ -287,7 +287,7 @@ let mc = function ()
                 let s = field[i*(Ny*Nz) +  j*(Nz) + k];
                 
                 try {
-                if (s >= V)
+                if (s <= V)
                 {
                     let u = Math.acos(2*Math.random() - 1);
                     let v = 2*Math.PI*Math.random();
