@@ -458,6 +458,7 @@ let handle_key_down = function (event)
         if (proj > 2) { proj = 0; }
         draw();
     }
+    /*
     else if (event.key === "o" || event.key === "O")
     {
         ++obj;
@@ -472,6 +473,7 @@ let handle_key_down = function (event)
     {
         save_obj();
     }
+    */
     else if (event.key === "F8")
     {
         let image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
