@@ -106,6 +106,9 @@ let Pstr = `\
 // V - level set
 return Math.min(1/(V-F+0.0001), 20);`;
 
+let point_placement = "lev";
+let pointp_dom      = [];
+
 
 let gl      = null;
 let glprog  = null;
@@ -166,14 +169,18 @@ let rotdir   = true;
 let grabbed  = 0;
 
 
-let a = 1 / Math.sqrt(6);
+let error = function (err)
+{
+    console.error(err);
+    window.alert("Error: " + err);
+}
+
 let camera = {
     pos   : [50, 50, 50],
     look  : v3.normalize([-1, -1, -1]),
-    up    : [-a, -a, 2*a],
-    near  : 1.0,
+    up    : v3.normalize([-1, -1,  2]),
+    near  : 0.1,
     median: 20,
-    //far   : 86,
     far   : 200,
     fovy  : Math.PI / 3,
     aspect: 1
@@ -267,12 +274,11 @@ let make_field = function ()
                 {
                     field.push(fxyz(i,j,k));
                 }
-                catch (err) { console.error("Func error!", err.message); alert(err.message); return; }
+                catch (err) { error("F(x,y,z)\n" + err.message); return; }
             }
         }
     }
 };
-
 
 let mc = function ()
 {
@@ -286,35 +292,61 @@ let mc = function ()
         {
             for (let k=1 ; k<Nz-1 ; ++k)
             {
-                let spos = field_pos(i, j, k);
+                let s  = field[i*(Ny*Nz) +  j*(Nz) + k];
+                let sx = field[(i+1)*(Ny*Nz) +  j*(Nz) + k];
+                let sy = field[(i)*(Ny*Nz) +  (j+1)*(Nz) + k];
+                let sz = field[(i)*(Ny*Nz) +  (j)*(Nz) + k+1];
+                let ss  = s < V;
+                let ssx = sx < V;
+                let ssy = sy < V;
+                let ssz = sz < V;
                 
-                let s = field[i*(Ny*Nz) +  j*(Nz) + k];
+                let r = 10;
+                try { r = P(s, V); } catch (err) { error("Pointsize(F,V)\n" + err.message); return; }
                 
-                try {
-                if (s <= V)
+                let n = [0,0,0];
+                if (normals === "rnd")
                 {
-                    let n = [0,0,0];
-                    if (normals === "rnd")
-                    {
-                        let u = Math.acos(2*Math.random() - 1);
-                        let v = 2*Math.PI*Math.random();
-                            n = [Math.sin(u) * Math.cos(v),
-                                 Math.sin(u) * Math.sin(v),
-                                 Math.cos(u)];
-                    }
-                    else
-                    {
-                        n = [field[(i-1)*(Ny*Nz) +  j*(Nz) + k]   - field[(i+1)*(Ny*Nz) +  j*(Nz) + k],
-                             field[(i)*(Ny*Nz) +  (j-1)*(Nz) + k] - field[(i)*(Ny*Nz) +  (j+1)*(Nz) + k],
-                             field[(i)*(Ny*Nz) +  j*(Nz) + k-1]   - field[(i)*(Ny*Nz) +  j*(Nz) + k+1]
-                            ];
-                    }
-                    //n = v3.normalize(n);
-                    let r = P(s, V);
-                    
-                    model.points.push(...spos, ...n, r);
+                    let u = Math.acos(2*Math.random() - 1);
+                    let v = 2*Math.PI*Math.random();
+                        n = [Math.sin(u) * Math.cos(v),
+                             Math.sin(u) * Math.sin(v),
+                             Math.cos(u)];
                 }
-                } catch (err) { console.error("Pointsize func error!", err.message); alert(err.message); return; }
+                else
+                {
+                    n = [field[(i-1)*(Ny*Nz) +  j*(Nz) + k]   - field[(i+1)*(Ny*Nz) +  j*(Nz) + k],
+                         field[(i)*(Ny*Nz) +  (j-1)*(Nz) + k] - field[(i)*(Ny*Nz) +  (j+1)*(Nz) + k],
+                         field[(i)*(Ny*Nz) +  j*(Nz) + k-1]   - field[(i)*(Ny*Nz) +  j*(Nz) + k+1]
+                        ];
+                }
+                
+                switch (point_placement)
+                {
+                    case "all":
+                        model.points.push(...field_pos(i, j, k), ...n, r);
+                        break;
+                        
+                    case "gre":
+                        if (s >= V)
+                        {
+                            model.points.push(...field_pos(i, j, k), ...n, r);
+                        }
+                        break;
+                        
+                    case "sma":
+                        if (s <= V)
+                        {
+                            model.points.push(...field_pos(i, j, k), ...n, r);
+                        }
+                        break;
+                        
+                    default:
+                        if ((ss != ssx) || (ss != ssy) || (ss != ssz))
+                        {
+                            model.points.push(...field_pos(i, j, k), ...n, r);
+                        }
+                }
             }
         }
     }
@@ -537,7 +569,7 @@ let setf = function ()
     V = Number(Vdom.value);
     if (isNaN(V) || V   === undefined || V === null)
     {
-        console.error("Couldn't parse level");
+        error("Couldn't parse Level");
         return;
     }
     
@@ -548,8 +580,7 @@ let setf = function ()
     }
     catch (err)
     {
-        console.error("Func error!", err.message);
-        alert(err.message);
+        error("F(x,y,z)\n" + err.message);
         return;
     }
     
@@ -560,8 +591,7 @@ let setf = function ()
     }
     catch (err)
     {
-        console.error("P Func error!", err.message);
-        alert(err.message);
+        error("Pointsize(F,V)\n" + err.message);
         return;
     }
     
@@ -601,7 +631,7 @@ let set_n = function ()
     if (isNaN(nnn)) return;
     if (nnn > 512*512*512)
     {
-        alert("Error: Divx*Divy*Divz > " + (512*512*512));
+        alert("Error: Divx * Divy * Divz > " + (512*512*512));
         return;
     }
     
@@ -650,12 +680,25 @@ let set_normals = function ()
     }
 };
 
+let set_pp = function ()
+{
+    for (let i=0 ; i<pointp_dom.length ; ++i)
+    {
+        if (pointp_dom[i].checked)
+        {
+            point_placement = pointp_dom[i].value;
+            break;
+        }
+    }
+};
+
 let set_params = function ()
 {
     set_n();
     set_s();
     set_noise();
     set_normals();
+    set_pp();
     
     mc();
     make_object();
@@ -691,6 +734,14 @@ let set_ui = function ()
         if (normaldom[i].value === normals)
         {
             normaldom[i].checked = true;
+            break;
+        }
+    }
+    for (let i=0 ; i<pointp_dom.length ; ++i)
+    {
+        if (pointp_dom[i].value === point_placement)
+        {
+            pointp_dom[i].checked = true;
             break;
         }
     }
@@ -736,6 +787,7 @@ let init = function ()
     nLdom         = document.getElementById('noiseL');
     nOdom         = document.getElementById('octaves');
     normaldom     = document.getElementsByName('norm');
+    pointp_dom    = document.getElementsByName('pointp');
     set_ui();
 
 
