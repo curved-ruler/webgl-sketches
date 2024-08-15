@@ -106,6 +106,7 @@ let Pstr = `\
 // V - level set
 return Math.min(1/(V-F+0.0001), 20);`;
 
+
 let gl      = null;
 let glprog  = null;
 let canvas  = null;
@@ -128,6 +129,9 @@ let Vdom   = null;
 let Fdom   = null;
 let Pdom   = null;
 let Fstr   = FS[0].Fstr;
+
+let normals = "dis";
+let normaldom = [];
 
 let added_noise = 0;
 let warp        = true;
@@ -276,11 +280,11 @@ let mc = function ()
     
     make_field();
     
-    for (let i=0 ; i<Nx ; ++i)
+    for (let i=1 ; i<Nx-1 ; ++i)
     {
-        for (let j=0 ; j<Ny ; ++j)
+        for (let j=1 ; j<Ny-1 ; ++j)
         {
-            for (let k=0 ; k<Nz ; ++k)
+            for (let k=1 ; k<Nz-1 ; ++k)
             {
                 let spos = field_pos(i, j, k);
                 
@@ -289,11 +293,23 @@ let mc = function ()
                 try {
                 if (s <= V)
                 {
-                    let u = Math.acos(2*Math.random() - 1);
-                    let v = 2*Math.PI*Math.random();
-                    let n = [Math.sin(u) * Math.cos(v),
-                             Math.sin(u) * Math.sin(v),
-                             Math.cos(u)];
+                    let n = [0,0,0];
+                    if (normals === "rnd")
+                    {
+                        let u = Math.acos(2*Math.random() - 1);
+                        let v = 2*Math.PI*Math.random();
+                            n = [Math.sin(u) * Math.cos(v),
+                                 Math.sin(u) * Math.sin(v),
+                                 Math.cos(u)];
+                    }
+                    else
+                    {
+                        n = [field[(i-1)*(Ny*Nz) +  j*(Nz) + k]   - field[(i+1)*(Ny*Nz) +  j*(Nz) + k],
+                             field[(i)*(Ny*Nz) +  (j-1)*(Nz) + k] - field[(i)*(Ny*Nz) +  (j+1)*(Nz) + k],
+                             field[(i)*(Ny*Nz) +  j*(Nz) + k-1]   - field[(i)*(Ny*Nz) +  j*(Nz) + k+1]
+                            ];
+                    }
+                    //n = v3.normalize(n);
                     let r = P(s, V);
                     
                     model.points.push(...spos, ...n, r);
@@ -583,9 +599,9 @@ let set_n = function ()
     let nnn = n2x*n2y*n2z;
     
     if (isNaN(nnn)) return;
-    if (nnn > 16777216)
+    if (nnn > 512*512*512)
     {
-        alert("Error: Divx*Divy*Divz > " + 16777216);
+        alert("Error: Divx*Divy*Divz > " + (512*512*512));
         return;
     }
     
@@ -622,11 +638,24 @@ let set_noise = function ()
     }
 };
 
+let set_normals = function ()
+{
+    for (let i=0 ; i<normaldom.length ; ++i)
+    {
+        if (normaldom[i].checked)
+        {
+            normals = normaldom[i].value;
+            break;
+        }
+    }
+};
+
 let set_params = function ()
 {
     set_n();
     set_s();
     set_noise();
+    set_normals();
     
     mc();
     make_object();
@@ -655,6 +684,15 @@ let set_ui = function ()
     for (let i=0 ; i<opts.length ; ++i)
     {
         if (opts[i].value == alpha) { opts.selectedIndex = i; }
+    }
+    
+    for (let i=0 ; i<normaldom.length ; ++i)
+    {
+        if (normaldom[i].value === normals)
+        {
+            normaldom[i].checked = true;
+            break;
+        }
     }
 };
 
@@ -697,6 +735,7 @@ let init = function ()
     nAdom         = document.getElementById('noiseA');
     nLdom         = document.getElementById('noiseL');
     nOdom         = document.getElementById('octaves');
+    normaldom     = document.getElementsByName('norm');
     set_ui();
 
 
