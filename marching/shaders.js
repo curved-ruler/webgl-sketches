@@ -34,16 +34,16 @@ vec4 tr6pp (in vec4 position, in mat4 vm, in float rad, in float aspect, in floa
 
 in      vec3  pos;
 in      vec3  norm;
-uniform vec3  col;
 uniform mat4  p;
 uniform mat4  vm;
 uniform int   proj;
 uniform float aspect;
+uniform vec3  col;
+uniform int   colscheme;
 out     vec3  outcol;
 
 void main ()
 {
-    //gl_PointSize = pointsize;
     if (proj == 0 || proj == 1)
     {
         gl_Position = p * vm * vec4(pos, 1.0);
@@ -59,7 +59,30 @@ void main ()
                             );
     }
 
-    outcol = 0.2*col + 0.8*shade_diffuse( col, mat3(vm)*norm, vec3(1.0, 0.0, 0.0) );
+    if (colscheme == 0)
+    {
+        outcol = 0.2*col + 0.8*shade_diffuse( col, mat3(vm)*norm, vec3(1.0, 0.0, 0.0) );
+    }
+    else if (colscheme == 1)
+    {
+        vec3 c = vec3(0.0);
+        if (norm.y <= 0.0)
+        {
+            c = vec3(0.0, 1.0, 1.0);
+        }
+        else
+        {
+            c = vec3(1.0, 0.6, 0.2);
+        }
+        vec3  N = normalize(norm);
+        float d = dot(N,vec3(1.0, 0.0, 0.0));
+        d = (d+1.0) / 2.0;
+        outcol = c*d;
+    }
+    else
+    {
+        outcol = norm;
+    }
 }
 `,
 

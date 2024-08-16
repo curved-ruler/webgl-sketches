@@ -102,6 +102,8 @@ return moon(q[0], q[1]);`
 
 ];
 
+let presets_dom = null;
+
 let gl      = null;
 let glprog  = null;
 let canvas  = null;
@@ -140,6 +142,8 @@ let linbuf = null;
 let bcol  = [0.1, 0.1, 0.1];
 let tcol  = [0.9, 0.9, 0.9];
 let lcol  = [0.0, 1.0, 1.0];
+let colscheme  = 0;
+let colsch_dom = null;
 let alpha = 1.0;
 let alpha_dom = null;
 
@@ -488,6 +492,7 @@ let draw = function ()
     gl.uniform1f(glprog.aspect, camera.aspect);
     
     gl.uniform1f(glprog.alpha, alpha);
+    gl.uniform1i(glprog.colscheme, colscheme);
     gl.uniform3fv(glprog.col, tcol);
 
     if (obj === 0)
@@ -658,20 +663,6 @@ let handle_key_down = function (event)
 };
 
 
-let set_alpha = function (strval)
-{
-    let ival = Number(strval);
-    
-    if (isNaN(ival) || ival === undefined || ival === null) return;
-    if (ival < 0)   ival = 0;
-    if (ival > 1.0) ival = 1.0;
-    
-    alpha = ival;
-    alpha_dom.blur();
-    
-    draw();
-};
-
 let resize = function ()
 {
     if (!canvas || !gl) return;
@@ -710,6 +701,27 @@ let setf = function ()
     draw();
 };
 
+let set_alpha = function (strval)
+{
+    let ival = Number(strval);
+    
+    if (isNaN(ival) || ival === undefined || ival === null) return;
+    if (ival < 0)   ival = 0;
+    if (ival > 1.0) ival = 1.0;
+    
+    alpha = ival;
+    alpha_dom.blur();
+    
+    draw();
+};
+
+let set_colscheme = function (strval)
+{
+    let ival = parseInt(strval);
+    if (isNaN(ival) || ival === undefined || ival === null) return;
+    colscheme = ival;
+    draw();
+};
 
 let set_pref = function (value)
 {
@@ -814,10 +826,18 @@ let set_ui = function ()
         if (oO[i].value == added_noise) { oO.selectedIndex = i; }
     }
     
+    presets_dom.options.selectedIndex = 0;
+    
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
     {
         if (opts[i].value == alpha) { opts.selectedIndex = i; }
+    }
+    
+    opts = colsch_dom.options;
+    for (let i=0 ; i<opts.length ; ++i)
+    {
+        if (opts[i].value == colscheme) { opts.selectedIndex = i; }
     }
 };
 
@@ -837,6 +857,7 @@ let gpu_init = function (canvas_id)
     glprog.proj    = gl.getUniformLocation(glprog.bin, "proj");
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
     glprog.col     = gl.getUniformLocation(glprog.bin, "col");
+    glprog.colscheme = gl.getUniformLocation(glprog.bin, "colscheme");
     glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
 
     tribuf = gl.createBuffer();
@@ -854,13 +875,15 @@ let init = function ()
     Fdom          = document.getElementById("func");
     Ndom          = document.getElementById("nxyz");
     Sdom          = document.getElementById("sxyz");
-    alpha_dom     = document.getElementById('alpha');
     curses_dom[0] = document.getElementById('curse0');
     curses_dom[1] = document.getElementById('curse1');
     smooth_dom    = document.getElementById('smooth');
     nAdom         = document.getElementById('noiseA');
     nLdom         = document.getElementById('noiseL');
     nOdom         = document.getElementById('octaves');
+    presets_dom   = document.getElementById('presets');
+    alpha_dom     = document.getElementById('alpha');
+    colsch_dom    = document.getElementById('colsch');
     set_ui();
 
 
@@ -881,6 +904,7 @@ let init = function ()
 
 
 window.set_alpha  = set_alpha;
+window.set_colscheme = set_colscheme;
 window.set_params = set_params;
 window.set_pref   = set_pref;
 window.setf       = setf;
