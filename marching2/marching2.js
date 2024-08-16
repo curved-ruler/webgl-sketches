@@ -101,10 +101,12 @@ return moon(q[0], q[1]);`
 
 ];
 
+let presets_dom = null;
+
 let Pstr = `\
 // F - field val
 // V - level set
-return Math.min(1/(V-F+0.0001), 20);`;
+return Math.min(1/(Math.abs(V-F)+0.0001), 20);`;
 
 let point_placement = "lev";
 let pointp_dom      = [];
@@ -153,6 +155,8 @@ let linbuf = null;
 let bcol  = [0.1, 0.1, 0.1];
 let tcol  = [0.9, 0.9, 0.9];
 let lcol  = [0.0, 1.0, 1.0];
+let colscheme  = 0;
+let colsch_dom = null;
 let alpha = 1.0;
 let alpha_dom = null;
 
@@ -390,6 +394,7 @@ let draw = function ()
     gl.uniform1f(glprog.aspect, camera.aspect);
     
     gl.uniform1f(glprog.alpha, alpha);
+    gl.uniform1i(glprog.colscheme, colscheme);
     gl.uniform3fv(glprog.col, tcol);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, pntbuf);
@@ -538,19 +543,6 @@ let handle_key_down = function (event)
 };
 
 
-let set_alpha = function (strval)
-{
-    let ival = Number(strval);
-    
-    if (isNaN(ival) || ival === undefined || ival === null) return;
-    if (ival < 0)   ival = 0;
-    if (ival > 1.0) ival = 1.0;
-    
-    alpha = ival;
-    alpha_dom.blur();
-    
-    draw();
-};
 
 let resize = function ()
 {
@@ -600,6 +592,27 @@ let setf = function ()
     draw();
 };
 
+let set_alpha = function (strval)
+{
+    let ival = Number(strval);
+    
+    if (isNaN(ival) || ival === undefined || ival === null) return;
+    if (ival < 0)   ival = 0;
+    if (ival > 1.0) ival = 1.0;
+    
+    alpha = ival;
+    alpha_dom.blur();
+    
+    draw();
+};
+
+let set_colscheme = function (strval)
+{
+    let ival = parseInt(strval);
+    if (isNaN(ival) || ival === undefined || ival === null) return;
+    colscheme = ival;
+    draw();
+}
 
 let set_pref = function (value)
 {
@@ -723,10 +736,18 @@ let set_ui = function ()
         if (oO[i].value == added_noise) { oO.selectedIndex = i; }
     }
     
+    presets_dom.options.selectedIndex = 0;
+    
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
     {
         if (opts[i].value == alpha) { opts.selectedIndex = i; }
+    }
+    
+    opts = colsch_dom.options;
+    for (let i=0 ; i<opts.length ; ++i)
+    {
+        if (opts[i].value == colscheme) { opts.selectedIndex = i; }
     }
     
     for (let i=0 ; i<normaldom.length ; ++i)
@@ -765,6 +786,7 @@ let gpu_init = function (canvas_id)
     glprog.proj    = gl.getUniformLocation(glprog.bin, "proj");
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
     glprog.col     = gl.getUniformLocation(glprog.bin, "col");
+    glprog.colscheme = gl.getUniformLocation(glprog.bin, "colscheme");
     glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
 
     pntbuf = gl.createBuffer();
@@ -782,12 +804,14 @@ let init = function ()
     Pdom          = document.getElementById("psfunc");
     Ndom          = document.getElementById("nxyz");
     Sdom          = document.getElementById("sxyz");
-    alpha_dom     = document.getElementById('alpha');
     nAdom         = document.getElementById('noiseA');
     nLdom         = document.getElementById('noiseL');
     nOdom         = document.getElementById('octaves');
     normaldom     = document.getElementsByName('norm');
+    presets_dom   = document.getElementById('presets');
     pointp_dom    = document.getElementsByName('pointp');
+    alpha_dom     = document.getElementById('alpha');
+    colsch_dom    = document.getElementById('colsch');
     set_ui();
 
 
@@ -808,6 +832,7 @@ let init = function ()
 
 
 window.set_alpha  = set_alpha;
+window.set_colscheme = set_colscheme;
 window.set_params = set_params;
 window.set_pref   = set_pref;
 window.setf       = setf;

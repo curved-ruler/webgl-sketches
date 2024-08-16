@@ -143,8 +143,14 @@
                 </td>
             </tr>
             <tr>
-                <td class="left">Alpha:</td>
+                <td class="left">Colscheme:</td>
                 <td>
+                    <select id="colsch" onchange="set_colscheme(this.value)">
+                        <option value="0">Monochrome</option>
+                        <option value="1">Yell-Cy</option>
+                        <option value="2">Norm</option>
+                    </select>
+                    Alpha:
                     <select id="alpha" onchange="set_alpha(this.value)">
                         <option value="0.005">0.005</option>
                         <option value="0.01">0.01</option>
