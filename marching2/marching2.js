@@ -540,6 +540,34 @@ let handle_key_down = function (event)
         scale    = 1;
         draw();
     }
+    else if (event.key === "w" || event.key === "W")
+    {
+        camera.pos   = [50, 50, 50];
+        camera.look  = v3.normalize([-1, -1, -1]);
+        camera.up    = v3.normalize([-1, -1,  2]);
+        draw();
+    }
+    else if (event.key === "a" || event.key === "A")
+    {
+        camera.pos   = [70, 0, 0];
+        camera.look  = [-1, 0, 0];
+        camera.up    = [ 0, 0, 1];
+        draw();
+    }
+    else if (event.key === "x" || event.key === "X")
+    {
+        camera.pos   = [ 0,70, 0];
+        camera.look  = [ 0,-1, 0];
+        camera.up    = [ 0, 0, 1];
+        draw();
+    }
+    else if (event.key === "d" || event.key === "D")
+    {
+        camera.pos   = [ 0, 0,70];
+        camera.look  = [ 0, 0,-1];
+        camera.up    = [ 0, 1, 0];
+        draw();
+    }
 };
 
 
