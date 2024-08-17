@@ -612,7 +612,7 @@ let set_colscheme = function (strval)
     if (isNaN(ival) || ival === undefined || ival === null) return;
     colscheme = ival;
     draw();
-}
+};
 
 let set_pref = function (value)
 {
@@ -736,8 +736,6 @@ let set_ui = function ()
         if (oO[i].value == added_noise) { oO.selectedIndex = i; }
     }
     
-    presets_dom.options.selectedIndex = 0;
-    
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
     {
@@ -812,6 +810,8 @@ let init = function ()
     pointp_dom    = document.getElementsByName('pointp');
     alpha_dom     = document.getElementById('alpha');
     colsch_dom    = document.getElementById('colsch');
+    
+    presets_dom.options.selectedIndex = 0;
     set_ui();
 
 

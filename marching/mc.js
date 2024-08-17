@@ -820,15 +820,13 @@ let set_ui = function ()
     
     nAdom.value = A_noise;
     nLdom.value = L_noise;
-    let oO = nOdom.options;
-    for (let i=0 ; i<oO.length ; ++i)
+    let opts = nOdom.options;
+    for (let i=0 ; i<opts.length ; ++i)
     {
-        if (oO[i].value == added_noise) { oO.selectedIndex = i; }
+        if (opts[i].value == added_noise) { opts.selectedIndex = i; }
     }
     
-    presets_dom.options.selectedIndex = 0;
-    
-    let opts = alpha_dom.options;
+    opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
     {
         if (opts[i].value == alpha) { opts.selectedIndex = i; }
@@ -884,6 +882,8 @@ let init = function ()
     presets_dom   = document.getElementById('presets');
     alpha_dom     = document.getElementById('alpha');
     colsch_dom    = document.getElementById('colsch');
+    
+    presets_dom.options.selectedIndex = 0;
     set_ui();
 
 
