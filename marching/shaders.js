@@ -79,9 +79,13 @@ void main ()
         d = (d+1.0) / 2.0;
         outcol = c*d;
     }
-    else
+    else if (colscheme == 2)
     {
         outcol = norm;
+    }
+    else
+    {
+        outcol = clamp(normalize(norm), 0.0, 1.0);
     }
 }
 `,
