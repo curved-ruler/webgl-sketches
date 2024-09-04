@@ -49,6 +49,7 @@ var constants = {
         haz_e   : 'haz_e.obj',
         teto    : 'teto.obj',
         teto_e  : 'teto_e.obj',
+        star    : 'star3d.obj',
         
         square  : 'negyzet.obj',
         circle  : 'kor.obj'
