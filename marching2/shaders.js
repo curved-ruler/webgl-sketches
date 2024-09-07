@@ -82,6 +82,18 @@ void main ()
         d = (d+1.0) / 2.0;
         outcol = c*d;
     }
+    else if (colscheme == 2)
+    {
+        vec3  N = normalize(norm);
+        if (N.z <= 0.0)
+        {
+            outcol = vec3(0.0, -N.z*1.0, -N.z*1.0);
+        }
+        else
+        {
+            outcol = vec3(N.z*1.0, N.z*0.6, N.z*0.2);
+        }
+    }
     else
     {
         outcol = norm;
