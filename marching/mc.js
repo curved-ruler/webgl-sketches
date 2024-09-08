@@ -748,6 +748,8 @@ let set_colscheme = function (strval)
     let ival = parseInt(strval);
     if (isNaN(ival) || ival === undefined || ival === null) return;
     colscheme = ival;
+    colsch_dom.blur();
+    
     draw();
 };
 
