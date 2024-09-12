@@ -12,6 +12,7 @@ let Nu = 64;
 let Nv = 64;
 let Nudom = null;
 let Nvdom = null;
+let Pdom  = null;
 
 let fta = null;
 let start_func = shaders['shell'];
@@ -356,6 +357,8 @@ let setf  = function ()
 let preset = function (opt)
 {
     start_func = shaders[opt];
+    Pdom.blur();
+    
     set_ui();
     create_shader();
     draw();
@@ -370,7 +373,8 @@ let init = function ()
     Nudom  = document.getElementById('nuin');
     Nvdom  = document.getElementById('nvin');
     
-    document.getElementById('pres').options.selectedIndex = 0;
+    Pdom = document.getElementById('pres');
+    Pdom.options.selectedIndex = 0;
     
     set_ui();
     gpu_init('canvas');
