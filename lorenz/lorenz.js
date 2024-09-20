@@ -18,6 +18,7 @@ let draw_lines = true;
 
 let N    = 30;
 let Z    = 0;
+let start_s = 0.5;
 let pos1 = [];
 let pos2 = [];
 
@@ -123,6 +124,7 @@ let alpha = 0.3;
 let ip_dom = null;
 let nn_dom = null;
 let zz_dom = null;
+let ss_dom = null;
 let Fdom   = null;
 let pr_dom = null;
 let alpha_dom = null;
@@ -134,7 +136,7 @@ let menu_hidden = false;
 let proj = 0;
 let projmat, modlmat, viewmat;
 let modinvmat;
-let scale    = 0.1;
+let scale    = 1.0;
 let axis     = 0;
 let rotation = 0;
 let rotdir   = true;
@@ -322,6 +324,14 @@ let init_pos_grid = function ()
     }
 };
 
+let start_scale = function ()
+{
+    for (let i=0 ; i<pos1.length ; ++i)
+    {
+        pos1[i] *= start_s;
+    }
+};
+
 let init_pos = function()
 {
     model.lines = [];
@@ -336,6 +346,8 @@ let init_pos = function()
     else if (initpos === "circ2") { init_pos_circ2(); }
     else if (initpos === "2sq")   { init_pos_2sq(); }
     else if (initpos === "grid")  { init_pos_grid(); }
+    
+    start_scale();
 }
 
 let step = function ()
@@ -551,7 +563,7 @@ let handle_key_down = function (event)
     }
     else if (event.key === "Enter")
     {
-        scale = 0.1;
+        scale    = 1.0;
         axis     = 0;
         rotation = 0;
         rotdir   = true;
@@ -675,6 +687,12 @@ let set_z = function (strval)
     if (isNaN(zz) || zz === undefined || zz === null) return;
     Z = zz;
 };
+let set_s = function (strval)
+{
+    let ss = Number(strval);
+    if (isNaN(ss) || ss === undefined || ss === null) return;
+    start_s = ss;
+};
 
 let resize = function ()
 {
@@ -723,6 +741,7 @@ let init = function ()
     ip_dom = document.getElementById('start');
     nn_dom = document.getElementById('nn');
     zz_dom = document.getElementById('zz');
+    ss_dom = document.getElementById('ss');
     Fdom   = document.getElementById("func");
     pr_dom = document.getElementById('presets');
     alpha_dom = document.getElementById('alpha');
@@ -742,6 +761,7 @@ let init = function ()
     pr_dom.options.selectedIndex = 0;
     nn_dom.value = "" + N;
     zz_dom.value = "" + Z;
+    ss_dom.value = "" + start_s;
     Fdom.value   = FS[0];
     
     setf();
@@ -760,6 +780,7 @@ window.set_alpha  = set_alpha;
 window.set_start  = set_start;
 window.set_n      = set_n;
 window.set_z      = set_z;
+window.set_s      = set_s;
 window.setf       = setf;
 window.set_pref   = set_pref;
 
