@@ -19,8 +19,37 @@ let draw_lines = true;
 let N    = 30;
 let Z    = 0;
 let start_s = 0.5;
+let follow  = 0;
 let pos1 = [];
 let pos2 = [];
+
+let initpos = "rnd";
+
+let bcol  = [0.1, 0.1, 0.1];
+let lcol  = [1.0, 1.0, 0.0];
+let alpha = 0.3;
+//let alpha_dom = null;
+let ip_dom = null;
+let nn_dom = null;
+let zz_dom = null;
+let ss_dom = null;
+let follow_dom = null;
+let Fdom   = null;
+let pr_dom = null;
+let alpha_dom = null;
+let bcol_dom  = null;
+let lcol_dom  = null;
+
+let menu_hidden = false;
+
+let proj = 0;
+let projmat, modlmat, viewmat;
+let modinvmat;
+let scale    = 1.0;
+let axis     = 0;
+let rotation = 0;
+let rotdir   = true;
+let grabbed  = 0;
 
 let F  = null;
 let FS = [
@@ -114,33 +143,6 @@ return [x + 1*Math.cos(y)*Math.sin(z),
         z + 1*Math.cos(x)*Math.sin(y)];`
 ];
 
-
-let initpos = "rnd";
-
-let bcol  = [0.1, 0.1, 0.1];
-let lcol  = [1.0, 1.0, 0.0];
-let alpha = 0.3;
-//let alpha_dom = null;
-let ip_dom = null;
-let nn_dom = null;
-let zz_dom = null;
-let ss_dom = null;
-let Fdom   = null;
-let pr_dom = null;
-let alpha_dom = null;
-let bcol_dom  = null;
-let lcol_dom  = null;
-
-let menu_hidden = false;
-
-let proj = 0;
-let projmat, modlmat, viewmat;
-let modinvmat;
-let scale    = 1.0;
-let axis     = 0;
-let rotation = 0;
-let rotdir   = true;
-let grabbed  = 0;
 
 
 
@@ -392,6 +394,17 @@ let step = function ()
         pos1[3*i + 1] = pos2[3*i + 1];
         pos1[3*i + 2] = pos2[3*i + 2];
     }
+    
+    if (follow > 0)
+    {
+        let ll = model.lines.length / 6;
+        let sl = ll/nn;
+        
+        if (sl > follow)
+        {
+            model.lines.splice(0, Math.floor((sl-follow)*nn*6));
+        }
+    }
 
     make_object();
 };
@@ -543,7 +556,6 @@ let handle_key_down = function (event)
     else if (event.key === "s" || event.key === "S")
     {
         step();
-        make_object();
         draw();
     }
     else if (event.key === "o" || event.key === "O")
@@ -673,6 +685,12 @@ let set_start = function (strval)
     make_object();
     draw();
 };
+let set_follow = function (strval)
+{
+    let ff = parseInt(strval);
+    if (isNaN(ff) || ff === undefined || ff === null) return;
+    follow = ff;
+};
 let set_n = function (strval)
 {
     let nn = parseInt(strval);
@@ -744,9 +762,10 @@ let init = function ()
     ss_dom = document.getElementById('ss');
     Fdom   = document.getElementById("func");
     pr_dom = document.getElementById('presets');
-    alpha_dom = document.getElementById('alpha');
-    bcol_dom  = document.getElementById('bcolin');
-    lcol_dom  = document.getElementById('lcolin');
+    alpha_dom  = document.getElementById('alpha');
+    bcol_dom   = document.getElementById('bcolin');
+    lcol_dom   = document.getElementById('lcolin');
+    follow_dom = document.getElementById('followin');
     
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
@@ -762,6 +781,7 @@ let init = function ()
     nn_dom.value = "" + N;
     zz_dom.value = "" + Z;
     ss_dom.value = "" + start_s;
+    follow_dom.value = "" + follow;
     Fdom.value   = FS[0];
     
     setf();
@@ -778,6 +798,7 @@ window.set_bcol   = set_bcol;
 window.set_lcol   = set_lcol;
 window.set_alpha  = set_alpha;
 window.set_start  = set_start;
+window.set_follow = set_follow;
 window.set_n      = set_n;
 window.set_z      = set_z;
 window.set_s      = set_s;
