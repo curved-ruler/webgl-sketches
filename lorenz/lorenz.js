@@ -45,9 +45,10 @@ let menu_hidden = false;
 let proj = 0;
 let projmat, modlmat, viewmat;
 let modinvmat;
-let scale    = 1.0;
+let scale    = 2.0;
 let axis     = 0;
 let rotation = 0;
+let panz     = 0;
 let rotdir   = true;
 let grabbed  = 0;
 
@@ -161,7 +162,7 @@ let compute_matrices = function ()
 {
     modlmat = tr.rotz(rotation);
     modlmat = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis), modlmat);
-    //modlmat = tr.translate(trans);
+    modlmat = m4.mul(tr.translate([0,0,panz]), modlmat);
     modlmat = m4.mul(tr.scale(scale), modlmat);
     /*
     modinvmat = tr.scale(1/scale);
@@ -523,13 +524,19 @@ let handle_mouse_move = function (event)
 {
     if (grabbed === 1)
     {
-        axis -= event.movementY*0.25;
-        rotation += rotdir ? event.movementX*0.25 : event.movementX*-0.25;
-        
-        // Ensure [0,360]
-        axis = axis - Math.floor(axis/360.0)*360.0;
-        rotation = rotation - Math.floor(rotation/360.0)*360.0;
-        
+        if (event.ctrlKey)
+        {
+            panz -= event.movementY*0.1;
+        }
+        else
+        {
+            axis -= event.movementY*0.25;
+            rotation += rotdir ? event.movementX*0.25 : event.movementX*-0.25;
+            
+            // Ensure [0,360]
+            axis = axis - Math.floor(axis/360.0)*360.0;
+            rotation = rotation - Math.floor(rotation/360.0)*360.0;
+        }
         draw();
     }
 };
@@ -575,7 +582,8 @@ let handle_key_down = function (event)
     }
     else if (event.key === "Enter")
     {
-        scale    = 1.0;
+        scale    = 2.0;
+        panz     = 0;
         axis     = 0;
         rotation = 0;
         rotdir   = true;
