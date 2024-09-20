@@ -16,7 +16,7 @@ let linbuf = null;
 let draw_pts   = true;
 let draw_lines = true;
 
-let N    = 30;
+let N    = 100;
 let Z    = 0;
 let start_s = 0.5;
 let follow  = 0;
@@ -316,15 +316,31 @@ let init_pos_circ2 = function ()
 };
 let init_pos_grid = function ()
 {
-    pos1 = [...Array(N*N*3)];
-    pos2 = [...Array(N*N*3)];
+    let N2 = Math.floor(Math.sqrt(N));
+    pos1 = [...Array(N2*N2*3)];
+    pos2 = [...Array(N2*N2*3)];
     
-    for (let i=0 ; i<N ; ++i)
-    for (let j=0 ; j<N ; ++j)
+    for (let i=0 ; i<N2 ; ++i)
+    for (let j=0 ; j<N2 ; ++j)
     {
-        pos1[(i*N + j)*3 + 0] = -N/2 + i;
-        pos1[(i*N + j)*3 + 1] = -N/2 + j;
-        pos1[(i*N + j)*3 + 2] = Z;
+        pos1[(i*N2 + j)*3 + 0] = -N2/2 + i;
+        pos1[(i*N2 + j)*3 + 1] = -N2/2 + j;
+        pos1[(i*N2 + j)*3 + 2] = Z;
+    }
+};
+let init_pos_grid_3 = function ()
+{
+    let N3 = Math.floor(Math.cbrt(N));
+    pos1 = [...Array(N3*N3*N3*3)];
+    pos2 = [...Array(N3*N3*N3*3)];
+    
+    for (let i=0 ; i<N3 ; ++i)
+    for (let j=0 ; j<N3 ; ++j)
+    for (let k=0 ; k<N3 ; ++k)
+    {
+        pos1[(i*N3*N3 + j*N3 + k)*3 + 0] = -N3/2 + i;
+        pos1[(i*N3*N3 + j*N3 + k)*3 + 1] = -N3/2 + j;
+        pos1[(i*N3*N3 + j*N3 + k)*3 + 2] = -N3/2 + k;
     }
 };
 
@@ -350,6 +366,7 @@ let init_pos = function()
     else if (initpos === "circ2") { init_pos_circ2(); }
     else if (initpos === "2sq")   { init_pos_2sq(); }
     else if (initpos === "grid")  { init_pos_grid(); }
+    else if (initpos === "grid3") { init_pos_grid_3(); }
     
     start_scale();
 }
