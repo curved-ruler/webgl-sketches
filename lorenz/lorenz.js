@@ -20,6 +20,7 @@ let N    = 30;
 let Z    = 0;
 let start_s = 0.5;
 let follow  = 0;
+let step_i  = 0;
 let pos1 = [];
 let pos2 = [];
 
@@ -369,7 +370,7 @@ let step = function ()
         let xyz=[0,0,0];
         try
         {
-            xyz = F(pos1[3*i], pos1[3*i+1], pos1[3*i+2]);
+            xyz = F(pos1[3*i], pos1[3*i+1], pos1[3*i+2], step_i);
         }
         catch (err)
         {
@@ -406,6 +407,8 @@ let step = function ()
             model.lines.splice(0, Math.floor((sl-follow)*nn*6));
         }
     }
+    
+    step_i += 1;
 
     make_object();
 };
@@ -624,7 +627,7 @@ let setf = function ()
     let Fstr = Fdom.value;
     try
     {
-        F = Function('x', 'y', 'z', Fstr);
+        F = Function('x', 'y', 'z', 'step', Fstr);
     }
     catch (err)
     {
