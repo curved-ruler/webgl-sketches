@@ -33,7 +33,7 @@ let maps = [
     },
     {
         N : 128,
-        F : ['../input/terr/pl3/', '../input/terr/pl3/', 'planet_'],
+        F : ['../input/terr/pl3/', '../input/terr/plfunk3/', 'planet_'],
         D : [3,3]
     }
 ];
@@ -42,9 +42,10 @@ let mapi = 0;
 let funk = false;
 
 
-let bcol  = [0.0, 0.0, 0.0];
-let tcol  = [1.0, 1.0, 1.0];
-let alpha = 1.0;
+let bcol    = [0.1, 0.1, 0.1];
+let tcol    = [0.9, 0.9, 0.9];
+let colmode = 0;
+let alpha   = 1.0;
 let alpha_dom = null;
 
 let menu_hidden = false;
@@ -304,31 +305,35 @@ let draw = function ()
     gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
+    
+    gl.uniform1i(glprog.colmode, colmode);
+    gl.uniform1i(glprog.invert, (colmode == 2) ? 1 : 0);
+    gl.uniform3fv(glprog.defcol, tcol);
     gl.uniform1f(glprog.alpha, alpha);
     
     for (let i=0 ; i<planet.cx*planet.cy ; ++i)
     {
-        if (obj === 0 && planet.cells[i].pbuf !== null)
+        if ((obj === 0 || obj === 3 || obj === 5) && planet.cells[i].pbuf !== null)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].pbuf);
             gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
             gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
             gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
-            gl.uniform1i(glprog.shaded, 1);
+            gl.uniform1i(glprog.shaded, obj === 3 ? 0 : 1);
             gl.drawArrays(gl.POINTS, 0, planet.cells[i].points.length / 9);
         }
         
-        if (obj === 1 && planet.cells[i].lbuf !== null)
+        if ((obj === 1 || obj === 4 || obj === 5) && planet.cells[i].lbuf !== null)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].lbuf);
             gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
             gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
             gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
-            gl.uniform1i(glprog.shaded, 1);
+            gl.uniform1i(glprog.shaded, obj === 4 ? 0 : 1);
             gl.drawArrays(gl.LINES, 0, planet.cells[i].lines.length / 9);
         }
         
-        if (obj === 2 && planet.cells[i].tbuf !== null)
+        if ((obj === 2 || obj === 3 || obj === 4) && planet.cells[i].tbuf !== null)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].tbuf);
             gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
@@ -421,7 +426,12 @@ let handle_key_down = function (event)
     else if (event.key === "o" || event.key === "O")
     {
         ++obj;
-        if (obj > 2) { obj = 0; }
+        if (obj > 5) { obj = 0; }
+    }
+    else if (event.key === "k" || event.key === "K")
+    {
+        ++colmode;
+        if (colmode > 2) { colmode = 0; }
     }
     else if (event.key === "q" || event.key === "Q")
     {
@@ -505,13 +515,16 @@ let gpu_init = function (canvas_id)
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
     glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
     glprog.shaded  = gl.getUniformLocation(glprog.bin, "shaded");
+    glprog.colmode = gl.getUniformLocation(glprog.bin, "colmode");
+    glprog.invert  = gl.getUniformLocation(glprog.bin, "invert");
+    glprog.defcol  = gl.getUniformLocation(glprog.bin, "defcol");
 }
 
 let init = function ()
 {
     document.removeEventListener("DOMContentLoaded", init);
     
-    canvas = document.getElementById('canvas');
+    canvas = document.getElementById('canvas', {});
     gpu_init('canvas');
     
     canvas.addEventListener("mousedown", handle_mouse_down);

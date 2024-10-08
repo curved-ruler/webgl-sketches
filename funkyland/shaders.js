@@ -39,6 +39,8 @@ uniform mat4  p;
 uniform mat4  vm;
 uniform int   proj;
 uniform int   shaded;
+uniform int   colmode;
+uniform vec3  defcol;
 uniform float aspect;
 
 out vec3 fcol;
@@ -64,13 +66,16 @@ void main ()
                             );
     }
     
+    vec3 col2 = defcol;
+    if (colmode % 2 == 0) col2 = col;
+    
     if (shaded == 1)
     {
-        fcol  = 0.5*col + 0.5*shade_diffuse(col,norm,vec3(1.0, 1.0, 1.0));
+        fcol  = 0.5*col2 + 0.5*shade_diffuse(col2,norm,vec3(1.0, 1.0, 1.0));
     }
     else
     {
-        fcol = col;
+        fcol = col2;
     }
 }
 `,
@@ -79,11 +84,14 @@ void main ()
 
 in      vec3  fcol;
 uniform float alpha;
+uniform int   invert;
 out     vec4  fragcolor;
 
 void main ()
 {
-    fragcolor = vec4(fcol, alpha);
+    vec3 col3 = fcol;
+    if (invert == 1) col3 = 1.0-fcol;
+    fragcolor = vec4(col3, alpha);
 }
 `
 
