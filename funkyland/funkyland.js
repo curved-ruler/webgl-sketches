@@ -23,13 +23,18 @@ let planet = {
 let maps = [
     {
         N : 128,
-        F : ['pl/', 'plfunk/', 'terr_ds_'],
+        F : ['../input/terr/pl/', '../input/terr/plfunk/', 'terr_ds_'],
         D : [3,3]
     },
     {
         N : 128,
-        F : ['pl2/', 'plfunk2/', 'planet_'],
+        F : ['../input/terr/pl2/', '../input/terr/plfunk2/', 'planet_'],
         D : [5,5]
+    },
+    {
+        N : 128,
+        F : ['../input/terr/pl3/', '../input/terr/pl3/', 'planet_'],
+        D : [3,3]
     }
 ];
 let mapi = 0;
