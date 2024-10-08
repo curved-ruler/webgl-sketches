@@ -421,7 +421,7 @@ let handle_key_down = function (event)
     else if (event.key === "i" || event.key === "I")
     {
         ++proj;
-        if (proj > 2) { proj = 0; }
+        if (proj > 2) { proj = 1; }
     }
     else if (event.key === "o" || event.key === "O")
     {
