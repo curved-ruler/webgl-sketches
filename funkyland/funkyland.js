@@ -137,10 +137,10 @@ let getheight = function (pos)
     let xx = x - Math.floor(x);
     let yy = y - Math.floor(y);
     
-    return planet.cells[j*planet.cx+i].tris[k*6*3 +    2]    * (1-xx) *   (yy) +
-           planet.cells[j*planet.cx+i].tris[k*6*3 +  6+2]    * (1-xx) * (1-yy) +
-           planet.cells[j*planet.cx+i].tris[k*6*3 + 12+2]    *   (xx) * (1-yy) +
-           planet.cells[j*planet.cx+i].tris[(k+1)*6*3 + 6+2] *   (xx) *   (yy);
+    return planet.cells[j*planet.cx+i].tris[k*9*3 +    2]    * (1-xx) *   (yy) +
+           planet.cells[j*planet.cx+i].tris[k*9*3 +  9+2]    * (1-xx) * (1-yy) +
+           planet.cells[j*planet.cx+i].tris[k*9*3 + 18+2]    *   (xx) * (1-yy) +
+           planet.cells[j*planet.cx+i].tris[(k+1)*9*3 + 9+2] *   (xx) *   (yy);
 };
 let cam_pos_h = function ()
 {
@@ -197,21 +197,27 @@ let fetch_terr = function (name, x, y, pnx)
                 col = Math.floor((col-g)/256);
                 let r = col % 256;
                 
-                planet.cells[y*pnx+x].tris.push(xoff+i,   yoff+j+1, H[(j+1)*(Nx+1)+i],   r/255, g/255, b/255);
-                planet.cells[y*pnx+x].tris.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255);
-                planet.cells[y*pnx+x].tris.push(xoff+i+1, yoff+j,   H[(j  )*(Nx+1)+i+1], r/255, g/255, b/255);
+                let va = [ 1, 0, H[(j+1)*(Nx+1)+i]-H[(j)*(Nx+1)+i] ];
+                let vb = [ 0, 1, H[(j)*(Nx+1)+i+1]-H[(j)*(Nx+1)+i] ];
+                let norm = v3.cross(va,vb);
+                
+                planet.cells[y*pnx+x].tris.push(xoff+i,   yoff+j+1, H[(j+1)*(Nx+1)+i],   r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
+                planet.cells[y*pnx+x].tris.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
+                planet.cells[y*pnx+x].tris.push(xoff+i+1, yoff+j,   H[(j  )*(Nx+1)+i+1], r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
              
-                planet.cells[y*pnx+x].tris.push(xoff+i+1, yoff+j,   H[(j  )*(Nx+1)+i+1], r/255, g/255, b/255);
-                planet.cells[y*pnx+x].tris.push(xoff+i+1, yoff+j+1, H[(j+1)*(Nx+1)+i+1], r/255, g/255, b/255);
-                planet.cells[y*pnx+x].tris.push(xoff+i,   yoff+j+1, H[(j+1)*(Nx+1)+i],   r/255, g/255, b/255);
+                planet.cells[y*pnx+x].tris.push(xoff+i+1, yoff+j,   H[(j  )*(Nx+1)+i+1], r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
+                planet.cells[y*pnx+x].tris.push(xoff+i+1, yoff+j+1, H[(j+1)*(Nx+1)+i+1], r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
+                planet.cells[y*pnx+x].tris.push(xoff+i,   yoff+j+1, H[(j+1)*(Nx+1)+i],   r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
                 
-                planet.cells[y*pnx+x].lines.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255);
-                planet.cells[y*pnx+x].lines.push(xoff+i+1, yoff+j,   H[(j  )*(Nx+1)+i+1], r/255, g/255, b/255);
                 
-                planet.cells[y*pnx+x].lines.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255);
-                planet.cells[y*pnx+x].lines.push(xoff+i,   yoff+j+1, H[(j+1)*(Nx+1)+i],   r/255, g/255, b/255);
+                planet.cells[y*pnx+x].lines.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
+                planet.cells[y*pnx+x].lines.push(xoff+i+1, yoff+j,   H[(j  )*(Nx+1)+i+1], r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
                 
-                //planet.cells[y*pnx+x].points.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255);
+                planet.cells[y*pnx+x].lines.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
+                planet.cells[y*pnx+x].lines.push(xoff+i,   yoff+j+1, H[(j+1)*(Nx+1)+i],   r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
+                
+                
+                planet.cells[y*pnx+x].points.push(xoff+i,   yoff+j,   H[(j  )*(Nx+1)+i],   r/255, g/255, b/255,   norm[0], norm[1], norm[2]);
             }
             
             //console.log("H", H);
@@ -224,9 +230,9 @@ let fetch_terr = function (name, x, y, pnx)
             gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[y*pnx+x].lbuf);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(planet.cells[y*pnx+x].lines), gl.STATIC_DRAW);
             
-            //planet.cells[y*pnx+x].pbuf = gl.createBuffer();
-            //gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[y*pnx+x].pbuf);
-            //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(planet.cells[y*pnx+x].points), gl.STATIC_DRAW);
+            planet.cells[y*pnx+x].pbuf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[y*pnx+x].pbuf);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(planet.cells[y*pnx+x].points), gl.STATIC_DRAW);
             
             ++planet.ready;
         }
@@ -244,7 +250,7 @@ let make_planet = function ()
         {
             gl.deleteBuffer(planet.cells[i].tbuf);
             gl.deleteBuffer(planet.cells[i].lbuf);
-            //gl.deleteBuffer(planet.cells[i].pbuf);
+            gl.deleteBuffer(planet.cells[i].pbuf);
         }
     }
     
@@ -302,26 +308,38 @@ let draw = function ()
     
     for (let i=0 ; i<planet.cx*planet.cy ; ++i)
     {
-        if (planet.cells[i].lbuf !== null)
+        if (obj === 0 && planet.cells[i].pbuf !== null)
+        {
+            gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].pbuf);
+            gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
+            gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
+            gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
+            gl.uniform1i(glprog.shaded, 1);
+            gl.drawArrays(gl.POINTS, 0, planet.cells[i].points.length / 9);
+        }
+        
+        if (obj === 1 && planet.cells[i].lbuf !== null)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].lbuf);
-            gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 6*4, 0*4);
-            gl.vertexAttribPointer(glprog.col, 3, gl.FLOAT, false, 6*4, 3*4);
-            gl.uniform1i(glprog.sahded, 0);
-            gl.drawArrays(gl.LINES, 0, planet.cells[i].lines.length / 6);
+            gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
+            gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
+            gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
+            gl.uniform1i(glprog.shaded, 1);
+            gl.drawArrays(gl.LINES, 0, planet.cells[i].lines.length / 9);
         }
         
         if (obj === 2 && planet.cells[i].tbuf !== null)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].tbuf);
-            gl.vertexAttribPointer(glprog.pos, 3, gl.FLOAT, false, 6*4, 0*4);
-            gl.vertexAttribPointer(glprog.col, 3, gl.FLOAT, false, 6*4, 3*4);
-            gl.uniform1i(glprog.sahded, 1);
+            gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
+            gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
+            gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
+            gl.uniform1i(glprog.shaded, 1);
             
             gl.enable(gl.POLYGON_OFFSET_FILL);
             gl.polygonOffset(1, 1);
             //gl.drawElements(gl.TRIANGLES, model.tris.length, gl.UNSIGNED_INT, 0);
-            gl.drawArrays(gl.TRIANGLES, 0, planet.cells[i].tris.length / 6);
+            gl.drawArrays(gl.TRIANGLES, 0, planet.cells[i].tris.length / 9);
             gl.disable(gl.POLYGON_OFFSET_FILL);
         }
     }
@@ -403,7 +421,7 @@ let handle_key_down = function (event)
     else if (event.key === "o" || event.key === "O")
     {
         ++obj;
-        if (obj > 2) { obj = 1; }
+        if (obj > 2) { obj = 0; }
     }
     else if (event.key === "q" || event.key === "Q")
     {
@@ -474,10 +492,12 @@ let gpu_init = function (canvas_id)
     
     glprog = gl_init.create_glprog(gl, shaders.version + shaders.vs, shaders.version + shaders.precision + shaders.fs);
     
-    glprog.pos = gl.getAttribLocation(glprog.bin, "pos");
+    glprog.pos  = gl.getAttribLocation(glprog.bin, "pos");
     gl.enableVertexAttribArray(glprog.pos);
-    glprog.col = gl.getAttribLocation(glprog.bin, "col");
+    glprog.col  = gl.getAttribLocation(glprog.bin, "col");
     gl.enableVertexAttribArray(glprog.col);
+    glprog.norm = gl.getAttribLocation(glprog.bin, "norm");
+    gl.enableVertexAttribArray(glprog.norm);
     
     glprog.p       = gl.getUniformLocation(glprog.bin, "p");
     glprog.vm      = gl.getUniformLocation(glprog.bin, "vm");

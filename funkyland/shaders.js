@@ -7,6 +7,13 @@ let shaders = {
 
         vs : `\
 
+vec3 shade_diffuse (in vec3 color, in vec3 norm, in vec3 light)
+{
+    vec3 N = normalize(norm);
+    vec3 L = normalize(light);
+    return color*dot(N,L);
+}
+
 vec4 tr6pp (in vec4 position, in mat4 vm, in float rad, in float aspect, in float nn, in float ff)
 {
     vec4 v   = vm * position;
@@ -26,19 +33,21 @@ vec4 tr6pp (in vec4 position, in mat4 vm, in float rad, in float aspect, in floa
 
 in      vec3  pos;
 in      vec3  col;
+in      vec3  norm;
+
 uniform mat4  p;
 uniform mat4  vm;
 uniform int   proj;
+uniform int   shaded;
 uniform float aspect;
 
-out vec3 opos;
-out vec3 ocol;
+out vec3 fcol;
 
 void main ()
 {
     vec4 p2 = vm * vec4(pos, 1.0);
+    gl_PointSize = 3.0;
     
-    //gl_PointSize = pointsize;
     
     if (proj == 0 || proj == 1)
     {
@@ -55,31 +64,26 @@ void main ()
                             );
     }
     
-    opos = p2.xyz;
-    ocol = col;
+    if (shaded == 1)
+    {
+        fcol  = 0.5*col + 0.5*shade_diffuse(col,norm,vec3(1.0, 1.0, 1.0));
+    }
+    else
+    {
+        fcol = col;
+    }
 }
 `,
 
         fs : `\
 
-in      vec3  opos;
-in      vec3  ocol;
+in      vec3  fcol;
 uniform float alpha;
-uniform int   shaded;
 out     vec4  fragcolor;
 
 void main ()
 {
-    if (shaded == 1)
-    {
-        vec3 light  = normalize(vec3(1.0, 1.0, 1.0));
-        vec3 normal = normalize(cross(dFdx(opos), dFdy(opos)));
-        fragcolor = vec4(ocol, alpha) * clamp(dot(light, normal), 0.2f, 1.0f);
-    }
-    else
-    {
-        fragcolor = vec4(ocol, alpha);
-    }
+    fragcolor = vec4(fcol, alpha);
 }
 `
 
