@@ -3,6 +3,7 @@ import { gl_init }          from "./gl_init.js";
 import { shaders }          from "./shaders.js";
 import { m4, v3, quat, tr } from "./matvec.js";
 import { plane_controls }   from "./aeroplane.js";
+import { obj }              from "./obj.js";
 
 let gl      = null;
 let glprog  = null;
@@ -52,10 +53,10 @@ let alpha_dom = null;
 
 let menu_hidden = false;
 
-let obj  = 1;
-let proj = 1;
+let objmode = 1;
+let proj    = 1;
 let projmat, modlmat, viewmat;
-let scale    = 1;
+let scale   = 1;
 
 
 let camera = {
@@ -81,11 +82,14 @@ let update_cam = function ()
 {
     let up    = tr.rot_q(aeroplane.orient, [0,0,1]);
     let look  = tr.rot_q(aeroplane.orient, [1,0,0]);
+    //up   = v3.normalize(up);
+    //look = v3.normalize(look);
     let right = v3.cross(look, up);
     
     let dir = v3.add( v3.cmul(look, -1/5.0), v3.cmul(up, 0.5/5.0) );
     
     camera.pos  = v3.add(aeroplane.pos, v3.cmul(dir, camera.median));
+    //camera.pos  = v3.sub(aeroplane.pos, [1, 0, 1]);
     camera.look = v3.sub(aeroplane.pos, camera.pos);
     camera.up   = v3.cross(right, camera.look);
     
@@ -123,7 +127,10 @@ let aeroplane = {
     acceleration : [0,0,0],
     angularacc   : [0,0,0],
     velocity     : [0,0,0],
-    angularvel   : [0,0,0]
+    angularvel   : [0,0,0],
+    
+    model : { name : '../input/obj3/plane03.obj', tlen:0, llen:0, plen:0, tbuf:null, lbuf:null, pbuf:null },
+    showplane : true
 };
 
 
@@ -268,6 +275,35 @@ let fetch_terr = function (name, x, y, pnx)
     xhr.responseType = "arraybuffer";
     xhr.send(null);
 };
+let fetch_objfile = function (objfile)
+{
+    let xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function()
+        {
+            if (xhr.readyState === 4 && xhr.status === 200)
+            {
+                let model_resp = obj.create(xhr.responseText, 0.5, true, [0.243161, 0.887797, 1.000000]);
+                
+                if (model_resp.tris.length > 0)
+                {
+                    aeroplane.model.tlen = model_resp.tris.length;
+                    aeroplane.model.tbuf = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, aeroplane.model.tbuf);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_resp.tris), gl.STATIC_DRAW);
+                }
+                
+                if (model_resp.lines.length > 0)
+                {
+                    aeroplane.model.llen = model_resp.lines.length;
+                    aeroplane.model.lbuf = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, aeroplane.model.lbuf);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_resp.lines), gl.STATIC_DRAW);
+                }
+            }
+        }
+        xhr.open('GET', objfile, true);
+        xhr.send(null);
+};
 
 let make_planet = function ()
 {
@@ -342,6 +378,8 @@ let draw = function ()
     
     gl.useProgram(glprog.bin);
     
+    //gl.enable(gl.CULL_FACE);
+    
     if (alpha < 0.98)
     {
         gl.disable(gl.DEPTH_TEST);
@@ -373,27 +411,27 @@ let draw = function ()
         modlmat  = tr.translate(planet_view[i].tr);
         gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat))
         
-        if ((obj === 0 || obj === 3 || obj === 5) && cell.pbuf !== null)
+        if ((objmode === 0 || objmode === 3 || objmode === 5) && cell.pbuf !== null)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, cell.pbuf);
             gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
             gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
             gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
-            gl.uniform1i(glprog.shaded, obj === 3 ? 0 : 1);
+            gl.uniform1i(glprog.shaded, objmode === 3 ? 0 : 1);
             gl.drawArrays(gl.POINTS, 0, cell.points.length / 9);
         }
         
-        if ((obj === 1 || obj === 4 || obj === 5) && cell.lbuf !== null)
+        if ((objmode === 1 || objmode === 4 || objmode === 5) && cell.lbuf !== null)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, cell.lbuf);
             gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
             gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
             gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
-            gl.uniform1i(glprog.shaded, obj === 4 ? 0 : 1);
+            gl.uniform1i(glprog.shaded, objmode === 4 ? 0 : 1);
             gl.drawArrays(gl.LINES, 0, cell.lines.length / 9);
         }
         
-        if ((obj === 2 || obj === 3 || obj === 4) && cell.tbuf !== null)
+        if ((objmode === 2 || objmode === 3 || objmode === 4) && cell.tbuf !== null)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, cell.tbuf);
             gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
@@ -405,6 +443,28 @@ let draw = function ()
             gl.polygonOffset(1, 1);
             gl.drawArrays(gl.TRIANGLES, 0, cell.tris.length / 9);
             gl.disable(gl.POLYGON_OFFSET_FILL);
+        }
+    }
+    
+    if (aeroplane.showplane)
+    {
+        let pltr = m4.init();
+        pltr = m4.mul(tr.scale(20), pltr);
+        pltr = m4.mul(quat.rot_mat(aeroplane.orient), pltr);
+        pltr = m4.mul(tr.translate(aeroplane.pos), pltr);
+        
+        gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, pltr));
+        
+        
+        if (aeroplane.model.tlen > 0)
+        {
+            gl.bindBuffer(gl.ARRAY_BUFFER, aeroplane.model.tbuf);
+            gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
+            gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
+            gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
+            gl.uniform1i(glprog.shaded, 1);
+            
+            gl.drawArrays(gl.TRIANGLES, 0, aeroplane.model.tlen / 9);
         }
     }
 };
@@ -437,8 +497,8 @@ let handle_key_down = function (event)
     }
     else if (event.key === "o" || event.key === "O")
     {
-        ++obj;
-        if (obj > 5) { obj = 0; }
+        ++objmode;
+        if (objmode > 5) { objmode = 0; }
     }
     else if (event.key === "k" || event.key === "K")
     {
@@ -450,6 +510,10 @@ let handle_key_down = function (event)
         ++mapi;
         if (mapi >= maps.length) { mapi = 0; }
         make_planet();
+    }
+    else if (event.key === "2")
+    {
+        aeroplane.showplane = !aeroplane.showplane;
     }
     else if (event.key === "F8")
     {
@@ -540,6 +604,7 @@ let init = function ()
     resize();
     
     cam_constrain();
+    fetch_objfile(aeroplane.model.name);
     make_planet();
 };
 

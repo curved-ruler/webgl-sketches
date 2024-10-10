@@ -238,17 +238,20 @@ let quat = {
         }
         return [1, 0, 0, 0];
     },
-        /*
-        mat4 rot_mat() const
-        {
-            return {
+    
+    rot_mat : function (q)
+    {
+        let r = q[0];
+        let i = q[1];
+        let j = q[2];
+        let k = q[3];
+            return [
                 r*r+i*i-j*j-k*k,   2*i*j-2*r*k,    2*i*k+2*r*j,   0,
                  2*i*j + 2*r*k,  r*r-i*i+j*j-k*k,  2*j*k-2*r*i,   0,
                  2*i*k-2*r*j,      2*j*k+2*r*i,  r*r-i*i-j*j+k*k, 0,
                       0,                0,              0,        1
-            };
-        }
-        */
+            ];
+    }
 };
 
 
