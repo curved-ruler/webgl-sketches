@@ -36,7 +36,7 @@ span.hh {
 }
 
 div.container {
-  margin:  50px auto;
+  margin:  70px auto;
   padding: 40px 10px;
   
   text-align:    center;
@@ -45,8 +45,8 @@ div.container {
   background-color: rgb(30,30,30);
 }
 div.container2 {
-  margin:  50px auto;
-  padding: 70px 10px;
+  margin:  40px auto;
+  padding: 50px 10px;
   
   text-align:    center;
   width:         980px;
