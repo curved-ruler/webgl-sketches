@@ -13,13 +13,17 @@
   image-rendering: smooth;
 }
 #menu {
-  position: absolute;
-  top:  10px;
-  left: 10px;
-
   padding: 10px;
   background-color: rgb(50, 50, 50);
   color: rgb(120, 255, 255);
+}
+#menu-ovf {
+  position: absolute;
+  top:  10px;
+  left: 10px;
+  
+  height: 90%;
+  overflow-y: auto;
 }
 
 .left {
@@ -80,6 +84,14 @@
                         <option value="0.5">0.5</option>
                         <option value="1.0">1.0</option>
                     </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Plane parameters:</td>
+                <td>
+                    <textarea id="paramsin" type="text" rows="10" cols="40"></textarea>
+                    <br/>
+                    <button onclick="set_params()">Set params</button>
                 </td>
             </tr>
         </table></div>

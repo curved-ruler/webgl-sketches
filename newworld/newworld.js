@@ -96,6 +96,20 @@ let update_cam = function ()
     cam_constrain();
 };
 
+let plane_params = `\
+return {
+    imass : 1/1000,   // inverse mass
+    iinertia : 1/100, // inverse inertia
+    damp  : -1,   // velocity damp
+    adamp : -2.0, // angular damp
+    maxvel  : 10, // max velocity
+    maxavel : 5,  // max angular velocity
+    force  : 100, // force magnitude
+    torque : 1,   // torque magnitude
+};`;
+let P = null;
+let P_dom = null;
+
 let aeroplane = {
     oldpos : [0, 0, 0],
     pos    : [0, 0, 0],
@@ -477,6 +491,10 @@ let handle_key_up = function (event)
 };
 let handle_key_down = function (event)
 {
+    if (document.activeElement === P_dom) { return; }
+    if (event.ctrlKey) { return; }
+    
+    
     if (event.key === "m" || event.key === "M")
     {
         if (menu_hidden)
@@ -524,10 +542,37 @@ let handle_key_down = function (event)
     
     plane_controls.control(aeroplane, event, true);
 };
+
+let errorlog = function (str)
+{
+    console.error('Error: ' + str);
+    window.alert('Error:\n' + str);
+};
 let set_alpha = function (strval)
 {
     alpha = parseFloat(strval);
     alpha_dom.blur();
+};
+let set_params = function ()
+{
+    try
+    {
+        P = Function(P_dom.value);
+        let currp = P();
+        aeroplane.imass    = currp.imass;
+        aeroplane.iinertia = currp.iinertia;
+        aeroplane.damp     = currp.damp;
+        aeroplane.adamp    = currp.adamp;
+        aeroplane.maxvel   = currp.maxvel;
+        aeroplane.maxavel  = currp.maxavel;
+        aeroplane.force    = currp.force;
+        aeroplane.torque   = currp.torque;
+    }
+    catch (err)
+    {
+        errorlog(err.message);
+        return;
+    }
 };
 
 let tick = function (timestamp)
@@ -601,6 +646,11 @@ let init = function ()
         if (opts[i].value == alpha) { opts.selectedIndex = i; }
     }
     
+    P_dom = document.getElementById('paramsin');
+    P_dom.value = plane_params;
+    P = Function(plane_params);
+    set_params();
+    
     resize();
     
     cam_constrain();
@@ -609,7 +659,8 @@ let init = function ()
 };
 
 
-window.set_alpha = set_alpha;
+window.set_alpha  = set_alpha;
+window.set_params = set_params;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
