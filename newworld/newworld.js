@@ -40,6 +40,9 @@ let maps = [
 ];
 let mapi = 0;
 
+let plv_size    = 5;
+let planet_view = [...Array(plv_size * plv_size)];
+
 
 let bcol  = [0.1, 0.1, 0.1];
 let tcol  = [0.9, 0.9, 0.9];
@@ -90,6 +93,7 @@ let update_cam = function ()
 };
 
 let aeroplane = {
+    oldpos : [0, 0, 0],
     pos    : [0, 0, 0],
     orient : [1, 0, 0, 0],
     
@@ -192,8 +196,8 @@ let fetch_terr = function (name, x, y, pnx)
                 return;
             }
             
-            let xoff = x*planet.N;
-            let yoff = y*planet.N;
+            let xoff = 0;
+            let yoff = 0;
             
             let H  = [...Array((Nx+1)*(Ny+1))];
             let C  = [...Array((Nx+1)*(Ny+1))];
@@ -289,6 +293,8 @@ let make_planet = function ()
         }) )
     };
     
+    loop_planet();
+    
     for (let i=0 ; i<planet.cx ; ++i)
     {
         for (let j=0 ; j<planet.cy ; ++j)
@@ -296,7 +302,38 @@ let make_planet = function ()
             fetch_terr(maps[mapi].F[0] + maps[mapi].F[1] + j + '_' + i + '.terr', i, j, planet.cx);
         }
     }
-}
+};
+
+let loop_planet = function ()
+{
+    let x = aeroplane.pos[0];
+    let y = aeroplane.pos[1];
+    
+    let xm = Math.floor(x / (planet.N*scale) - plv_size/2);
+    let ym = Math.floor(y / (planet.N*scale) - plv_size/2);
+    
+    let modi = (x, m) =>
+    {
+        if (x >= 0) return (x - Math.floor(x/m)*m);
+        else        return (Math.floor((-x-1)/m) + 1)*m + x;
+    };
+
+    for (let j=0 ; j<plv_size ; ++j)
+    {
+        for (let i=0 ; i<plv_size ; ++i)
+        {
+            let i2 = modi(ym+i, planet.cy);
+            let j2 = modi(xm+j, planet.cx);
+            
+            //console.log("IJ", i2, j2);
+            
+            planet_view[j*plv_size + i] = { pointer: i2*planet.cx + j2,  tr: [(xm+j)*planet.N, (ym+i)*planet.N, 0] };
+        }
+    }
+    
+    //xo1 = xn1;
+    //yo1 = yn1;
+};
 
 
 let draw = function ()
@@ -323,7 +360,6 @@ let draw = function ()
     compute_matrices();
     
     gl.uniformMatrix4fv(glprog.p,  true, projmat);
-    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
     
@@ -331,31 +367,35 @@ let draw = function ()
     gl.uniform3fv(glprog.defcol,  tcol);
     gl.uniform1f (glprog.alpha,   alpha);
     
-    for (let i=0 ; i<planet.cx*planet.cy ; ++i)
+    for (let i=0 ; i<planet_view.length ; ++i)
     {
-        if ((obj === 0 || obj === 3 || obj === 5) && planet.cells[i].pbuf !== null)
+        let cell = planet.cells[planet_view[i].pointer];
+        modlmat  = tr.translate(planet_view[i].tr);
+        gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat))
+        
+        if ((obj === 0 || obj === 3 || obj === 5) && cell.pbuf !== null)
         {
-            gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].pbuf);
+            gl.bindBuffer(gl.ARRAY_BUFFER, cell.pbuf);
             gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
             gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
             gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
             gl.uniform1i(glprog.shaded, obj === 3 ? 0 : 1);
-            gl.drawArrays(gl.POINTS, 0, planet.cells[i].points.length / 9);
+            gl.drawArrays(gl.POINTS, 0, cell.points.length / 9);
         }
         
-        if ((obj === 1 || obj === 4 || obj === 5) && planet.cells[i].lbuf !== null)
+        if ((obj === 1 || obj === 4 || obj === 5) && cell.lbuf !== null)
         {
-            gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].lbuf);
+            gl.bindBuffer(gl.ARRAY_BUFFER, cell.lbuf);
             gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
             gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
             gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
             gl.uniform1i(glprog.shaded, obj === 4 ? 0 : 1);
-            gl.drawArrays(gl.LINES, 0, planet.cells[i].lines.length / 9);
+            gl.drawArrays(gl.LINES, 0, cell.lines.length / 9);
         }
         
-        if ((obj === 2 || obj === 3 || obj === 4) && planet.cells[i].tbuf !== null)
+        if ((obj === 2 || obj === 3 || obj === 4) && cell.tbuf !== null)
         {
-            gl.bindBuffer(gl.ARRAY_BUFFER, planet.cells[i].tbuf);
+            gl.bindBuffer(gl.ARRAY_BUFFER, cell.tbuf);
             gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
             gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
             gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
@@ -363,49 +403,14 @@ let draw = function ()
             
             gl.enable(gl.POLYGON_OFFSET_FILL);
             gl.polygonOffset(1, 1);
-            //gl.drawElements(gl.TRIANGLES, model.tris.length, gl.UNSIGNED_INT, 0);
-            gl.drawArrays(gl.TRIANGLES, 0, planet.cells[i].tris.length / 9);
+            gl.drawArrays(gl.TRIANGLES, 0, cell.tris.length / 9);
             gl.disable(gl.POLYGON_OFFSET_FILL);
         }
     }
 };
 
 
-let handle_mouse_down = function (event)
-{
-    //grabbed = 1;
-};
-let handle_mouse_up = function (event)
-{
-    //grabbed = 0;
-};
 
-let handle_mouse_move = function (event)
-{
-    /*
-    if (grabbed === 1)
-    {
-        let zi   = [0, 0, 1];
-        let left = v3.cross(camera.up, camera.look);
-        let qx = tr.rot(zi,   -camera.rot_k*event.movementX);
-        let qy = tr.rot(left,  camera.rot_k*event.movementY);
-        
-        let nu = v3.mmul(qy, camera.up);
-        let nl = v3.mmul(qy, camera.look);
-        
-        if (nu[2] > 0.001)
-        {
-            camera.up   = nu;
-            camera.look = nl;
-        }
-        
-        camera.up   = v3.mmul(qx, camera.up);
-        camera.look = v3.mmul(qx, camera.look);
-        
-        cam_constrain();
-    }
-    */
-};
 let handle_key_up = function (event)
 {
     plane_controls.control(aeroplane, event, false);
@@ -464,6 +469,15 @@ let set_alpha = function (strval)
 let tick = function (timestamp)
 {
     plane_controls.tick(aeroplane, 0.1); // TODO timestamp
+    
+    let distxy = (a,b) => ( Math.sqrt( (a[0]-b[0])*(a[0]-b[0]) + (a[1]-b[1])*(a[1]-b[1]) ) );
+    
+    if (distxy(aeroplane.oldpos, aeroplane.pos) > 128)
+    {
+        aeroplane.oldpos = aeroplane.pos;
+        loop_planet();
+    }
+    
     update_cam();
     draw();
     

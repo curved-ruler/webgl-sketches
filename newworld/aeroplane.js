@@ -50,7 +50,7 @@ let tick = function (plane, dt)
         add_f( [look[0]*plane.force, look[1]*plane.force, look[2]*plane.force] );
     }
     if (plane.backw) {
-        add_f( [look[0]*plane.force, look[1]*plane.force, look[2]*plane.force] );
+        add_f( [look[0]*-plane.force, look[1]*-plane.force, look[2]*-plane.force] );
     }
     if (plane.tup) {
         add_t([up[0]*(plane.torque*vrot), up[1]*(plane.torque*vrot), up[2]*(plane.torque*vrot)], look);
