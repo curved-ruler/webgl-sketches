@@ -1,9 +1,9 @@
 
-
 let file_dom = null;
 let font_dom = null;
 let shade_dom = null;
 let board  = null;
+let bc_dom = null;
 let charx = 10;
 let chary = 15;
 let rx = 0;
@@ -12,7 +12,7 @@ let file = false;
 let im_dom = null;
 let canvas = null;
 let ctx = null;
-let imdata   = [];
+let imdata   = {};
 let rendered = [];
 
 
@@ -25,29 +25,16 @@ let pixel_brightness = function (r,g,b)
     return (0.299*r + 0.587*g + 0.114*b);
 };
 
-let render_to_html = function ()
-{
-    let r = "";
-    for (let y = ry-1 ; y>=0 ; --y)
-    {
-        for (let x = 0 ; x<rx ; ++x)
-        {
-            r += rendered[y*rx + x];
-        }
-        r += "\n";
-    }
-    board.innerHTML = r;
-};
-
 let draw = function ()
 {
     if (!file) return;
     
-    rx = Math.floor(canvas.width  / charx);
-    ry = Math.floor(canvas.height / chary);
-    rendered = [...Array(rx*ry)];
+    rx = Math.floor(imdata.width  / charx);
+    ry = Math.floor(imdata.height / chary);
+    rendered = "";
     
     for (let i=0 ; i<ry ; ++i)
+    {
     for (let j=0 ; j<rx ; ++j)
     {
         let rsum = 0;
@@ -56,28 +43,29 @@ let draw = function ()
         for (let k=0 ; k<chary ; ++k)
         for (let l=0 ; l<charx ; ++l)
         {
-            rsum += imdata[(i+k)*canvas.width*4 + (j*charx + l)*4];
-            gsum += imdata[(i+k)*canvas.width*4 + (j*charx + l)*4 + 1];
-            bsum += imdata[(i+k)*canvas.width*4 + (j*charx + l)*4 + 2];
+            rsum += imdata.data[(i+k)*imdata.width*4 + (j*charx + l)*4];
+            gsum += imdata.data[(i+k)*imdata.width*4 + (j*charx + l)*4 + 1];
+            bsum += imdata.data[(i+k)*imdata.width*4 + (j*charx + l)*4 + 2];
         }
         rsum /= 256*charx*chary;
         gsum /= 256*charx*chary;
         bsum /= 256*charx*chary;
         let bri = Math.floor((1-pixel_brightness(rsum, gsum, bsum)) * shade.length);
-        rendered[i*rx+j] = shade.charAt(bri);
+        rendered += shade.charAt(bri);
     }
-    render_to_html();
+    rendered += "\n";
+    }
+    
+    board.innerHTML = rendered;
 };
-
-
 
 let resize = function ()
 {
     if (!board) return;
     
     board.innerHTML = "ABCDE\nabcde\n01234\nmmmmm\nMMMMM";
-    charx = Math.floor(board.offsetWidth / 5);
-    chary = Math.floor(board.offsetHeight / 5);
+    charx = Math.floor(bc_dom.offsetWidth / 5);
+    chary = Math.floor(bc_dom.offsetHeight / 5);
 };
 
 let handle_file_change = function (files)
@@ -87,17 +75,20 @@ let handle_file_change = function (files)
         canvas.width  = im_dom.width;
         canvas.height = im_dom.height;
         ctx.drawImage(im_dom, 0, 0);
-        imdata = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        resize();
+        imdata = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        //resize();
         draw();
     });
     im_dom.src = URL.createObjectURL(file_dom.files[0]);
 };
+
 let init = function ()
 {
     canvas = document.getElementById("canv");
     ctx    = canvas.getContext("2d");
     board  = document.getElementById("board");
+    
+    bc_dom = document.getElementById("board-cont");
     
     file_dom  = document.getElementById("file-in");
     font_dom  = document.getElementById("font-in");
@@ -113,7 +104,7 @@ let init = function ()
 };
 
 
-window.font_change  = () => { font  = font_dom.value; board.style.font=font; resize(); }
+window.font_change  = () => { font  = font_dom.value; board.style.font=font; resize(); draw(); }
 window.shade_change = () => { shade = shade_dom.value; draw(); }
 
 document.addEventListener("DOMContentLoaded", init);
