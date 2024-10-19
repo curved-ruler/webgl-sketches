@@ -17,24 +17,38 @@ let rendered = [];
 
 
 let font  = "20px Courier";
-let shade = " .+%";
+let shade = " .:+%";
 
 
 let pixel_brightness = function (r,g,b)
 {
     return (0.299*r + 0.587*g + 0.114*b);
 };
-
+let rendered_to_html = function (bmin, bmax)
+{
+    let r = "";
+    for (let y=0 ; y<ry ; ++y)
+    {
+        for (let x=0 ; x<rx ; ++x)
+        {
+            r += shade.charAt((shade.length-1) * (rendered[y*rx + x] - bmin) / (bmax-bmin));
+        }
+        r += "\n";
+    }
+    board.innerHTML = r;
+};
 let draw = function ()
 {
     if (!file) return;
     
     rx = Math.floor(imdata.width  / charx);
     ry = Math.floor(imdata.height / chary);
-    rendered = "";
+    rendered = [...Array(rx*ry)];
+    
+    let bmin = 1000;
+    let bmax = -1;
     
     for (let i=0 ; i<ry ; ++i)
-    {
     for (let j=0 ; j<rx ; ++j)
     {
         let rsum = 0;
@@ -50,13 +64,13 @@ let draw = function ()
         rsum /= 256*charx*chary;
         gsum /= 256*charx*chary;
         bsum /= 256*charx*chary;
-        let bri = Math.floor((1-pixel_brightness(rsum, gsum, bsum)) * shade.length);
-        rendered += shade.charAt(bri);
+        let bri = pixel_brightness(rsum, gsum, bsum);
+        rendered[i*rx+j] = bri;
+        
+        if (bri > bmax) bmax = bri;
+        if (bri < bmin) bmin = bri;
     }
-    rendered += "\n";
-    }
-    
-    board.innerHTML = rendered;
+    rendered_to_html(bmin, bmax);
 };
 
 let resize = function ()
@@ -64,8 +78,8 @@ let resize = function ()
     if (!board) return;
     
     board.innerHTML = "ABCDE\nabcde\n01234\nmmmmm\nMMMMM";
-    charx = Math.floor(bc_dom.offsetWidth / 5);
-    chary = Math.floor(bc_dom.offsetHeight / 5);
+    charx = Math.floor(board.offsetWidth / 5);
+    chary = Math.floor(board.offsetHeight / 5);
 };
 
 let handle_file_change = function (files)
@@ -88,7 +102,7 @@ let init = function ()
     ctx    = canvas.getContext("2d");
     board  = document.getElementById("board");
     
-    bc_dom = document.getElementById("board-cont");
+    //bc_dom = document.getElementById("board-cont");
     
     file_dom  = document.getElementById("file-in");
     font_dom  = document.getElementById("font-in");
