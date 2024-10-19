@@ -57,9 +57,9 @@ let draw = function ()
         for (let k=0 ; k<chary ; ++k)
         for (let l=0 ; l<charx ; ++l)
         {
-            rsum += imdata.data[(i+k)*imdata.width*4 + (j*charx + l)*4];
-            gsum += imdata.data[(i+k)*imdata.width*4 + (j*charx + l)*4 + 1];
-            bsum += imdata.data[(i+k)*imdata.width*4 + (j*charx + l)*4 + 2];
+            rsum += imdata.data[(i*chary+k)*imdata.width*4 + (j*charx + l)*4];
+            gsum += imdata.data[(i*chary+k)*imdata.width*4 + (j*charx + l)*4 + 1];
+            bsum += imdata.data[(i*chary+k)*imdata.width*4 + (j*charx + l)*4 + 2];
         }
         rsum /= 256*charx*chary;
         gsum /= 256*charx*chary;
