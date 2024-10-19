@@ -31,7 +31,9 @@ let rendered_to_html = function (bmin, bmax)
     {
         for (let x=0 ; x<rx ; ++x)
         {
-            r += shade.charAt((shade.length-1) * (rendered[y*rx + x] - bmin) / (bmax-bmin));
+            let i = Math.floor(shade.length * (rendered[y*rx + x] - bmin) / (bmax-bmin));
+            if (i == shade.length) i-=1;
+            r += shade.charAt(i);
         }
         r += "\n";
     }
