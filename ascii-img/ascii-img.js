@@ -1,6 +1,7 @@
 
 let file_dom = null;
 let font_dom = null;
+let lineh_dom = null;
 let shade_dom = null;
 let board  = null;
 let bc_dom = null;
@@ -17,6 +18,7 @@ let rendered = [];
 
 
 let font  = "20px Courier";
+let line_height = "5px";
 let shade = " .:+%";
 
 
@@ -108,11 +110,13 @@ let init = function ()
     
     file_dom  = document.getElementById("file-in");
     font_dom  = document.getElementById("font-in");
+    lineh_dom = document.getElementById("lineh-in");
     shade_dom = document.getElementById("shade-in");
     im_dom    = document.getElementById("im");
     
     file_dom.addEventListener("change", handle_file_change);
     font_dom.value  = font;
+    lineh_dom.value = line_height;
     shade_dom.value = shade;
     
     font_change();
@@ -121,6 +125,7 @@ let init = function ()
 
 
 window.font_change  = () => { font  = font_dom.value; board.style.font=font; resize(); draw(); }
+window.lineh_change = () => { line_height = lineh_dom.value; board.style.lineHeight=line_height; resize(); draw(); }
 window.shade_change = () => { shade = shade_dom.value; draw(); }
 
 document.addEventListener("DOMContentLoaded", init);

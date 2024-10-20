@@ -1,5 +1,4 @@
 
-<!DOCTYPE html>
 
 <html>
     <head>
@@ -10,7 +9,7 @@
         <style>
           * {
             margin: 1px;
-            background-color: #212121;
+            background-color: #111;
             color: #fff;
           }
         </style>
@@ -21,9 +20,11 @@
         &nbsp;&nbsp;
         Font:<input id="font-in"  type='text' size="20" onchange="font_change()"/>
         &nbsp;&nbsp;
+        Line-Height:<input id="lineh-in"  type='text' size="20" onchange="lineh_change()"/>
+        &nbsp;&nbsp;
         Shade:<input id="shade-in" type='text' size="20" onchange="shade_change()"/>
         <br/>
-        <div id="board-cont"><span id="board" style="white-space:pre; overflow:auto;" /></div>
+        <div id="board-cont"><span id="board" style="white-space:pre; overflow:auto; line-height:5px;" /></div>
         
         <img id="im" style="display:none;" src="#"/>
         <canvas id="canv" style="display:block;"/>
