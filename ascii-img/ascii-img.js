@@ -18,7 +18,7 @@ let rendered = [];
 
 
 let font  = "20px Courier";
-let line_height = "5px";
+let line_height = "1";
 let shade = " .:+%";
 
 
