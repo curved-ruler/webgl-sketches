@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script src="grid.js" type="module"></script>
+        <title>Illusion of a New World</title>
+        <style>
+#canvas {
+  position: absolute;
+  top:  0px;
+  left: 0px;
+  image-rendering: smooth;
+}
+#menu {
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  color: rgb(120, 255, 255);
+}
+#menu-ovf {
+  position: absolute;
+  top:  10px;
+  left: 10px;
+  
+  height: 90%;
+  overflow-y: auto;
+}
+
+.left {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.hidden {
+  display: none;
+}
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        
+        <div id="menu-ovf"><table id="menu">
+            <tr>
+                <td class="left">M:</td>
+                <td>Show/Hide Menu</td>
+            </tr>
+            <tr>
+                <td class="left">I:</td>
+                <td>Toggle projection</td>
+            </tr>
+            <tr>
+                <td class="left">O:</td>
+                <td>Obj mode</td>
+            </tr>
+            <tr>
+                <td class="left">K:</td>
+                <td>Col mode</td>
+            </tr>
+            <tr>
+                <td class="left">S:</td>
+                <td>Save .terr</td>
+            </tr>
+            <tr>
+                <td class="left">NxN: </td>
+                <td>
+                    <input id="nnin" type="text" size="11" onchange="set_nn(this.value)"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Back col: </td>
+                <td>
+                    <input id="bcolin" type="text" size="11" onchange="set_bcol(this.value)"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Line col: </td>
+                <td>
+                    <input id="lcolin" type="text" size="11" onchange="set_lcol(this.value)"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Alpha:</td>
+                <td>
+                    <input id="alphain" type="text" size="11" onchange="set_alpha(this.value)"/>
+                </td>
+            </tr>
+        </table></div>
+    </body>
+</html>
