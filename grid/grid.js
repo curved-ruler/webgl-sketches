@@ -4,6 +4,7 @@ import { saveAs } from './FileSaver.js';
 import { gl_init }          from "./gl_init.js";
 import { shaders }          from "./shaders.js";
 import { m4, v3, quat, tr } from "./matvec.js";
+import { generators }       from "./generators.js";
 
 let gl      = null;
 let glprog  = null;
@@ -121,7 +122,12 @@ let save_terr = function ()
 
 let init_grid = function ()
 {
-    grid.verts = [...Array((grid.N+1)*(grid.N+1)*2)].map(i=>0);
+    grid.verts = [...Array((grid.N+1)*(grid.N+1)*2)];
+    for (let i=0 ; i<(grid.N+1)*(grid.N+1) ; ++i)
+    {
+        grid.verts[2*i]   = 0;
+        grid.verts[2*i+1] = 4294967295;
+    }
     grid_to_gpu();
 };
 let grid_to_gpu = function ()
@@ -350,6 +356,12 @@ let handle_key_down = function (event)
     {
         ++colmode;
         if (colmode > 1) { colmode = 0; }
+        draw();
+    }
+    else if (event.key === "d" || event.key === "D")
+    {
+        generators.diamond_square(grid);
+        grid_to_gpu();
         draw();
     }
     else if (event.key === "F8")
