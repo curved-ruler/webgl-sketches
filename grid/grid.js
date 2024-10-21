@@ -11,7 +11,7 @@ let canvas  = null;
 let cwidth, cheight;
 
 let grid   = {
-    N:256,
+    N:128,
     verts:[],  tris:[],   lines:[],  points:[],
     vbuf:null, tbuf:null, lbuf:null, pbuf:null
 };
@@ -167,6 +167,23 @@ let grid_to_gpu = function ()
         
         
         grid.points.push(i,  j,   h0, r/255, g/255, b/255,  norm[0], norm[1], norm[2]);
+        
+        if (j==grid.N-1)
+        {
+            grid.lines.push(i,    j+1, h1, r/255, g/255, b/255,  norm[0], norm[1], norm[2]);
+            grid.lines.push(i+1,  j+1, h3, r/255, g/255, b/255,  norm[0], norm[1], norm[2]);
+            grid.points.push(i,   j+1, h1, r/255, g/255, b/255,  norm[0], norm[1], norm[2]);
+        }
+        if (i==grid.N-1)
+        {
+            grid.lines.push(i+1,  j,   h2, r/255, g/255, b/255,  norm[0], norm[1], norm[2]);
+            grid.lines.push(i+1,  j+1, h3, r/255, g/255, b/255,  norm[0], norm[1], norm[2]);
+            grid.points.push(i+1, j,   h2, r/255, g/255, b/255,  norm[0], norm[1], norm[2]);
+        }
+        if (j==grid.N-1 && i == grid.N-1)
+        {
+            grid.points.push(i+1, j+1,  h3, r/255, g/255, b/255,  norm[0], norm[1], norm[2]);
+        }
     }
     
     gl.deleteBuffer(grid.tbuf);
