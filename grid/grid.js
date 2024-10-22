@@ -13,8 +13,10 @@ let cwidth, cheight;
 
 let grid   = {
     N:128,
-    verts:[],  tris:[],   lines:[],  points:[],
-    vbuf:null, tbuf:null, lbuf:null, pbuf:null
+    H:[],
+    C:[],
+    tris:[],   lines:[],  points:[],
+    tbuf:null, lbuf:null, pbuf:null
 };
 
 let bcol  = [0.1, 0.1, 0.1];
@@ -25,6 +27,7 @@ let nn_dom = null;
 let alpha_dom = null;
 let bcol_dom  = null;
 let lcol_dom  = null;
+
 
 let menu_hidden = false;
 
@@ -37,29 +40,6 @@ let axis     = 0;
 let rotation = 0;
 let rotdir   = true;
 let grabbed  = 0;
-
-let F  = null;
-let FS = [
-    `\
-let dt = 0.02;
-let A  = 10;
-let B  = 8/3;
-let C  = 28;
-let dx = A*(y - x);
-let dy = x*(C - z) - y;
-let dz = x*y - B*z;
-return [x+dt*dx, y+dt*dy, z+dt*dz];`,
-    
-    `\
-let dt = 0.02;
-let A  = 0.2;
-let B  = 0.2;
-let C  = 5.7;
-let dx = -y - z;
-let dy = x + A*y;
-let dz = B+z*(x-C);
-return [x+dt*dx, y+dt*dy, z+dt*dz];`,
-];
 
 
 
@@ -122,12 +102,8 @@ let save_terr = function ()
 
 let init_grid = function ()
 {
-    grid.verts = [...Array((grid.N+1)*(grid.N+1)*2)];
-    for (let i=0 ; i<(grid.N+1)*(grid.N+1) ; ++i)
-    {
-        grid.verts[2*i]   = 0;
-        grid.verts[2*i+1] = 4294967295;
-    }
+    grid.H = [...Array( (grid.N+1)*(grid.N+1) )].map(i=>0);
+    grid.C = [...Array( (grid.N+1)*(grid.N+1) )].map(i=>4294967295);
     grid_to_gpu();
 };
 let grid_to_gpu = function ()
@@ -139,11 +115,11 @@ let grid_to_gpu = function ()
     for (let j=0 ; j<grid.N ; ++j)
     for (let i=0 ; i<grid.N ; ++i)
     {
-        let col = grid.verts[( j   *(grid.N+1)+i)  *2+1];
-        let h0  = grid.verts[( j   *(grid.N+1)+i)  *2];
-        let h1  = grid.verts[((j+1)*(grid.N+1)+i)  *2];
-        let h2  = grid.verts[( j   *(grid.N+1)+i+1)*2];
-        let h3  = grid.verts[((j+1)*(grid.N+1)+i+1)*2];
+        let col = grid.C[ j   *(grid.N+1)+i];
+        let h0  = grid.H[ j   *(grid.N+1)+i];
+        let h1  = grid.H[(j+1)*(grid.N+1)+i];
+        let h2  = grid.H[ j   *(grid.N+1)+i+1];
+        let h3  = grid.H[(j+1)*(grid.N+1)+i+1];
         let a = col % 256;
         col = Math.floor((col-a)/256);
         let b = col % 256;
@@ -371,8 +347,7 @@ let handle_key_down = function (event)
     }
     else if (event.key === "Enter")
     {
-        scale    = 2.0;
-        panz     = 0;
+        scale    = 1.0;
         axis     = 0;
         rotation = 0;
         rotdir   = true;

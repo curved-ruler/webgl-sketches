@@ -17,13 +17,13 @@ let diamond_square = function (grid)
             {
                 //if (x+i >= hh) { std::cerr << "DS: Index out of bounds in X" << std::endl; break; }
                 
-                let a = grid.verts[(y*(grid.N+1) + x)*2];
-                let b = grid.verts[((y+i)*(grid.N+1) + x)*2];
-                let c = grid.verts[(y*(grid.N+1) + (x+i))*2];
-                let d = grid.verts[((y+i)*(grid.N+1) + (x+i))*2];
+                let a = grid.H[ y   *(grid.N+1) +  x];
+                let b = grid.H[(y+i)*(grid.N+1) +  x];
+                let c = grid.H[ y   *(grid.N+1) + (x+i)];
+                let d = grid.H[(y+i)*(grid.N+1) + (x+i)];
                 let r = (Math.random()-0.5) * i * 0.6;
                 
-                grid.verts[((y+ip2) * (grid.N+1) + (x+ip2))*2] = (a + b + c + d) / 4.0 + r;
+                grid.H[(y+ip2) * (grid.N+1) + (x+ip2)] = (a + b + c + d) / 4.0 + r;
                 //hmap[(y+ip2) * hw + (x+ip2)] = (a+b+c+d+d)/4.0f;
                 /*
                 float rnd = dice.next();
@@ -51,34 +51,34 @@ let diamond_square = function (grid)
                 let a = 0.0;
                 if (x-ip2 >= 0)
                 {
-                    a = grid.verts[(y*(grid.N+1) + (x-ip2))*2];
+                    a = grid.H[y*(grid.N+1) + (x-ip2)];
                 }
                 else { p -= 1.0; }
                 
                 let b = 0.0;
                 if (x+ip2 <= grid.N)
                 {
-                    b = grid.verts[(y*(grid.N+1) + (x+ip2))*2];
+                    b = grid.H[y*(grid.N+1) + (x+ip2)];
                 }
                 else { p -= 1.0; }
                 
                 let c = 0.0;
                 if (y-ip2 >= 0)
                 {
-                    c = grid.verts[((y-ip2)*(grid.N+1) + x)*2];
+                    c = grid.H[(y-ip2)*(grid.N+1) + x];
                 }
                 else { p -= 1.0; }
                 
                 let d = 0.0;
                 if (y+ip2 < grid.N)
                 {
-                    d = grid.verts[((y+ip2)*(grid.N+1) + x)*2];
+                    d = grid.H[(y+ip2)*(grid.N+1) + x];
                 }
                 else { p -= 1.0; }
                 
                 let r = (Math.random()-0.5) * ip2 * 0.6;
                 
-                grid.verts[(y*(grid.N+1) + x)*2] = (a + b + c + d) / p + r;
+                grid.H[y*(grid.N+1) + x] = (a + b + c + d) / p + r;
                 //hmap[y*hw + x] = (a+b+c+d+d)/(p);
                 /*
                 float rnd = dice.next();
