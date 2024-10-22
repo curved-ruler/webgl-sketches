@@ -28,6 +28,11 @@ let alpha_dom = null;
 let bcol_dom  = null;
 let lcol_dom  = null;
 
+let ds_w = 0.5;
+let ds_w_dom = null;
+let levels = [0,4,12];
+let level_dom = null;
+
 
 let menu_hidden = false;
 
@@ -336,7 +341,7 @@ let handle_key_down = function (event)
     }
     else if (event.key === "d" || event.key === "D")
     {
-        generators.diamond_square(grid);
+        generators.diamond_square(grid, ds_w);
         grid_to_gpu();
         draw();
     }
@@ -355,6 +360,24 @@ let handle_key_down = function (event)
     }
 };
 
+
+
+let set_level = function (strval)
+{
+    let lv = strval.split(",");
+    for (let i=0 ; i<lv.length ; ++i)
+    {
+        let ival = parseFloat(lv[i]);
+        if (isNaN(ival) || ival === undefined || ival === null) return;
+        levels.push(ival);
+    }
+};
+let set_ds_w = function (strval)
+{
+    let ival = parseFloat(strval);
+    if (isNaN(ival) || ival === undefined || ival === null) return;
+    ds_w = ival;
+};
 let set_bcol = function (str)
 {
     let bc = str.split(',');
@@ -458,6 +481,11 @@ let init = function ()
     bcol_dom  = document.getElementById('bcolin');
     lcol_dom  = document.getElementById('lcolin');
     
+    ds_w_dom  = document.getElementById('dsw_in');
+    level_dom = document.getElementById('level_in');
+    ds_w_dom.value  = "" + ds_w;
+    level_dom.value = levels.join(",");
+    
     alpha_dom.value = alpha;
     bcol_dom.value  = "" + Math.floor(bcol[0]*255) + "," + Math.floor(bcol[1]*255) + "," + Math.floor(bcol[2]*255);
     lcol_dom.value  = "" + Math.floor(lcol[0]*255) + "," + Math.floor(lcol[1]*255) + "," + Math.floor(lcol[2]*255);
@@ -470,11 +498,15 @@ let init = function ()
 };
 
 
+window.set_level  = set_level;
+window.set_ds_w   = set_ds_w;
 window.set_bcol   = set_bcol;
 window.set_lcol   = set_lcol;
 window.set_alpha  = set_alpha;
 window.set_n      = set_n;
 
+window.level = () => { generators.level(grid,levels); grid_to_gpu(); draw(); };
+
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
-window.addEventListener("resize", function() { resize(); draw(); });
+window.addEventListener("resize", () => { resize(); draw(); });

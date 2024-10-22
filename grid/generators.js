@@ -1,5 +1,28 @@
 
-let diamond_square = function (grid)
+let level = function (grid, L)
+{
+    for (let y=0 ; y<=grid.N ; y+=1)
+    {
+        for (let x=0 ; x<=grid.N ; x+=1)
+        {
+            if (grid.H[y*(grid.N+1) + x] < L[0]) { grid.H[y*(grid.N+1) + x]=L[0]; }
+        }
+    }
+    
+    for (let i=1 ; i<L.length-1 ; i+=2)
+    {
+        for (let y=0 ; y<=grid.N ; y+=1)
+        for (let x=0 ; x<=grid.N ; x+=1)
+        {
+            if (grid.H[y*(grid.N+1) + x] < L[i+1] && grid.H[y*(grid.N+1) + x] > L[i])
+            {
+                grid.H[y*(grid.N+1) + x]=L[i];
+            }
+        }
+    }
+};
+
+let diamond_square = function (grid, weight)
 {
     let i = grid.N;
     
@@ -21,7 +44,7 @@ let diamond_square = function (grid)
                 let b = grid.H[(y+i)*(grid.N+1) +  x];
                 let c = grid.H[ y   *(grid.N+1) + (x+i)];
                 let d = grid.H[(y+i)*(grid.N+1) + (x+i)];
-                let r = (Math.random()-0.5) * i * 0.6;
+                let r = (Math.random()-0.5) * i * weight;
                 
                 grid.H[(y+ip2) * (grid.N+1) + (x+ip2)] = (a + b + c + d) / 4.0 + r;
                 //hmap[(y+ip2) * hw + (x+ip2)] = (a+b+c+d+d)/4.0f;
@@ -76,7 +99,7 @@ let diamond_square = function (grid)
                 }
                 else { p -= 1.0; }
                 
-                let r = (Math.random()-0.5) * ip2 * 0.6;
+                let r = (Math.random()-0.5) * ip2 * weight;
                 
                 grid.H[y*(grid.N+1) + x] = (a + b + c + d) / p + r;
                 //hmap[y*hw + x] = (a+b+c+d+d)/(p);
@@ -98,7 +121,8 @@ let diamond_square = function (grid)
 };
 
 let generators = {
-    diamond_square: diamond_square
+    diamond_square,
+    level
 };
 
 export { generators };
