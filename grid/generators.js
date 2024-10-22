@@ -1,5 +1,5 @@
 
-let level = function (grid, L)
+let level = function (grid, L, cliff)
 {
     for (let y=0 ; y<=grid.N ; y+=1)
     {
@@ -17,6 +17,10 @@ let level = function (grid, L)
             if (grid.H[y*(grid.N+1) + x] < L[i+1] && grid.H[y*(grid.N+1) + x] > L[i])
             {
                 grid.H[y*(grid.N+1) + x]=L[i];
+            }
+            else if (!cliff && grid.H[y*(grid.N+1) + x] > L[i+1])
+            {
+                grid.H[y*(grid.N+1) + x] -= L[i+1]-L[i];
             }
         }
     }

@@ -30,8 +30,10 @@ let lcol_dom  = null;
 
 let ds_w = 0.5;
 let ds_w_dom = null;
-let levels = [0,4,12];
+let levels    = [0,4,12];
+let lev_cliff = true;
 let level_dom = null;
+let lev_c_dom = null;
 
 
 let menu_hidden = false;
@@ -93,12 +95,12 @@ let save_terr = function ()
     for (let i=0 ; i<=grid.N ; ++i)
     for (let j=0 ; j<=grid.N ; ++j)
     {
-        view.setFloat32((i*grid.N + j)*4, grid.verts[(i*grid.N + j)*2]);
+        view.setFloat32((i*grid.N + j)*4, grid.H[i*grid.N + j]);
     }
     for (let i=0 ; i<=grid.N ; ++i)
     for (let j=0 ; j<=grid.N ; ++j)
     {
-        view.setFloat32((grid.N+1)*(grid.N+1)*4 + (i*grid.N + j)*4, grid.verts[(i*grid.N + j)*2 + 1]);
+        view.setFloat32((grid.N+1)*(grid.N+1)*4 + (i*grid.N + j)*4, grid.C[i*grid.N + j]);
     }
 
     let blob = new Blob([buffer], {type: "model/gltf-binary"});
@@ -483,8 +485,10 @@ let init = function ()
     
     ds_w_dom  = document.getElementById('dsw_in');
     level_dom = document.getElementById('level_in');
+    lev_c_dom = document.getElementById('lev_c_in');
     ds_w_dom.value  = "" + ds_w;
     level_dom.value = levels.join(",");
+    lev_c_dom.checked = lev_cliff;
     
     alpha_dom.value = alpha;
     bcol_dom.value  = "" + Math.floor(bcol[0]*255) + "," + Math.floor(bcol[1]*255) + "," + Math.floor(bcol[2]*255);
@@ -505,7 +509,7 @@ window.set_lcol   = set_lcol;
 window.set_alpha  = set_alpha;
 window.set_n      = set_n;
 
-window.level = () => { generators.level(grid,levels); grid_to_gpu(); draw(); };
+window.level = () => { generators.level(grid, levels, lev_c_dom.checked); grid_to_gpu(); draw(); };
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
