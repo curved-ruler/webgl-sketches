@@ -5,11 +5,14 @@ import { gl_init }          from "./gl_init.js";
 import { shaders }          from "./shaders.js";
 import { m4, v3, quat, tr } from "./matvec.js";
 import { generators }       from "./generators.js";
+import { Grid_UI }          from "./grid_ui.js";
 
 let gl      = null;
 let glprog  = null;
 let canvas  = null;
 let cwidth, cheight;
+
+let gui = null;
 
 let grid   = {
     N:128,
@@ -18,26 +21,11 @@ let grid   = {
     tris:[],   lines:[],  points:[],
     tbuf:null, lbuf:null, pbuf:null
 };
-
-let bcol  = [0.1, 0.1, 0.1];
-let lcol  = [1.0, 1.0, 1.0];
-let colmode = 0;
-let alpha = 1.0;
 let nn_dom = null;
-let alpha_dom = null;
-let bcol_dom  = null;
-let lcol_dom  = null;
-
-let ds_w = 0.5;
-let ds_w_dom = null;
-let levels    = [0,4,12];
-let lev_cliff = true;
-let level_dom = null;
-let lev_c_dom = null;
-
 
 let menu_hidden = false;
 
+let colmode = 0;
 let proj = 1;
 let obj  = 1;
 let projmat, modlmat, viewmat;
@@ -198,6 +186,7 @@ let draw = function ()
     
     gl.useProgram(glprog.bin);
     
+    let alpha = gui.get_alpha();
     if (alpha < 0.99)
     {
         gl.enable(gl.BLEND);
@@ -211,6 +200,8 @@ let draw = function ()
         gl.enable(gl.DEPTH_TEST);
     }
     
+    let bcol = gui.get_bcol();
+    let lcol = gui.get_lcol();
     gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
@@ -341,10 +332,8 @@ let handle_key_down = function (event)
         if (colmode > 1) { colmode = 0; }
         draw();
     }
-    else if (event.key === "d" || event.key === "D")
+    else if (event.key === "r" || event.key === "R")
     {
-        generators.diamond_square(grid, ds_w);
-        grid_to_gpu();
         draw();
     }
     else if (event.key === "F8")
@@ -364,57 +353,6 @@ let handle_key_down = function (event)
 
 
 
-let set_level = function (strval)
-{
-    let lv = strval.split(",");
-    for (let i=0 ; i<lv.length ; ++i)
-    {
-        let ival = parseFloat(lv[i]);
-        if (isNaN(ival) || ival === undefined || ival === null) return;
-        levels.push(ival);
-    }
-};
-let set_ds_w = function (strval)
-{
-    let ival = parseFloat(strval);
-    if (isNaN(ival) || ival === undefined || ival === null) return;
-    ds_w = ival;
-};
-let set_bcol = function (str)
-{
-    let bc = str.split(',');
-    if (bc.length === 1) bc.push(bc[0], bc[0]);
-    if (bc.length === 2) bc.push(bc[1]);
-    
-    bcol[0] = parseInt(bc[0]) / 255.0;
-    bcol[1] = parseInt(bc[1]) / 255.0;
-    bcol[2] = parseInt(bc[2]) / 255.0;
-    
-    draw();
-};
-let set_lcol = function (str)
-{
-    let bc = str.split(',');
-    if (bc.length === 1) bc.push(bc[0], bc[0]);
-    if (bc.length === 2) bc.push(bc[1]);
-    
-    lcol[0] = parseInt(bc[0]) / 255.0;
-    lcol[1] = parseInt(bc[1]) / 255.0;
-    lcol[2] = parseInt(bc[2]) / 255.0;
-    
-    draw();
-};
-let set_alpha = function (strval)
-{
-    let ival = Number(strval);
-    
-    if (isNaN(ival) || ival === undefined || ival === null) return;
-    if (ival < 0)   ival = 0;
-    if (ival > 1.0) ival = 1.0;
-    
-    alpha = ival;
-    draw();
-};
 let set_n = function (strval)
 {
     let nn = parseInt(strval);
@@ -477,24 +415,11 @@ let init = function ()
     canvas.addEventListener("mouseup",   handle_mouse_up);
     canvas.addEventListener("mousemove", handle_mouse_move);
     canvas.addEventListener("wheel",     handle_wheel);
-
-    nn_dom    = document.getElementById('nnin');
-    alpha_dom = document.getElementById('alphain');
-    bcol_dom  = document.getElementById('bcolin');
-    lcol_dom  = document.getElementById('lcolin');
     
-    ds_w_dom  = document.getElementById('dsw_in');
-    level_dom = document.getElementById('level_in');
-    lev_c_dom = document.getElementById('lev_c_in');
-    ds_w_dom.value  = "" + ds_w;
-    level_dom.value = levels.join(",");
-    lev_c_dom.checked = lev_cliff;
-    
-    alpha_dom.value = alpha;
-    bcol_dom.value  = "" + Math.floor(bcol[0]*255) + "," + Math.floor(bcol[1]*255) + "," + Math.floor(bcol[2]*255);
-    lcol_dom.value  = "" + Math.floor(lcol[0]*255) + "," + Math.floor(lcol[1]*255) + "," + Math.floor(lcol[2]*255);
-    
+    nn_dom = document.getElementById('nnin');
     nn_dom.value = "" + grid.N;
+    
+    gui = new Grid_UI;
     
     resize();
     init_grid();
@@ -502,14 +427,9 @@ let init = function ()
 };
 
 
-window.set_level  = set_level;
-window.set_ds_w   = set_ds_w;
-window.set_bcol   = set_bcol;
-window.set_lcol   = set_lcol;
-window.set_alpha  = set_alpha;
-window.set_n      = set_n;
-
-window.level = () => { generators.level(grid, levels, lev_c_dom.checked); grid_to_gpu(); draw(); };
+window.set_n = set_n;
+window.level = () => { generators.level(grid, gui.get_levels(), gui.get_lev_c()); grid_to_gpu(); draw(); };
+window.ds    = () => { generators.diamond_square(grid, gui.get_ds_w()); grid_to_gpu(); draw(); };
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);

@@ -71,16 +71,17 @@
                 </td>
             </tr>
             <tr class="group">
-                <td class="left">D:<br/>Weight:</td>
-                <td>Diamond-Square
+                <td class="left">Weight:<br/>&nbsp;</td>
+                <td>
+                <input id="dsw_in" type="text" size="12" />
                 <br/>
-                <input id="dsw_in" type="text" size="12" onchange="set_ds_w(this.value)" />
+                <button onclick="ds()">Diamond-Square</button>
                 </td>
             </tr>
             <tr class="group">
                 <td class="left">Levels:<br/>Cliffs:<br/>&nbsp;</td>
                 <td>
-                <input id="level_in" type="text" size="12" onchange="set_level(this.value)" />
+                <input id="level_in" type="text" size="12" />
                 <br/>
                 <input id="lev_c_in" type="checkbox" />
                 <br/>
@@ -90,19 +91,19 @@
             <tr>
                 <td class="left">Back col: </td>
                 <td>
-                    <input id="bcolin" type="text" size="12" onchange="set_bcol(this.value)"/>
+                    <input id="bcolin" type="text" size="12"/>
                 </td>
             </tr>
             <tr>
-                <td class="left">Line col: </td>
+                <td class="left">Def col: </td>
                 <td>
-                    <input id="lcolin" type="text" size="12" onchange="set_lcol(this.value)"/>
+                    <input id="lcolin" type="text" size="12"/>
                 </td>
             </tr>
             <tr>
                 <td class="left">Alpha:</td>
                 <td>
-                    <input id="alphain" type="text" size="12" onchange="set_alpha(this.value)"/>
+                    <input id="alphain" type="text" size="12"/>
                 </td>
             </tr>
         </table></div>
