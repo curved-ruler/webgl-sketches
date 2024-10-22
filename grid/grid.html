@@ -33,6 +33,7 @@
 .left {
   text-align: right;
   padding-right: 10px;
+  vertical-align: top;
 }
 
 .hidden {
@@ -61,19 +62,23 @@
                 <td>Col mode</td>
             </tr>
             <tr>
+                <td class="left">R:</td>
+                <td>Redraw</td>
+            </tr>
+            <tr>
                 <td class="left">S:</td>
                 <td>Save .terr</td>
             </tr>
             <tr>
                 <td class="left">NxN:</td>
                 <td>
-                    <input id="nnin" type="text" size="12" onchange="set_n(this.value)"/>
+                    <input id="nnin" type="text" size="18" onchange="set_n(this.value)"/>
                 </td>
             </tr>
             <tr class="group">
                 <td class="left">Weight:<br/>&nbsp;</td>
                 <td>
-                <input id="dsw_in" type="text" size="12" />
+                <input id="dsw_in" type="text" size="18" />
                 <br/>
                 <button onclick="ds()">Diamond-Square</button>
                 </td>
@@ -81,29 +86,54 @@
             <tr class="group">
                 <td class="left">Levels:<br/>Cliffs:<br/>&nbsp;</td>
                 <td>
-                <input id="level_in" type="text" size="12" />
+                <input id="level_in" type="text" size="18" />
                 <br/>
                 <input id="lev_c_in" type="checkbox" />
                 <br/>
                 <button onclick="level()">Level</button>
                 </td>
             </tr>
+            <tr class="group">
+                <td class="left">
+                  Blend:</br>Heights:<br/>Cols:
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  Presets:
+                </td>
+                <td>
+                    <input id="blend_in" type="text" size="18" />
+                    <br/>
+                    <input id="heights_in" type="text" size="18" />
+                    <br/>
+                    <textarea id="cols_in" type="text" rows="8" cols="20"></textarea>
+                    <br/>
+                    <select id="colh_presets" onchange="set_colh_pre(this.value)">
+                    </select>
+                    <br/>
+                    <button onclick="set_colh()">Set cols</button>
+                </td>
+            </tr>
             <tr>
                 <td class="left">Back col: </td>
                 <td>
-                    <input id="bcolin" type="text" size="12"/>
+                    <input id="bcolin" type="text" size="18"/>
                 </td>
             </tr>
             <tr>
                 <td class="left">Def col: </td>
                 <td>
-                    <input id="lcolin" type="text" size="12"/>
+                    <input id="lcolin" type="text" size="18"/>
                 </td>
             </tr>
             <tr>
                 <td class="left">Alpha:</td>
                 <td>
-                    <input id="alphain" type="text" size="12"/>
+                    <input id="alphain" type="text" size="18"/>
                 </td>
             </tr>
         </table></div>

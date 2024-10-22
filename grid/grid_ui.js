@@ -1,4 +1,6 @@
 
+import { colschemes } from "./colschemes.js";
+
 class Grid_UI {
     
     bcol  = [0.1, 0.1, 0.1];
@@ -8,7 +10,13 @@ class Grid_UI {
     lcol_dom  = null;
     alpha_dom = null;
     
-    levels    = [0,4,12];
+    blend = 1;
+    blend_dom = null;
+    heights_dom = null;
+    cols_dom = null;
+    colh_presets_dom = null;
+    
+    levels    = [0];
     lev_cliff = true;
     level_dom = null;
     lev_c_dom = null;
@@ -26,6 +34,27 @@ class Grid_UI {
         this.lcol_dom.value  = "" + Math.floor(this.lcol[0]*255) + "," + Math.floor(this.lcol[1]*255) + "," + Math.floor(this.lcol[2]*255);
         this.alpha_dom.value = "" + this.alpha;
         
+        this.blend_dom   = document.getElementById('blend_in');
+        this.heights_dom = document.getElementById('heights_in');
+        this.cols_dom    = document.getElementById('cols_in');
+        this.colh_presets_dom = document.getElementById('colh_presets');
+        
+        this.blend_dom.value = "" + this.blend;
+        this.heights_dom.value = colschemes[0].limits.join(",");
+        
+        let colstr = "";
+        for (let i=0 ; i<colschemes[0].cols.length ; ++i) { colstr += colschemes[0].cols[i]; colstr+=", "; if (i%3 == 2) colstr+="\n"; }
+        this.cols_dom.value = colstr;
+        
+        for (let i=0 ; i<colschemes.length ; ++i)
+        {
+            let option = document.createElement("option");
+            option.value    = i;
+            option.text     = colschemes[i].name;
+            option.selected = i == 0;
+            this.colh_presets_dom.appendChild(option);
+        }
+        
         this.level_dom = document.getElementById('level_in');
         this.lev_c_dom = document.getElementById('lev_c_in');
         
@@ -34,6 +63,32 @@ class Grid_UI {
         
         this.ds_w_dom = document.getElementById('dsw_in');
         this.ds_w_dom.value  = "" + this.ds_w;
+    }
+    
+    get_colsch ()
+    {
+        let ret = { blend:parseInt(this.blend_dom.value), limits:[], cols:[] };
+        
+        let lim = this.heights_dom.value.split(",");
+        for (let i=0 ; i<lim.length ; ++i) { ret.limits.push(parseFloat(lim[i])); }
+        
+        let c = this.cols_dom.value.split(",");
+        for (let i=0 ; i<c.length ; ++i) { ret.cols.push(parseFloat(c[i])); }
+        
+        return ret;
+    }
+    
+    set_colsch (val)
+    {
+        let vv=parseInt(val);
+        
+        this.heights_dom.value = colschemes[vv].limits.join(",");
+        
+        let colstr = "";
+        for (let i=0 ; i<colschemes[vv].cols.length ; ++i) { colstr += colschemes[vv].cols[i]; colstr+=", "; if (i%3 == 2) colstr+="\n"; }
+        this.cols_dom.value = colstr;
+        
+        this.colh_presets_dom.blur();
     }
     
     get_bcol ()

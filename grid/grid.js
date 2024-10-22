@@ -101,6 +101,56 @@ let init_grid = function ()
     grid.C = [...Array( (grid.N+1)*(grid.N+1) )].map(i=>4294967295);
     grid_to_gpu();
 };
+let getcol = function (cs, h)
+{
+    let i=0;
+    let n=cs.cols.length/3
+    while (i<n-1 && cs.limits[i]<h) i+=1;
+    return [cs.cols[i*3], cs.cols[i*3+1], cs.cols[i*3+2]];
+};
+let mix = function (a, b, sub, i)
+{
+    return (a*(sub-i) + b*(i)) / (sub);
+};
+let col_grid = function ()
+{
+    let c = gui.get_colsch();
+    let hpal = structuredClone(c);
+    if (c.blend > 1)
+    {
+        hpal.limits = [];
+        hpal.cols   = [];
+        
+        hpal.limits.push(c.limits[0]);
+        hpal.cols.push(c.cols[0], c.cols[1], c.cols[2]);
+        
+        let n = c.cols.length/3;
+        for (let p=1 ; p < n-1 ; ++p)
+        {
+            for (let i = 0 ; i<c.blend ; ++i)
+            {
+                hpal.limits.push( mix(c.limits[p-1], c.limits[p], c.blend, i) );
+                
+                hpal.cols.push( mix(c.cols[(p-1)*3],   c.cols[p*3],   c.blend, i) );
+                hpal.cols.push( mix(c.cols[(p-1)*3+1], c.cols[p*3+1], c.blend, i) );
+                hpal.cols.push( mix(c.cols[(p-1)*3+2], c.cols[p*3+2], c.blend, i) );
+            }
+        }
+        
+        hpal.limits.push(c.limits[c.limits.length-1]);
+        hpal.cols.push(c.cols[(n-1)*3], c.cols[(n-1)*3 + 1], c.cols[(n-1)*3 + 2]);
+    }
+    
+    for (let j=0 ; j<grid.N ; ++j)
+    for (let i=0 ; i<grid.N ; ++i)
+    {
+        let col = getcol(hpal, grid.H[j*(grid.N+1)+i]);
+        let r = Math.floor(col[0]*255);
+        let g = Math.floor(col[1]*255);
+        let b = Math.floor(col[2]*255);
+        grid.C[j*(grid.N+1)+i] = (r*16777216) + (g*65536) + (b*256);
+    }
+};
 let grid_to_gpu = function ()
 {
     grid.tris   = [];
@@ -111,10 +161,12 @@ let grid_to_gpu = function ()
     for (let i=0 ; i<grid.N ; ++i)
     {
         let col = grid.C[ j   *(grid.N+1)+i];
+        
         let h0  = grid.H[ j   *(grid.N+1)+i];
         let h1  = grid.H[(j+1)*(grid.N+1)+i];
         let h2  = grid.H[ j   *(grid.N+1)+i+1];
         let h3  = grid.H[(j+1)*(grid.N+1)+i+1];
+        
         let a = col % 256;
         col = Math.floor((col-a)/256);
         let b = col % 256;
@@ -428,8 +480,13 @@ let init = function ()
 
 
 window.set_n = set_n;
+
 window.level = () => { generators.level(grid, gui.get_levels(), gui.get_lev_c()); grid_to_gpu(); draw(); };
-window.ds    = () => { generators.diamond_square(grid, gui.get_ds_w()); grid_to_gpu(); draw(); };
+
+window.ds    = () => { generators.diamond_square(grid, gui.get_ds_w()); col_grid(); grid_to_gpu(); draw(); };
+
+window.set_colh_pre = (v) => { gui.set_colsch(v); col_grid(); grid_to_gpu(); draw(); }
+window.set_colh     = ()  => { col_grid(); grid_to_gpu(); draw(); }
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
