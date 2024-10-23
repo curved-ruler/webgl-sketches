@@ -1,5 +1,6 @@
 
 import { colschemes } from "./colschemes.js";
+import { noise }      from "./noise.js";
 
 class Grid_UI {
     
@@ -23,6 +24,15 @@ class Grid_UI {
     
     ds_w = 0.5;
     ds_w_dom = null;
+    
+    octaves = 1;
+    n_amp   = 5;
+    n_l     = 0.5;
+    noise_dom     = null;
+    noise_pre_dom = null;
+    oct_dom       = null;
+    noisea_dom    = null;
+    noisel_dom    = null;
     
     constructor ()
     {
@@ -63,6 +73,26 @@ class Grid_UI {
         
         this.ds_w_dom = document.getElementById('dsw_in');
         this.ds_w_dom.value  = "" + this.ds_w;
+        
+        this.noise_dom     = document.getElementById('noise_in');
+        this.noise_pre_dom = document.getElementById('noise_presets');
+        this.oct_dom       = document.getElementById('octaves');
+        this.noisea_dom    = document.getElementById('noiseA');
+        this.noisel_dom    = document.getElementById('noiseL');
+        
+        this.noise_dom.value  = noise.gradient;
+        this.oct_dom.value    = "" + this.octaves;
+        this.noisea_dom.value = "" + this.n_amp;
+        this.noisel_dom.value = "" + this.n_l;
+        
+        for (const key in noise)
+        {
+            let option = document.createElement("option");
+            option.value    = key;
+            option.text     = key;
+            option.selected = key == "gradient";
+            this.noise_pre_dom.appendChild(option);
+        }
     }
     
     get_colsch ()
@@ -157,6 +187,44 @@ class Grid_UI {
         this.ds_w = w;
         
         return this.ds_w;
+    }
+    
+    get_noise_dom ()
+    {
+        return this.noise_dom;
+    }
+    
+    set_noise (v)
+    {
+        this.noise_dom.value = noise[v];
+        this.noise_pre_dom.blur();
+    }
+    
+    get_n_oct ()
+    {
+        let w = parseInt(this.oct_dom.value);
+        if (isNaN(w) || w === undefined || w === null) return this.octaves;
+        this.octaves = w < 0 ? 0 : w;
+        
+        return this.octaves;
+    }
+    
+    get_n_amp()
+    {
+        let w = parseFloat(this.noisea_dom.value);
+        if (isNaN(w) || w === undefined || w === null) return this.n_amp;
+        this.n_amp = w;
+        
+        return this.n_amp;
+    }
+    
+    get_n_lambda()
+    {
+        let w = parseFloat(this.noisel_dom.value);
+        if (isNaN(w) || w === undefined || w === null) return this.n_l;
+        this.n_l = w;
+        
+        return this.n_l;
     }
 }
 

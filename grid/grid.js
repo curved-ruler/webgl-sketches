@@ -40,6 +40,7 @@ let grabbed  = 0;
 
 
 let camera = {
+    upcam : false,
     pos   : [50, 50, 50],
     look  : v3.normalize([-1, -1, -1]),
     up    : v3.normalize([-1, -1,  2]),
@@ -69,6 +70,11 @@ let compute_matrices = function ()
 
 
 
+let error = function (m)
+{
+    console.error(m);
+    window.alert(m);
+}
 
 
 
@@ -116,6 +122,7 @@ let col_grid = function ()
 {
     let c = gui.get_colsch();
     let hpal = structuredClone(c);
+    
     if (c.blend > 1)
     {
         hpal.limits = [];
@@ -125,7 +132,7 @@ let col_grid = function ()
         hpal.cols.push(c.cols[0], c.cols[1], c.cols[2]);
         
         let n = c.cols.length/3;
-        for (let p=1 ; p < n-1 ; ++p)
+        for (let p=1 ; p < n ; ++p)
         {
             for (let i = 0 ; i<c.blend ; ++i)
             {
@@ -231,6 +238,45 @@ let grid_to_gpu = function ()
     
     //console.log("V", model.verts.length, "L", model.lines.length);
 };
+
+let diamond_square = function()
+{
+    generators.diamond_square(grid, gui.get_ds_w());
+    col_grid();
+    grid_to_gpu();
+    draw();
+};
+let level = function ()
+{
+    generators.level(grid, gui.get_levels(), gui.get_lev_c());
+    grid_to_gpu();
+    draw();
+};
+let add_noise = function ()
+{
+    try
+    {
+        let base = Function('x', 'y', gui.get_noise_dom().value);
+        let oct  = gui.get_n_oct();
+        let amp  = gui.get_n_amp();
+        let lam  = gui.get_n_lambda();
+        generators.noise(grid, oct, amp, lam, base);
+        col_grid();
+        grid_to_gpu();
+        draw();
+    }
+    catch (err) { error("noise func error!\n" + err.message); return; }
+};
+let reset = function ()
+{
+    for (let y=0 ; y<=grid.N ; y+=1)
+    for (let x=0 ; x<=grid.N ; x+=1)
+    {
+        grid.H[y*(grid.N+1) + x] = 0;
+    }
+    grid_to_gpu();
+    draw();
+}
 
 let draw = function ()
 {
@@ -344,7 +390,7 @@ let handle_mouse_move = function (event)
 };
 let handle_key_down = function (event)
 {
-    //if (document.activeElement === Fdom) { return; }
+    if (document.activeElement === gui.get_noise_dom()) { return; }
     if (event.ctrlKey) { return; }
     
     //console.log("KEY", event.key);
@@ -361,6 +407,10 @@ let handle_key_down = function (event)
             menu_hidden = true;
             document.getElementById("menu").className = "hidden";
         }
+    }
+    else if (event.key === "d" || event.key === "D")
+    {
+        diamond_square();
     }
     else if (event.key === "s" || event.key === "S")
     {
@@ -384,8 +434,34 @@ let handle_key_down = function (event)
         if (colmode > 1) { colmode = 0; }
         draw();
     }
+    else if (event.key === "l" || event.key === "L")
+    {
+        level();
+    }
+    else if (event.key === "n" || event.key === "N")
+    {
+        add_noise();
+    }
     else if (event.key === "r" || event.key === "R")
     {
+        reset();
+    }
+    else if (event.key === "q" || event.key === "Q")
+    {
+        if (camera.upcam)
+        {
+            camera.upcam = false;
+            camera.pos   = [50, 50, 50];
+            camera.look  = v3.normalize([-1, -1, -1]);
+            camera.up    = v3.normalize([-1, -1,  2]);
+        }
+        else
+        {
+            camera.upcam = true;
+            camera.pos   = [0, 0, 100];
+            camera.look  = [0, 0, -1];
+            camera.up    = [0, 1,  0];
+        }
         draw();
     }
     else if (event.key === "F8")
@@ -395,7 +471,7 @@ let handle_key_down = function (event)
     }
     else if (event.key === "Enter")
     {
-        scale    = 1.0;
+        //scale    = 1.0;
         axis     = 0;
         rotation = 0;
         rotdir   = true;
@@ -480,13 +556,13 @@ let init = function ()
 
 
 window.set_n = set_n;
+window.level = level;
+window.ds    = diamond_square;
+window.add_noise = add_noise;
 
-window.level = () => { generators.level(grid, gui.get_levels(), gui.get_lev_c()); grid_to_gpu(); draw(); };
-
-window.ds    = () => { generators.diamond_square(grid, gui.get_ds_w()); col_grid(); grid_to_gpu(); draw(); };
-
-window.set_colh_pre = (v) => { gui.set_colsch(v); col_grid(); grid_to_gpu(); draw(); }
-window.set_colh     = ()  => { col_grid(); grid_to_gpu(); draw(); }
+window.set_colh_pre  = (v) => { gui.set_colsch(v); col_grid(); grid_to_gpu(); draw(); }
+window.set_colh      = ()  => { col_grid(); grid_to_gpu(); draw(); }
+window.set_noise_pre = (v) => { gui.set_noise(v); }
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);

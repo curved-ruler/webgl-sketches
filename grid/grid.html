@@ -23,7 +23,7 @@
   top:  10px;
   left: 10px;
   
-  height: 90%;
+  height: 97%;
   overflow-y: auto;
 }
 .group {
@@ -62,8 +62,12 @@
                 <td>Col mode</td>
             </tr>
             <tr>
+                <td class="left">Q/Enter:</td>
+                <td>Cam mode / Reset rotation</td>
+            </tr>
+            <tr>
                 <td class="left">R:</td>
-                <td>Redraw</td>
+                <td>Reset</td>
             </tr>
             <tr>
                 <td class="left">S:</td>
@@ -76,7 +80,7 @@
                 </td>
             </tr>
             <tr class="group">
-                <td class="left">Weight:<br/>&nbsp;</td>
+                <td class="left">Weight:<br/>D:</td>
                 <td>
                 <input id="dsw_in" type="text" size="18" />
                 <br/>
@@ -84,7 +88,32 @@
                 </td>
             </tr>
             <tr class="group">
-                <td class="left">Levels:<br/>Cliffs:<br/>&nbsp;</td>
+                <td class="left">
+                  Noise(x,y):
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  <br/>&nbsp;
+                  Presets:
+                  <br/>N:
+                </td>
+                <td>
+                    <textarea id="noise_in" type="text" rows="8" cols="42"></textarea>
+                    <br/>
+                    <select id="noise_presets" onchange="set_noise_pre(this.value)">
+                    </select>
+                    <br/>
+                    <button onclick="add_noise()">Add Noise</button>
+                    Oct: <input id="octaves" type="text" size="2"/>
+                    A:   <input id="noiseA" type="text" size="5"/>
+                    1/λ: <input id="noiseL" type="text" size="5"/>
+                </td>
+            </tr>
+            <tr class="group">
+                <td class="left">Levels:<br/>Cliffs:<br/>L:</td>
                 <td>
                 <input id="level_in" type="text" size="18" />
                 <br/>

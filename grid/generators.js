@@ -124,9 +124,27 @@ let diamond_square = function (grid, weight)
     }
 };
 
+let noise = function (grid, oct, amp, lam, base)
+{
+    for (let y=0 ; y<=grid.N ; y+=1)
+    for (let x=0 ; x<=grid.N ; x+=1)
+    {
+        let o = 1.0;
+        let f = 0.0;
+        for (let i=0 ; i<oct ; ++i)
+        {
+            f   += (amp*o) * base( (x*lam/o),
+                                   (y*lam/o) );
+            o /= 2.0;
+        }
+        grid.H[y*(grid.N+1) + x] += f;
+    }
+};
+
 let generators = {
     diamond_square,
-    level
+    level,
+    noise
 };
 
 export { generators };
