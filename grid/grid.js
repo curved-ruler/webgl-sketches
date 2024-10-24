@@ -252,6 +252,25 @@ let level = function ()
     grid_to_gpu();
     draw();
 };
+let kernel_init = function ()
+{
+    generators.kernel_init(grid, 50);
+    col_grid();
+    grid_to_gpu();
+    draw();
+};
+let kernel = function ()
+{
+    try
+    {
+        let base = Function('X', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', gui.get_kernel_dom().value);
+        generators.kernel(grid, base, gui.get_kmin(), gui.get_kmax());
+        col_grid();
+        grid_to_gpu();
+        draw();
+    }
+    catch (err) { error("kernel func error!\n" + err.message); return; }
+};
 let add_noise = function ()
 {
     try
@@ -276,7 +295,7 @@ let reset = function ()
     }
     grid_to_gpu();
     draw();
-}
+};
 
 let draw = function ()
 {
@@ -390,7 +409,8 @@ let handle_mouse_move = function (event)
 };
 let handle_key_down = function (event)
 {
-    if (document.activeElement === gui.get_noise_dom()) { return; }
+    if (document.activeElement === gui.get_noise_dom())  { return; }
+    if (document.activeElement === gui.get_kernel_dom()) { return; }
     if (event.ctrlKey) { return; }
     
     //console.log("KEY", event.key);
@@ -407,6 +427,10 @@ let handle_key_down = function (event)
             menu_hidden = true;
             document.getElementById("menu").className = "hidden";
         }
+    }
+    else if (event.key === "b" || event.key === "B")
+    {
+        kernel();
     }
     else if (event.key === "d" || event.key === "D")
     {
@@ -463,6 +487,10 @@ let handle_key_down = function (event)
             camera.up    = [0, 1,  0];
         }
         draw();
+    }
+    else if (event.key === "v" || event.key === "V")
+    {
+        kernel_init();
     }
     else if (event.key === "F8")
     {
@@ -555,9 +583,10 @@ let init = function ()
 };
 
 
-window.set_n = set_n;
-window.level = level;
-window.ds    = diamond_square;
+window.set_n  = set_n;
+window.level  = level;
+window.ds     = diamond_square;
+window.kernel = kernel;
 window.add_noise = add_noise;
 
 window.set_colh_pre  = (v) => { gui.set_colsch(v); col_grid(); grid_to_gpu(); draw(); }

@@ -25,8 +25,30 @@ class Grid_UI {
     ds_w = 0.5;
     ds_w_dom = null;
     
+    kernel = `\
+let s  = -a*Math.log(Math.abs(a+0.01));
+    s -= -b*Math.log(Math.abs(b+0.01));
+    s -= -c*Math.log(Math.abs(c+0.01));
+    s -= -d*Math.log(Math.abs(d+0.01));
+    s -= -e*Math.log(Math.abs(e+0.01));
+    s -= -f*Math.log(Math.abs(f+0.01));
+    s -= -g*Math.log(Math.abs(g+0.01));
+    s -= -h*Math.log(Math.abs(h+0.01));
+return 1.1 * s;`;
+    /*
+    kernel = `\
+let s  = (a+h+f+c)/4;
+return 1.0 * s;`;
+    */
+    
+    kernel_dom = null;
+    kmin_dom = null;
+    kmax_dom = null;
+    kmin = -30;
+    kmax =  30;
+    
     octaves = 1;
-    n_amp   = 5;
+    n_amp   = 1;
     n_l     = 0.5;
     noise_dom     = null;
     noise_pre_dom = null;
@@ -73,6 +95,13 @@ class Grid_UI {
         
         this.ds_w_dom = document.getElementById('dsw_in');
         this.ds_w_dom.value  = "" + this.ds_w;
+        
+        this.kernel_dom = document.getElementById('kernel_in');
+        this.kmin_dom   = document.getElementById('kmin');
+        this.kmax_dom   = document.getElementById('kmax');
+        this.kernel_dom.value = this.kernel;
+        this.kmin_dom.value   = "" + this.kmin;
+        this.kmax_dom.value   = "" + this.kmax;
         
         this.noise_dom     = document.getElementById('noise_in');
         this.noise_pre_dom = document.getElementById('noise_presets');
@@ -187,6 +216,27 @@ class Grid_UI {
         this.ds_w = w;
         
         return this.ds_w;
+    }
+    
+    get_kernel_dom ()
+    {
+        return this.kernel_dom;
+    }
+    get_kmin ()
+    {
+        let a   = parseFloat(this.kmin_dom.value);
+        if (isNaN(a) || a === undefined || a === null) return this.kmin;
+        this.kmin = a;
+        
+        return this.kmin;
+    }
+    get_kmax ()
+    {
+        let a   = parseFloat(this.kmax_dom.value);
+        if (isNaN(a) || a === undefined || a === null) return this.kmax;
+        this.kmax = a;
+        
+        return this.kmax;
     }
     
     get_noise_dom ()

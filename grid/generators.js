@@ -124,6 +124,43 @@ let diamond_square = function (grid, weight)
     }
 };
 
+let kernel_init = function (grid, n)
+{
+    for (let y=0 ; y<=grid.N ; y+=1)
+    for (let x=0 ; x<=grid.N ; x+=1)
+    {
+        let i = Math.floor(Math.random()*5000);
+        grid.H[y*(grid.N+1) + x] = i%n === 0 ? 3 : 0;
+    }
+};
+let kernel = function (grid, base, min, max)
+{
+    let grid_c = structuredClone(grid.H);
+    let n = grid.N;
+    
+    for (let y=0 ; y<=grid.N ; y+=1)
+    for (let x=0 ; x<=grid.N ; x+=1)
+    {
+        let a = (x>0 && y>0) ? grid_c[(y-1)*(n+1) + x-1] : 0;
+        let b = (y>0)        ? grid_c[(y-1)*(n+1) + x]   : 0;
+        let c = (x<n && y>0) ? grid_c[(y-1)*(n+1) + x+1] : 0;
+        
+        let d = (x>0)        ? grid_c[(y)  *(n+1) + x-1] : 0;
+        let X =                grid_c[(y)  *(n+1) + x];
+        let e = (x<n)        ? grid_c[(y)  *(n+1) + x+1] : 0;
+        
+        let f = (x>0 && y<n) ? grid_c[(y+1)*(n+1) + x-1] : 0;
+        let g = (y<n)        ? grid_c[(y+1)*(n+1) + x]   : 0;
+        let h = (x<n && y<n) ? grid_c[(y+1)*(n+1) + x+1] : 0;
+        
+        let s = base(X, a, b, c, d, e, f, g, h);
+        if (s > max) s = max;
+        if (s < min) s = min;
+        grid.H[y*(grid.N+1) + x] = s;
+    }
+};
+
+
 let noise = function (grid, oct, amp, lam, base)
 {
     for (let y=0 ; y<=grid.N ; y+=1)
@@ -143,6 +180,8 @@ let noise = function (grid, oct, amp, lam, base)
 
 let generators = {
     diamond_square,
+    kernel_init,
+    kernel,
     level,
     noise
 };
