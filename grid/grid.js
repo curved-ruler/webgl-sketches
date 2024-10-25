@@ -252,13 +252,6 @@ let level = function ()
     grid_to_gpu();
     draw();
 };
-let kernel_init = function ()
-{
-    generators.kernel_init(grid, 50);
-    col_grid();
-    grid_to_gpu();
-    draw();
-};
 let kernel = function ()
 {
     try
@@ -487,10 +480,6 @@ let handle_key_down = function (event)
             camera.up    = [0, 1,  0];
         }
         draw();
-    }
-    else if (event.key === "v" || event.key === "V")
-    {
-        kernel_init();
     }
     else if (event.key === "F8")
     {

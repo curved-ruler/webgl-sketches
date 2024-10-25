@@ -34,7 +34,11 @@ let vd = dot( gd, { x: f.x-1, y: f.y-1 } );
 return va + u.x*(vb-va) + u.y*(vc-va) + u.x*u.y*(va-vb-vc+vd);`,
 
     sin : `\
-return Math.sin(x) * Math.sin(y);`
+return Math.sin(x) * Math.sin(y);`,
+
+    spikes: `\
+let a = Math.floor(Math.random()*10);
+return a == 0 ? 4 : 0;`
 
 };
 
