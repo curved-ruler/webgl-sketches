@@ -48,7 +48,7 @@ out vec3 fcol;
 void main ()
 {
     vec4 p2 = vm * vec4(pos, 1.0);
-    gl_PointSize = 3.0;
+    gl_PointSize = 5.0;
     
     
     if (proj == 0 || proj == 1)

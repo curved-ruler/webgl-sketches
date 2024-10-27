@@ -3,6 +3,7 @@ import { saveAs } from './FileSaver.js';
 
 import { gl_init }          from "./gl_init.js";
 import { shaders }          from "./shaders.js";
+import { utils }            from "./utils.js";
 import { m4, v3, quat, tr } from "./matvec.js";
 import { generators }       from "./generators.js";
 import { Grid_UI }          from "./grid_ui.js";
@@ -22,6 +23,16 @@ let grid   = {
     tbuf:null, lbuf:null, pbuf:null
 };
 let nn_dom = null;
+
+let erosion_par = {
+    N         : 2000,
+    maxmove   : 128,
+    inertia   : 0.5,
+    capacity  : 16,
+    debug     : false,
+    debug_pts : [],
+    debug_buf : null,
+};
 
 let menu_hidden = false;
 
@@ -239,6 +250,24 @@ let grid_to_gpu = function ()
     //console.log("V", model.verts.length, "L", model.lines.length);
 };
 
+let getheight = function (g, pos)
+{
+    let pos2 = [utils.clamp(pos[0], 0, g.N),
+                utils.clamp(pos[1], 0, g.N)];
+    
+    let x = Math.floor(pos2[0]);
+    let y = Math.floor(pos2[1]);
+    let u = pos2[0] - Math.floor(pos2[0]);
+    let v = pos2[1] - Math.floor(pos2[1]);
+    
+    let ha = g.H[y*(g.N+1)+x];
+    let hb = g.H[y*(g.N+1)+x+1];
+    let hc = g.H[(y+1)*(g.N+1)+x];
+    let hd = g.H[(y+1)*(g.N+1)+x+1];
+    
+    return utils.bilinear(ha,hb,hc,hd, u,v);
+};
+
 let diamond_square = function()
 {
     generators.diamond_square(grid, gui.get_ds_w());
@@ -278,6 +307,23 @@ let add_noise = function ()
         draw();
     }
     catch (err) { error("noise func error!\n" + err.message); return; }
+};
+let erosion = function ()
+{
+    erosion_par.debug_pts = [];
+    for (let i=0 ; i<erosion_par.N ; ++i)
+    {
+        generators.erosion(grid, getheight, erosion_par);
+    }
+    col_grid();
+    grid_to_gpu();
+    
+    if (erosion_par.debug_buf) gl.deleteBuffer(erosion_par.debug_buf);
+    erosion_par.debug_buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, erosion_par.debug_buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(erosion_par.debug_pts), gl.STATIC_DRAW);
+    
+    draw();
 };
 let reset = function ()
 {
@@ -358,6 +404,16 @@ let draw = function ()
         gl.drawArrays(gl.TRIANGLES, 0, grid.tris.length / 9);
         gl.disable(gl.POLYGON_OFFSET_FILL);
     }
+    
+    if (erosion_par.debug && erosion_par.debug_pts.length > 0)
+    {
+        gl.bindBuffer(gl.ARRAY_BUFFER, erosion_par.debug_buf);
+        gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
+        gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
+        gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
+        gl.uniform1i(glprog.shaded, 0);
+        gl.drawArrays(gl.POINTS, 0, erosion_par.debug_pts.length / 9);
+    }
 };
 
 
@@ -429,15 +485,9 @@ let handle_key_down = function (event)
     {
         diamond_square();
     }
-    else if (event.key === "s" || event.key === "S")
+    else if (event.key === "e" || event.key === "E")
     {
-        save_terr();
-    }
-    else if (event.key === "o" || event.key === "O")
-    {
-        ++obj;
-        if (obj > 5) { obj = 0; }
-        draw();
+        erosion();
     }
     else if (event.key === "i" || event.key === "I")
     {
@@ -458,6 +508,16 @@ let handle_key_down = function (event)
     else if (event.key === "n" || event.key === "N")
     {
         add_noise();
+    }
+    else if (event.key === "o" || event.key === "O")
+    {
+        ++obj;
+        if (obj > 5) { obj = 0; }
+        draw();
+    }
+    else if (event.key === "s" || event.key === "S")
+    {
+        save_terr();
     }
     else if (event.key === "r" || event.key === "R")
     {
@@ -577,6 +637,7 @@ window.level  = level;
 window.ds     = diamond_square;
 window.kernel = kernel;
 window.add_noise = add_noise;
+window.erosion   = erosion;
 
 window.set_colh_pre  = (v) => { gui.set_colsch(v); col_grid(); grid_to_gpu(); draw(); }
 window.set_colh      = ()  => { col_grid(); grid_to_gpu(); draw(); }

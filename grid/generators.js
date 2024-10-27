@@ -1,4 +1,6 @@
 
+import { m4, v3, quat, tr } from "./matvec.js";
+
 let level = function (grid, L, cliff)
 {
     for (let y=0 ; y<=grid.N ; y+=1)
@@ -178,12 +180,102 @@ let noise = function (grid, oct, amp, lam, base)
     }
 };
 
+let is_in = function (x, y, n)
+{
+    return (x >= 0 && y >= 0 && x <= n && y <= n);
+};
+
+let erosion = function (grid, geth, params)
+{
+    let pos = [2 + Math.random()*(grid.N-4),
+               2 + Math.random()*(grid.N-4)];
+    //let pos = [grid.N / 2, grid.N / 2];
+    
+    let h0 = geth(grid, pos);
+    let h1 = h0;
+    params.debug_pts.push(pos[0], pos[1], h0,  1,0,0,  1,0,0 );
+    
+    let ix  = Math.floor(pos[0]);
+    let iy  = Math.floor(pos[1]);
+    let ip  = 0;
+    let stay = 0;
+    let dir = [0,0];
+    let vel = 0;
+    let sediment = 0;
+    //while (is_in(ix,iy,grid.N) && ip < params.maxmove && stay < 2)
+    while (is_in(ix,iy,grid.N) && ip < params.maxmove)
+    {
+        let va = [pos[0],pos[1],h0];
+        let u = pos[0] - ix;
+        let v = pos[1] - iy;
+        let ha = grid.H[iy*(grid.N+1)+ix];
+        let hb = grid.H[iy*(grid.N+1)+ix+1];
+        let hc = grid.H[(iy+1)*(grid.N+1)+ix];
+        let hd = grid.H[(iy+1)*(grid.N+1)+ix+1];
+        let grad = [v*(hd-hc) + (1-v)*(hb-ha),
+                    u*(hd-hb) + (1-u)*(hc-ha)];
+        
+        dir[0] = dir[0]*params.inertia - grad[0]*(1-params.inertia);
+        dir[1] = dir[1]*params.inertia - grad[1]*(1-params.inertia);
+        pos[0] += dir[0];
+        pos[1] += dir[1];
+        h1 = geth(grid, pos);
+        let vb = [pos[0],pos[1],h1];
+        vel = v3.length(v3.sub(va,vb));
+        
+        let ix2 = Math.floor(pos[0]);
+        let iy2 = Math.floor(pos[1]);
+        if (ix2 == ix && iy2 == iy)
+        {
+            stay += 1;
+            h0 = h1;
+            ip += 1;
+            continue;
+        }
+        stay = 0;
+        
+        let hdif = h1-h0;
+        
+        if (hdif > 0)
+        {
+            let s = Math.min(hdif,sediment*0.1);
+            grid.H[iy*(grid.N+1)+ix] += s;
+            sediment -= s;
+        }
+        else // hdif < 0
+        {
+            let c = Math.min(vel, 0.1)*params.capacity*((params.maxmove-ip)/params.maxmove);
+            //let c = -hdif*params.capacity;
+            if (sediment < c)
+            {
+                let s = Math.min((c-sediment)*(0.1), -hdif);
+                grid.H[iy*(grid.N+1)+ix] -= s;
+                sediment += s;
+            }
+            else
+            {
+                let s = Math.min((sediment-c)*(0.1), -hdif);
+                grid.H[iy*(grid.N+1)+ix] += s;
+                sediment -= s;
+            }
+        }
+        
+        ix = Math.floor(pos[0]);
+        iy = Math.floor(pos[1]);
+        h0 = h1;
+        ip += 1;
+        
+        params.debug_pts.push(pos[0], pos[1], h1,  1,0,0,  1,0,0);
+    }
+};
+
 let generators = {
     diamond_square,
     kernel_init,
     kernel,
     level,
-    noise
+    noise,
+    erosion
 };
 
 export { generators };
