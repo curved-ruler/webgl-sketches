@@ -25,13 +25,16 @@ let grid   = {
 let nn_dom = null;
 
 let erosion_par = {
-    N         : 2000,
+    N         : 200,
     maxmove   : 128,
     inertia   : 0.5,
-    capacity  : 16,
+    capacity  : 4,
     debug     : false,
     debug_pts : [],
     debug_buf : null,
+    
+    kk        : 1,
+    kernel    : []
 };
 
 let menu_hidden = false;
@@ -625,6 +628,17 @@ let init = function ()
     nn_dom.value = "" + grid.N;
     
     gui = new Grid_UI;
+    
+    let ksum = 0;
+    let k = erosion_par.kk;
+    for (let y=-k ; y<=k ; ++y)
+    for (let x=-k ; x<=k ; ++x)
+    {
+        erosion_par.kernel[(y+k)*(2*k+1)+(x+k)] = 1/(y*y+x*x+1);
+        ksum += erosion_par.kernel[(y+k)*(2*k+1)+(x+k)];
+    }
+    for (let i=0 ; i<erosion_par.kernel.length ; ++i) { erosion_par.kernel[i] /= ksum; }
+    console.log("kernel", ksum, erosion_par.kernel);
     
     resize();
     init_grid();

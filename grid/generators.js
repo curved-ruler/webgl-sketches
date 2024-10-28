@@ -184,7 +184,17 @@ let is_in = function (x, y, n)
 {
     return (x >= 0 && y >= 0 && x <= n && y <= n);
 };
-
+let add_s = function (grid,ix,iy,s, kernel,k)
+{
+    for (let y=-k ; y<=k ; ++y)
+    for (let x=-k ; x<=k ; ++x)
+    {
+        if ( is_in(ix+x, iy+y, grid.N) )
+        {
+            grid.H[(iy+y)*(grid.N+1)+(ix+x)] += s * kernel[(y+k)*(2*k+1)+(x+k)];
+        }
+    }
+};
 let erosion = function (grid, geth, params)
 {
     let pos = [2 + Math.random()*(grid.N-4),
@@ -203,7 +213,7 @@ let erosion = function (grid, geth, params)
     let vel = 0;
     let sediment = 0;
     //while (is_in(ix,iy,grid.N) && ip < params.maxmove && stay < 2)
-    while (is_in(ix,iy,grid.N) && ip < params.maxmove)
+    while (is_in(pos[0],pos[1],grid.N) && ip < params.maxmove)
     {
         let va = [pos[0],pos[1],h0];
         let u = pos[0] - ix;
@@ -225,6 +235,9 @@ let erosion = function (grid, geth, params)
         
         let ix2 = Math.floor(pos[0]);
         let iy2 = Math.floor(pos[1]);
+        if (!is_in(pos[0],pos[1],grid.N)) { return; }
+        
+        /*
         if (ix2 == ix && iy2 == iy)
         {
             stay += 1;
@@ -232,36 +245,40 @@ let erosion = function (grid, geth, params)
             ip += 1;
             continue;
         }
+        */
         stay = 0;
         
         let hdif = h1-h0;
         
         if (hdif > 0)
         {
-            let s = Math.min(hdif,sediment*0.1);
-            grid.H[iy*(grid.N+1)+ix] += s;
+            let s = Math.min(hdif,sediment);
+            //grid.H[iy*(grid.N+1)+ix] += s;
+            //add_s(grid,ix,iy,s, params.kernel,params.kk);
             sediment -= s;
         }
         else // hdif < 0
         {
-            let c = Math.min(vel, 0.1)*params.capacity*((params.maxmove-ip)/params.maxmove);
-            //let c = -hdif*params.capacity;
+            //let c = Math.max(vel, 0.1)*params.capacity*((params.maxmove-ip)/params.maxmove);
+            let c = -hdif*params.capacity;
             if (sediment < c)
             {
-                let s = Math.min((c-sediment)*(0.1), -hdif);
-                grid.H[iy*(grid.N+1)+ix] -= s;
+                let s = Math.min((c-sediment), -hdif);
+                //grid.H[iy*(grid.N+1)+ix] -= s;
+                add_s(grid,ix,iy, -s, params.kernel,params.kk);
                 sediment += s;
             }
             else
             {
-                let s = Math.min((sediment-c)*(0.1), -hdif);
-                grid.H[iy*(grid.N+1)+ix] += s;
+                let s = Math.min((sediment-c), -hdif);
+                //grid.H[iy*(grid.N+1)+ix] += s;
+                add_s(grid,ix,iy, s, params.kernel,params.kk);
                 sediment -= s;
             }
         }
         
-        ix = Math.floor(pos[0]);
-        iy = Math.floor(pos[1]);
+        ix = ix2;
+        iy = iy2;
         h0 = h1;
         ip += 1;
         
