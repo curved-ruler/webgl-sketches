@@ -31,11 +31,13 @@ return [x*r*r/l, y*r*r/l];\
     },
     
     { Fstr:`\
+let t = 0.5;
 let cdiv = (z1, z2) => (
   [(z1[0]*z2[0] + z1[1]*z2[1]) / (z2[0]*z2[0] + z2[1]*z2[1]),
    (z1[1]*z2[0] - z1[0]*z2[1]) / (z2[0]*z2[0] + z2[1]*z2[1])]
 );
-return cdiv([y,1-x],[x+1,y]);`
+let rat = cdiv([y,1-x],[x+1,y]);
+return [x*(1-t)+rat[0]*t, y*(1-t)+rat[1]*t];`
     },
     
     { Fstr: 'return [x,y];'}
