@@ -30,6 +30,14 @@ return [x*r*r/l, y*r*r/l];\
 `
     },
     
+    { Fstr:`\
+let cdiv = (z1, z2) => (
+  [(z1[0]*z2[0] + z1[1]*z2[1]) / (z2[0]*z2[0] + z2[1]*z2[1]),
+   (z1[1]*z2[0] - z1[0]*z2[1]) / (z2[0]*z2[0] + z2[1]*z2[1])]
+);
+return cdiv([y,1-x],[x+1,y]);`
+    },
+    
     { Fstr: 'return [x,y];'}
 
 ];
@@ -135,6 +143,60 @@ let square_t = function ()
         
         model_in.verts[(j*(N)+i)*8+6] = -(N*A)/2.0 + (i+1)*A - G/2;
         model_in.verts[(j*(N)+i)*8+7] = -(N*A)/2.0 + j*A     + G/2;
+    }
+    
+    for (let j=0 ; j<N ; ++j)
+    for (let i=0 ; i<N ; ++i)
+    {
+        model_in.lines[(j*N+i)*8+0] = (j*(N)+i)*4;
+        model_in.lines[(j*N+i)*8+1] = (j*(N)+i)*4+1;
+        model_in.lines[(j*N+i)*8+2] = (j*(N)+i)*4+1;
+        model_in.lines[(j*N+i)*8+3] = (j*(N)+i)*4+2;
+        model_in.lines[(j*N+i)*8+4] = (j*(N)+i)*4+2;
+        model_in.lines[(j*N+i)*8+5] = (j*(N)+i)*4+3;
+        model_in.lines[(j*N+i)*8+6] = (j*(N)+i)*4+3;
+        model_in.lines[(j*N+i)*8+7] = (j*(N)+i)*4;
+    }
+    
+    gl.bindBuffer(gl.ARRAY_BUFFER, vrtbuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_in.verts), gl.DYNAMIC_DRAW);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, linbuf);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(model_in.lines), gl.STATIC_DRAW);
+    
+    
+    console.log("V", model_in.verts.length, "L", model_in.lines.length);
+    
+    transform();
+};
+
+let polar_t = function ()
+{
+    let M = 2*N;
+    
+    model_in.verts = [...Array(N*M*8)];
+    model_in.lines = [...Array(N*M*8)];
+    
+    let di = 2*Math.PI / M;
+    let dG = G*di/2;
+    let G2 = G/2;
+    
+    for (let j=0 ; j<N ; ++j)
+    for (let i=0 ; i<M ; ++i)
+    {
+        let ii = di*i;
+        
+        model_in.verts[(j*(M)+i)*8+0] = (j+G2)*Math.cos(ii+dG);
+        model_in.verts[(j*(M)+i)*8+1] = (j+G2)*Math.sin(ii+dG);
+        
+        model_in.verts[(j*(M)+i)*8+2] = (j+1-G2)*Math.cos(ii+dG);
+        model_in.verts[(j*(M)+i)*8+3] = (j+1-G2)*Math.sin(ii+dG);
+        
+        model_in.verts[(j*(M)+i)*8+4] = (j+1-G2)*Math.cos(ii+di-dG);
+        model_in.verts[(j*(M)+i)*8+5] = (j+1-G2)*Math.sin(ii+di-dG);
+        
+        model_in.verts[(j*(M)+i)*8+6] = (j+G2)*Math.cos(ii+di-dG);
+        model_in.verts[(j*(M)+i)*8+7] = (j+G2)*Math.sin(ii+di-dG);
     }
     
     for (let j=0 ; j<N ; ++j)
@@ -538,20 +600,25 @@ let set_tiling = function (t)
     }
     else if (t == "1")
     {
-        hexa_t();
+        polar_t();
         draw();
     }
     else if (t == "2")
     {
-        james_t10_cmm_t();
+        hexa_t();
         draw();
     }
     else if (t == "3")
     {
-        cairo_t();
+        james_t10_cmm_t();
         draw();
     }
     else if (t == "4")
+    {
+        cairo_t();
+        draw();
+    }
+    else if (t == "5")
     {
         fetch_file("hats.csv", einstein_hat_t);
         //draw();
@@ -815,7 +882,10 @@ let set_col = function (bstr, lstr)
 {
     let bc = bstr.split(',');
     let lc = lstr.split(',');
-    if (bc.length < 3 || lc.length < 3) return;
+    if (bc.length < 2) bc.push(bc[0]);
+    if (bc.length < 3) bc.push(bc[0]);
+    if (lc.length < 2) lc.push(lc[0]);
+    if (lc.length < 3) lc.push(lc[0]);
     
     bcol[0] = parseInt(bc[0]) / 255.0;
     bcol[1] = parseInt(bc[1]) / 255.0;
