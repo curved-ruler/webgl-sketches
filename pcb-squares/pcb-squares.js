@@ -15,6 +15,8 @@ let start_pan = 0;
 
 let N = 100;
 let N_dom = null;
+let line_size = 1;
+let LNS_dom = null;
 let lines = [];
 let wires = [];
 //let cells = [];
@@ -260,17 +262,17 @@ let generate = function ()
         {
             if (horizontal)
             {
-                wires.push([lines[i].pos[0]-2,
+                wires.push([lines[i].pos[0]-line_size/2,
                             lines[i].pos[1] + S+nn*0.1,
-                            lines[i].pos[2]+2,
+                            lines[i].pos[2]+line_size/2,
                             lines[i].pos[1] + S+nn*0.1]);
             }
             else
             {
                 wires.push([lines[i].pos[0] + S+nn*0.1,
-                            lines[i].pos[1]-2,
+                            lines[i].pos[1]-line_size/2,
                             lines[i].pos[0] + S+nn*0.1,
-                            lines[i].pos[3]+2]);
+                            lines[i].pos[3]+line_size/2]);
             }
         }
     }
@@ -309,17 +311,17 @@ let pattern = function ()
         {
             if (horizontal)
             {
-                wires.push([lines[i].pos[0]-0.5,
+                wires.push([lines[i].pos[0]-line_size/2,
                             lines[i].pos[1] + S+nn*0.1,
-                            lines[i].pos[2]+0.5,
+                            lines[i].pos[2]+line_size/2,
                             lines[i].pos[1] + S+nn*0.1]);
             }
             else
             {
                 wires.push([lines[i].pos[0] + S+nn*0.1,
-                            lines[i].pos[1]-0.5,
+                            lines[i].pos[1]-line_size/2,
                             lines[i].pos[0] + S+nn*0.1,
-                            lines[i].pos[3]+0.5]);
+                            lines[i].pos[3]+line_size/2]);
             }
         }
     }
@@ -388,11 +390,13 @@ let handleKeyDown = function (event)
             document.getElementById("menu").className = "hidden";
         }
     }
+    /*
     else if (event.key === 'g' || event.key === 'G')
     {
         generate();
         draw();
     }
+    */
     else if (event.key === 'p' || event.key === 'P')
     {
         pattern();
@@ -442,6 +446,17 @@ let set_n = function (strval)
     N = ival;
     
     make_grid();
+    pattern();
+    draw();
+};
+
+let set_lns = function (strval)
+{
+    let fval = parseFloat(strval);
+    if (isNaN(fval) || fval === undefined) { return; }
+    line_size = fval;
+    
+    pattern();
     draw();
 };
 
@@ -492,6 +507,8 @@ let init = function ()
     
     N_dom = document.getElementById('n_in');
     N_dom.value = "" + N;
+    LNS_dom = document.getElementById('lns_in');
+    LNS_dom.value = "" + line_size;
     P_dom = document.getElementById('func');
     P_dom.value = Pstrings[0];
     //set_patt(0);
@@ -516,6 +533,7 @@ let init = function ()
 
 window.set_patt = set_patt;
 window.set_n    = set_n;
+window.set_lns  = set_lns;
 window.set_lcol = set_lcol;
 window.set_nolcol = set_nolcol;
 window.set_deb  = set_deb;
