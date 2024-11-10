@@ -19,7 +19,7 @@ let lines = [];
 let wires = [];
 //let cells = [];
 
-let debug = 1;
+let debug = 0;
 
 let back_col = [255, 255, 255];
 let line_col = [255, 255, 255];
@@ -31,9 +31,30 @@ let P = null;
 let P_dom = null;
 let Pstrings = [
     `\
+return (Math.abs(x)+Math.abs(y)) % 8;
+`,
+    `\
 let x2 = (x/5)*(x/5);
 let y2 = (y/5)*(y/5);
 return Math.sqrt(x2+y2) % 6;
+`,
+    `\
+let s = 1/8;
+let x2 = (x*s)*(x*s);
+let y2 = (y*s)*(y*s);
+return Math.floor((x2+y2)*Math.random());
+`,
+    `\
+let bayer = [ 0/16,  8/16,  2/16, 10/16,
+             12/16,  4/16, 14/16,  6/16,
+              3/16, 11/16,  1/16,  9/16,
+             15/16,  7/16, 13/16,  5/16];
+let i = Math.abs(Math.floor(y)) % 4;
+let j = Math.abs(Math.floor(x)) % 4;
+let s = 1/8;
+let x2 = (x*s)*(x*s);
+let y2 = (y*s)*(y*s);
+return Math.floor((x2+y2) + bayer[i*4+j]);
 `,
     `\
 let length = (p) => { return Math.sqrt(p[0]*p[0]+p[1]*p[1]); };
@@ -45,6 +66,33 @@ for (j=0 ; j<10 ; ++j)
     if (length(z) > 2.0) break;
 }
 return j;
+`,
+    `\
+let lenn = (a,b) => { return (a[0]-b[0])*(a[0]-b[0]) + (a[1]-b[1])*(a[1]-b[1]) };
+let cmul = (z1, z2) => { return [z1[0]*z2[0] - z1[1]*z2[1], z1[0]*z2[1] + z1[1]*z2[0]]; };
+let z = [x/30, y/30];
+let r0 = [1.0, 0.0];
+let r1 = [-0.5,  Math.sqrt(0.75)];
+let r2 = [-0.5, -Math.sqrt(0.75)];
+    
+let ret = [0, 0];
+for (let i=0 ; i<10 ; ++i)
+{
+    let z2 = cmul( z,z);
+    let z3 = cmul(z2,z);
+    let v = [ z3[0] - 1.0, z3[1] ];
+    let d = [ 3 * z2[0], 3 * z2[1] ];
+    let q = [(v[0]*d[0] + v[1]*d[1]) / (d[0]*d[0] + d[1]*d[1]), 
+              (-v[0]*d[1]+v[1]*d[0]) / (d[0]*d[0] + d[1]*d[1])];
+        
+    z = [z[0]-q[0], z[1]-q[1]];
+        
+    if ( lenn(z,r0) < 0.0001 ) { ret = [0, i]; break; }
+    if ( lenn(z,r1) < 0.0001 ) { ret = [1, i]; break; }
+    if ( lenn(z,r2) < 0.0001 ) { ret = [2, i]; break; }
+}
+
+return ret[1];
 `
 ];
 
@@ -194,7 +242,7 @@ let randomize_lines = function ()
         if (lines[i].N < 0) continue;
         
         let R = Math.random();
-        lines[i].N = Math.floor(R*4);
+        lines[i].N = Math.floor(R*5);
     }
 };
 
@@ -212,17 +260,17 @@ let generate = function ()
         {
             if (horizontal)
             {
-                wires.push([lines[i].pos[0]-0.5,
+                wires.push([lines[i].pos[0]-2,
                             lines[i].pos[1] + S+nn*0.1,
-                            lines[i].pos[2]+0.5,
+                            lines[i].pos[2]+2,
                             lines[i].pos[1] + S+nn*0.1]);
             }
             else
             {
                 wires.push([lines[i].pos[0] + S+nn*0.1,
-                            lines[i].pos[1]-0.5,
+                            lines[i].pos[1]-2,
                             lines[i].pos[0] + S+nn*0.1,
-                            lines[i].pos[3]+0.5]);
+                            lines[i].pos[3]+2]);
             }
         }
     }
@@ -376,6 +424,13 @@ let set_p = function ()
         return;
     }
 };
+let set_patt = function (s)
+{
+    let ival = parseInt(s);
+    if (isNaN(ival) || ival === undefined) { return; }
+    P_dom.value = Pstrings[ival];
+    //set_p();
+};
 
 
 let set_n = function (strval)
@@ -439,6 +494,7 @@ let init = function ()
     N_dom.value = "" + N;
     P_dom = document.getElementById('func');
     P_dom.value = Pstrings[0];
+    //set_patt(0);
     
     l1col_dom = document.getElementById('l1col_in');
     l1col_dom.value = "" + line_col[0] + ", " + line_col[1] + ", " + line_col[2];
@@ -454,13 +510,15 @@ let init = function ()
     resize();
     
     make_grid();
+    pattern();
     draw();
 };
 
-window.set_n = set_n;
+window.set_patt = set_patt;
+window.set_n    = set_n;
 window.set_lcol = set_lcol;
 window.set_nolcol = set_nolcol;
-window.set_deb = set_deb;
+window.set_deb  = set_deb;
 
 document.addEventListener("mouseup", handleMouseUp);
 document.addEventListener("wheel", handleWheel);
