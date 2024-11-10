@@ -433,7 +433,9 @@ let set_patt = function (s)
     let ival = parseInt(s);
     if (isNaN(ival) || ival === undefined) { return; }
     P_dom.value = Pstrings[ival];
-    //set_p();
+    
+    pattern();
+    draw();
 };
 
 
