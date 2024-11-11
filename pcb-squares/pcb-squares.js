@@ -36,9 +36,16 @@ let Pstrings = [
 return (Math.abs(x)+Math.abs(y)) % 8;
 `,
     `\
-let x2 = (x/5)*(x/5);
-let y2 = (y/5)*(y/5);
+let s  = 1/5;
+let x2 = (x*s)*(x*s);
+let y2 = (y*s)*(y*s);
 return Math.sqrt(x2+y2) % 6;
+`,
+`\
+let s  = 1/5;
+let x2 = (x*s)*(x*s);
+let y2 = (y*s)*(y*s);
+return Math.floor(x2+y2) % 2;
 `,
     `\
 let s = 1/8;
