@@ -290,7 +290,7 @@ let pcalc_lines = function ()
     let dtor = Math.PI / 180;
     for (let i=0 ; i<lines.length ; ++i)
     {
-        if (lines[i].N === -1) continue;
+        if (lines[i].N < 0) continue;
         
         //let horizontal = (lines[i].pos[0] === lines[i].pos[2]) ? true : false;
         //let S = Math.sin( lines[i].pos[0]*5*dtor ) + Math.cos( lines[i].pos[1] * 5*dtor );
