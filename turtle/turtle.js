@@ -27,9 +27,7 @@ let proj = 0;
 let projmat, modlmat, viewmat;
 //let modinvmat;
 let scale    = 1;
-let axis     = 0;
-let rotation = 0;
-let rotdir   = true;
+let pan      = [0,0];
 let grabbed  = 0;
 
 let P_dom = null;
@@ -58,9 +56,10 @@ let camera = {
 let compute_matrices = function ()
 {
     modlmat = m4.init();
-    modlmat = tr.rotz(rotation / 180*Math.PI);
-    modlmat = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis / 180*Math.PI), modlmat);
+    //modlmat = tr.rotz(rotation / 180*Math.PI);
+    //modlmat = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis / 180*Math.PI), modlmat);
     modlmat = m4.mul(tr.scale(scale), modlmat);
+    modlmat = m4.mul(tr.translate([pan[0],pan[1],0]), modlmat);
     
     //modinvmat = tr.scale(1/scale);
     //modinvmat = m4.mul(tr.rotz(-rotation), modinvmat);
@@ -198,7 +197,7 @@ let handle_wheel = function (event)
 let handle_mouse_down = function (event)
 {
     grabbed = 1;
-    rotdir = (axis < 90) || (axis > 270);
+    //rotdir = (axis < 90) || (axis > 270);
 };
 let handle_mouse_up = function (event)
 {
@@ -218,8 +217,8 @@ let handle_mouse_move = function (event)
         rotation = rotation - Math.floor(rotation/360.0)*360.0;
         */
 
-        camera.pos[0] -= event.movementX*(0.05*scale);
-        camera.pos[1] += event.movementY*(0.05*scale);
+        pan[0] += event.movementX*0.05;
+        pan[1] -= event.movementY*0.05;
 
         draw();
     }
@@ -288,7 +287,7 @@ let resize = function ()
 
 let gpu_init = function (canvas_id)
 {
-    gl = gl_init.get_webgl2_context(canvas_id);
+    gl = gl_init.get_webgl2_context(canvas_id, {preserveDrawingBuffer: true, antialias: false});
     
     glprog = gl_init.create_glprog(gl, shaders.version + shaders.vs, shaders.version + shaders.precision + shaders.fs);
     
