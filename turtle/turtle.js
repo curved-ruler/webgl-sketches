@@ -56,10 +56,8 @@ let camera = {
 let compute_matrices = function ()
 {
     modlmat = m4.init();
-    //modlmat = tr.rotz(rotation / 180*Math.PI);
-    //modlmat = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis / 180*Math.PI), modlmat);
-    modlmat = m4.mul(tr.scale(scale), modlmat);
     modlmat = m4.mul(tr.translate([pan[0],pan[1],0]), modlmat);
+    modlmat = m4.mul(tr.scale(scale), modlmat);
     
     //modinvmat = tr.scale(1/scale);
     //modinvmat = m4.mul(tr.rotz(-rotation), modinvmat);
@@ -217,8 +215,8 @@ let handle_mouse_move = function (event)
         rotation = rotation - Math.floor(rotation/360.0)*360.0;
         */
 
-        pan[0] += event.movementX*0.05;
-        pan[1] -= event.movementY*0.05;
+        pan[0] += event.movementX*0.02/scale;
+        pan[1] -= event.movementY*0.02/scale;
 
         draw();
     }
@@ -255,7 +253,7 @@ let handle_key_down = function ()
     else if (event.key === "Enter")
     {
         scale    = 1;
-        camera.pos = [ 0,  0,  10 ];
+        pan = [ 0,  0 ];
         draw();
     }
 };

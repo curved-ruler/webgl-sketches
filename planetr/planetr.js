@@ -802,8 +802,8 @@ let handle_mouse_move = function (event)
 {
     if (grabbed === 1)
     {
-        pan[0] += event.movementX * 0.003;
-        pan[1] -= event.movementY * 0.003;
+        pan[0] += event.movementX * 0.02 / scale;
+        pan[1] -= event.movementY * 0.02 / scale;
         transform();
         draw();
     }
