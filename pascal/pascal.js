@@ -101,6 +101,22 @@ return ( p[1] + (1-p[2]) + p[3] ) % 2;
       RGB: [1.0, 1.0, 1.0]
     },
     
+    { Fstr: `\
+let middle = xmax / 2;
+let gap = 4;
+let sn  = 9;
+let start = Math.floor(middle - (sn/2)*gap);
+for (let i=0 ; i<sn ; ++i)
+{
+    first[start + i*gap] = 6;
+}`,
+      Rstr: `\
+return Math.floor(1.1*p[1] + 0.9*p[2] + 1.1*p[3] +1 ) % 2;
+`,
+      N: 2,
+      Fill: 0,
+      RGB: [1.0, 1.0, 1.0]
+    },
     
     { Fstr: `\
 let middle = xmax / 2;
