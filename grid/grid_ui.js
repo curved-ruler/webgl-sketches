@@ -22,6 +22,11 @@ class Grid_UI {
     level_dom = null;
     lev_c_dom = null;
     
+    contour_dom = null;
+    contour_min = -50;
+    contour_max =  50;
+    contour_step =  5;
+    
     ds_w = 0.5;
     ds_w_dom = null;
     
@@ -92,6 +97,9 @@ return 1.0 * s;`;
         
         this.level_dom.value   = this.levels.join(",");
         this.lev_c_dom.checked = this.lev_cliff;
+        
+        this.contour_dom = document.getElementById('cont_mms_in');
+        this.contour_dom.value = "" + this.contour_min + ", " + this.contour_max + ", " + this.contour_step;
         
         this.ds_w_dom = document.getElementById('dsw_in');
         this.ds_w_dom.value  = "" + this.ds_w;
@@ -207,6 +215,16 @@ return 1.0 * s;`;
     get_lev_c ()
     {
         return this.lev_c_dom.checked;
+    }
+    
+    get_contour_params ()
+    {
+        let cs = this.contour_dom.value.split(",");
+        return [
+            parseFloat(cs[0]),
+            parseFloat(cs[1]),
+            parseFloat(cs[2])
+        ];
     }
     
     get_ds_w ()

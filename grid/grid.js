@@ -19,8 +19,9 @@ let grid   = {
     N:128,
     H:[],
     C:[],
-    tris:[],   lines:[],  points:[],
-    tbuf:null, lbuf:null, pbuf:null
+    tris:[],   lines:[],  points:[], contour:[],
+    tbuf:null, lbuf:null, pbuf:null, cbuf:null,
+    contoured:false
 };
 let nn_dom = null;
 
@@ -33,7 +34,7 @@ let erosion_par = {
     debug_pts : [],
     debug_buf : null,
     
-    kk        : 1,
+    kk        : 3,
     kernel    : []
 };
 
@@ -250,6 +251,8 @@ let grid_to_gpu = function ()
     gl.bindBuffer(gl.ARRAY_BUFFER, grid.pbuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(grid.points), gl.STATIC_DRAW);
     
+    grid.contoured = false;
+    
     //console.log("V", model.verts.length, "L", model.lines.length);
 };
 
@@ -269,6 +272,229 @@ let getheight = function (g, pos)
     let hd = g.H[(y+1)*(g.N+1)+x+1];
     
     return utils.bilinear(ha,hb,hc,hd, u,v);
+};
+
+let make_contour = function ()
+{
+    grid.contour = [];
+    if (grid.cbuf) { gl.deleteBuffer(grid.cbuf); }
+    
+    let va = [0,0,0];
+    let vb = [0,0,0];
+    let vc = [0,0,0];
+    let vd = [0,0,0];
+    let ve = [0,0,0];
+    let vf = [0,0,0];
+    let mix = (va,vb,t) => ( [va[0]*t+vb[0]*(1-t), va[1]*t+vb[1]*(1-t), va[2]*t+vb[2]*(1-t)] );
+    
+    let newnorm = [0,0,0];
+    let norm    = [0,0,0];
+    let zi = [0.0, 0.0, 1.0];
+    
+    let parms = gui.get_contour_params();
+    for (let planez = parms[0] ; planez <= parms[1] ; planez += parms[2])
+    {
+    for (let y=0 ; y<grid.N ; ++y)
+    {
+        for (let x=0 ; x<grid.N ; ++x)
+        {
+            va[0] = x;
+            va[1] = y;
+            va[2] = grid.H[y*(grid.N+1)+x];
+            vb[0] = x + 1;
+            vb[1] = y;
+            vb[2] = grid.H[y*(grid.N+1)+x+1];
+            vc[0] = x;
+            vc[1] = y + 1;
+            vc[2] = grid.H[(y+1)*(grid.N+1)+x];
+            vd[0] = x + 1;
+            vd[1] = y + 1;
+            vd[2] = grid.H[(y+1)*(grid.N+1)+x+1];
+            
+            norm = v3.cross( v3.sub(vb,va), v3.sub(vc,va) );
+            norm = v3.normalize(norm);
+            
+            let z0 = ((planez > va[2]) ? -1 : 1 );
+            let z1 = ((planez > vb[2]) ? -1 : 1 );
+            let z2 = ((planez > vc[2]) ? -1 : 1 );
+            let z3 = ((planez > vd[2]) ? -1 : 1 );
+            
+            let intersect = false;
+            
+
+            if ((z0 == 1 && z1 == -1) || (z0 == -1 && z1 == 1))
+            {
+                ve = mix(va, vb, Math.abs(planez-va[2]) / Math.abs(va[2]-vb[2]));
+                if (z2 == z0)
+                {
+                    vf = mix(vb, vc, Math.abs(planez-vb[2]) / Math.abs(vc[2]-vb[2]));
+                }
+                else
+                {
+                    vf = mix(va, vc, Math.abs(planez-va[2]) / Math.abs(vc[2]-va[2]));
+                }
+                
+                newnorm = v3.cross(v3.sub(ve,vf), zi);
+                newnorm = v3.normalize(newnorm);
+                
+                intersect = true;
+                
+            }
+            if ((z0 == 1 && z2 == -1) || (z0 == -1 && z2 == 1))
+            {
+                ve = mix(va, vc, Math.abs(planez-va[2]) / Math.abs(va[2]-vc[2]));
+                if (z1 == z0)
+                {
+                    vf = mix(vb, vc, Math.abs(planez-vb[2]) / Math.abs(vc[2]-vb[2]));
+                }
+                else
+                {
+                    vf = mix(va, vb, Math.abs(planez-va[2]) / Math.abs(vb[2]-va[2]));
+                }
+                
+                newnorm = v3.cross(v3.sub(ve,vf), zi);
+                newnorm = v3.normalize(newnorm);
+                
+                intersect = true;
+            }
+            if ((z1 == 1 && z2 == -1) || (z1 == -1 && z2 == 1))
+            {
+                ve = mix(vb, vc, Math.abs(planez-vb[2]) / Math.abs(vb[2]-vc[2]));
+                if (z0 == z1)
+                {
+                    vf = mix(va, vc, Math.abs(planez-va[2]) / Math.abs(va[2]-vc[2]));
+                }
+                else
+                {
+                    vf = mix(va, vb, Math.abs(planez-va[2]) / Math.abs(vb[2]-va[2]));
+                }
+                
+                newnorm = v3.cross(v3.sub(ve,vf), zi);
+                newnorm = v3.normalize(newnorm);
+                
+                intersect = true;
+            }
+            
+            if (intersect)
+            {
+                /*
+                if (!same_facing(norm, newnorm))
+                {
+                    newnorm = -newnorm;
+                }
+                */
+                
+                //let vez = [ve[0], ve[1], planez - dz];
+                //let vfz = [vf[0], vf[1], planez - dz];
+                
+                let col = grid.C[y*(grid.N+1)+x];
+                let a = col % 256;
+                col = Math.floor((col-a)/256);
+                let b = col % 256;
+                col = Math.floor((col-b)/256);
+                let g = col % 256;
+                col = Math.floor((col-g)/256);
+                let r = col % 256;
+        
+                grid.contour.push(ve[0], ve[1], ve[2], r/255, g/255, b/255,  newnorm[0], newnorm[1], newnorm[2]);
+                grid.contour.push(vf[0], vf[1], vf[2], r/255, g/255, b/255,  newnorm[0], newnorm[1], newnorm[2]);
+            }
+            
+            //-------
+            //-------
+            //-------
+            //-------
+            //-------
+            va = vd;
+            z0 = z3;
+            intersect = false;
+            
+            if ((z0 == 1 && z1 == -1) || (z0 == -1 && z1 == 1))
+            {
+                ve = mix(va, vb, Math.abs(planez-va[2]) / Math.abs(va[2]-vb[2]));
+                if (z2 == z0)
+                {
+                    vf = mix(vb, vc, Math.abs(planez-vb[2]) / Math.abs(vc[2]-vb[2]));
+                }
+                else
+                {
+                    vf = mix(va, vc, Math.abs(planez-va[2]) / Math.abs(vc[2]-va[2]));
+                }
+                
+                newnorm = v3.cross(v3.sub(ve,vf), zi);
+                newnorm = v3.normalize(newnorm);
+                
+                intersect = true;
+            }
+            if ((z0 == 1 && z2 == -1) || (z0 == -1 && z2 == 1))
+            {
+                ve = mix(va, vc, Math.abs(planez-va[2]) / Math.abs(va[2]-vc[2]));
+                if (z1 == z0)
+                {
+                    vf = mix(vb, vc, Math.abs(planez-vb[2]) / Math.abs(vc[2]-vb[2]));
+                }
+                else
+                {
+                    vf = mix(va, vb, Math.abs(planez-va[2]) / Math.abs(vb[2]-va[2]));
+                }
+                
+                newnorm = v3.cross(v3.sub(ve,vf), zi);
+                newnorm = v3.normalize(newnorm);
+                
+                intersect = true;
+            }
+            if ((z1 == 1 && z2 == -1) || (z1 == -1 && z2 == 1))
+            {
+                ve = mix(vb, vc, Math.abs(planez-vb[2]) / Math.abs(vb[2]-vc[2]));
+                if (z0 == z1)
+                {
+                    vf = mix(va, vc, Math.abs(planez-va[2]) / Math.abs(va[2]-vc[2]));
+                }
+                else
+                {
+                    vf = mix(va, vb, Math.abs(planez-va[2]) / Math.abs(vb[2]-va[2]));
+                }
+                
+                newnorm = v3.cross(v3.sub(ve,vf), zi);
+                newnorm = v3.normalize(newnorm);
+                
+                intersect = true;
+            }
+            
+            if (intersect)
+            {
+                /*
+                if (!same_facing(norm, newnorm))
+                {
+                    newnorm = -newnorm;
+                }
+                */
+                
+                //let vez = [ve[0], ve[1], planez - dz];
+                //let vfz = [vf[0], vf[1], planez - dz];
+                
+                let col = grid.C[y*(grid.N+1)+x];
+                let a = col % 256;
+                col = Math.floor((col-a)/256);
+                let b = col % 256;
+                col = Math.floor((col-b)/256);
+                let g = col % 256;
+                col = Math.floor((col-g)/256);
+                let r = col % 256;
+        
+                grid.contour.push(ve[0], ve[1], ve[2], r/255, g/255, b/255,  newnorm[0], newnorm[1], newnorm[2]);
+                grid.contour.push(vf[0], vf[1], vf[2], r/255, g/255, b/255,  newnorm[0], newnorm[1], newnorm[2]);
+            }
+        }
+    }
+    }
+    
+    grid.cbuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, grid.cbuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(grid.contour), gl.STATIC_DRAW);
+    grid.contoured = true;
+    
+    draw();
 };
 
 let diamond_square = function()
@@ -380,18 +606,30 @@ let draw = function ()
         gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
         gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
         gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
-        gl.uniform1i(glprog.shaded, obj === 3 ? 0 : 1);
+        gl.uniform1i(glprog.shaded, 0);
         gl.drawArrays(gl.POINTS, 0, grid.points.length / 9);
     }
     
     if ((obj === 1 || obj === 4 || obj === 5) && grid.lbuf !== null)
     {
+        if (grid.contoured)
+        {
+        gl.bindBuffer(gl.ARRAY_BUFFER, grid.cbuf);
+        gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
+        gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
+        gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
+        gl.uniform1i(glprog.shaded, 0);
+        gl.drawArrays(gl.LINES, 0, grid.contour.length / 9);
+        }
+        else
+        {
         gl.bindBuffer(gl.ARRAY_BUFFER, grid.lbuf);
         gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
         gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
         gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
-        gl.uniform1i(glprog.shaded, obj === 4 ? 0 : 1);
+        gl.uniform1i(glprog.shaded, 0);
         gl.drawArrays(gl.LINES, 0, grid.lines.length / 9);
+        }
     }
     
     if ((obj === 2 || obj === 3 || obj === 4) && grid.tbuf !== null)
@@ -483,6 +721,10 @@ let handle_key_down = function (event)
     else if (event.key === "b" || event.key === "B")
     {
         kernel();
+    }
+    else if (event.key === "c" || event.key === "C")
+    {
+        make_contour();
     }
     else if (event.key === "d" || event.key === "D")
     {
@@ -634,7 +876,7 @@ let init = function ()
     for (let y=-k ; y<=k ; ++y)
     for (let x=-k ; x<=k ; ++x)
     {
-        erosion_par.kernel[(y+k)*(2*k+1)+(x+k)] = 1/(y*y+x*x+1);
+        erosion_par.kernel[(y+k)*(2*k+1)+(x+k)] = Math.exp(-y*y-x*x);
         ksum += erosion_par.kernel[(y+k)*(2*k+1)+(x+k)];
     }
     for (let i=0 ; i<erosion_par.kernel.length ; ++i) { erosion_par.kernel[i] /= ksum; }
@@ -652,6 +894,7 @@ window.ds     = diamond_square;
 window.kernel = kernel;
 window.add_noise = add_noise;
 window.erosion   = erosion;
+window.make_contour = make_contour;
 
 window.set_colh_pre  = (v) => { gui.set_colsch(v); col_grid(); grid_to_gpu(); draw(); }
 window.set_colh      = ()  => { col_grid(); grid_to_gpu(); draw(); }
