@@ -285,7 +285,7 @@ let make_contour = function ()
     let vd = [0,0,0];
     let ve = [0,0,0];
     let vf = [0,0,0];
-    let mix = (va,vb,t) => ( [va[0]*t+vb[0]*(1-t), va[1]*t+vb[1]*(1-t), va[2]*t+vb[2]*(1-t)] );
+    let mix = (va,vb,t) => ( [va[0]*(1-t)+vb[0]*(t), va[1]*(1-t)+vb[1]*(t), va[2]*(1-t)+vb[2]*(t)] );
     
     let newnorm = [0,0,0];
     let norm    = [0,0,0];
@@ -301,12 +301,15 @@ let make_contour = function ()
             va[0] = x;
             va[1] = y;
             va[2] = grid.H[y*(grid.N+1)+x];
+            
             vb[0] = x + 1;
             vb[1] = y;
             vb[2] = grid.H[y*(grid.N+1)+x+1];
+            
             vc[0] = x;
             vc[1] = y + 1;
             vc[2] = grid.H[(y+1)*(grid.N+1)+x];
+            
             vd[0] = x + 1;
             vd[1] = y + 1;
             vd[2] = grid.H[(y+1)*(grid.N+1)+x+1];
@@ -405,7 +408,9 @@ let make_contour = function ()
             //-------
             //-------
             //-------
-            va = vd;
+            va[0] = vd[0];
+            va[1] = vd[1];
+            va[2] = vd[2];
             z0 = z3;
             intersect = false;
             
@@ -496,6 +501,8 @@ let make_contour = function ()
     
     draw();
 };
+
+
 
 let diamond_square = function()
 {
