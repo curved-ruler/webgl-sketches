@@ -286,6 +286,10 @@ let make_contour = function ()
     let ve = [0,0,0];
     let vf = [0,0,0];
     let mix = (va,vb,t) => ( [va[0]*(1-t)+vb[0]*(t), va[1]*(1-t)+vb[1]*(t), va[2]*(1-t)+vb[2]*(t)] );
+    if ( gui.get_contour_curse() )
+    {
+        mix = (va,vb,t) => ( [va[0]*(t)+vb[0]*(1-t), va[1]*(t)+vb[1]*(1-t), va[2]*(t)+vb[2]*(1-t)] );
+    }
     
     let newnorm = [0,0,0];
     let norm    = [0,0,0];
