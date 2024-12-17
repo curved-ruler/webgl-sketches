@@ -26,6 +26,8 @@ class Grid_UI {
     contour_min = -50;
     contour_max =  50;
     contour_step  = 5;
+    contour_half = false;
+    contour_half_dom = null;
     contour_curse = false;
     contour_curse_dom = null;
     
@@ -104,6 +106,8 @@ return 1.0 * s;`;
         this.contour_dom.value = "" + this.contour_min + ", " + this.contour_max + ", " + this.contour_step;
         this.contour_curse_dom = document.getElementById('cont_curse');
         this.contour_curse_dom.checked = this.contour_curse;
+        this.contour_half_dom = document.getElementById('cont_half');
+        this.contour_half_dom.checked = this.contour_half;
         
         this.ds_w_dom = document.getElementById('dsw_in');
         this.ds_w_dom.value  = "" + this.ds_w;
@@ -233,6 +237,10 @@ return 1.0 * s;`;
     get_contour_curse ()
     {
         return this.contour_curse_dom.checked;
+    }
+    get_contour_half ()
+    {
+        return this.contour_half_dom.checked;
     }
     
     get_ds_w ()

@@ -407,6 +407,8 @@ let make_contour = function ()
                 grid.contour.push(vf[0], vf[1], vf[2], r/255, g/255, b/255,  newnorm[0], newnorm[1], newnorm[2]);
             }
             
+            if ( gui.get_contour_half() ) { continue; }
+            
             //-------
             //-------
             //-------
