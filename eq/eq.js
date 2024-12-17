@@ -121,6 +121,12 @@ let handle_key_down = function (event)
         mousep(mouse_param);
         mousep_dom.checked = mouse_param;
     }
+    else if (event.key === "Enter")
+    {
+        tr = [1,0,1,0];
+        scale = 10.0;
+        draw();
+    }
 };
 
 let resize = function ()

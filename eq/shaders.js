@@ -305,6 +305,64 @@ vec3 col(in float x, in float y)
 }
 `,
 
+julia_rainbow: `\
+float mand(in float x, in float y)
+{
+    vec2 z = vec2(0.0);
+    int i = 0;
+    int n = 100;
+    for (i=0 ; i<n ; ++i)
+    {
+        z = vec2(z.x*z.x - z.y*z.y + x, 2.0*z.x*z.y + y);
+        if (length(z) > 2.0) break;
+    }
+    return (float(i)/float(n));
+}
+vec3 col(in float x, in float y)
+{
+    vec2 z = vec2(x,y);
+    vec2 c = vec2(mouse.x, mouse.y);
+    int i = 0;
+    int n = 500;
+    for (i=0 ; i<n ; ++i)
+    {
+        z = vec2(z.x*z.x - z.y*z.y + c.x, 2.0*z.x*z.y + c.y);
+        if (length(z) > 2.0) break;
+    }
+    float t = fract(3.5 * float(i) / float(n));
+    return hsv2rgb(vec3(t, 1.0-t, 1.0-t)) + vec3(0.1*mand(x,y));
+}
+`,
+
+julia_binary: `\
+float mand(in float x, in float y)
+{
+    vec2 z = vec2(0.0);
+    int i = 0;
+    int n = 100;
+    for (i=0 ; i<n ; ++i)
+    {
+        z = vec2(z.x*z.x - z.y*z.y + x, 2.0*z.x*z.y + y);
+        if (length(z) > 2.0) break;
+    }
+    return (float(i)/float(n));
+}
+vec3 col(in float x, in float y)
+{
+    vec2 z = vec2(x,y);
+    vec2 c = vec2(mouse.x, mouse.y);
+    int i = 0;
+    int n = 500;
+    for (i=0 ; i<n ; ++i)
+    {
+        z = vec2(z.x*z.x - z.y*z.y + c.x, 2.0*z.x*z.y + c.y);
+        if (length(z) > 2.0) break;
+    }
+    vec3 t = i<n ? vec3(0.0) : hsv2rgb(vec3(0.1, 0.9, 0.9));
+    return t + vec3(0.1*mand(x,y));
+}
+`,
+
 julia_2: `\
 // Julia set with equation by @Peter_Stampfli@mathstodon.xy
 vec3 col(in float x, in float y)
