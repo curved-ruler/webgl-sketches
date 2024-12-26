@@ -123,7 +123,8 @@ let handle_key_down = function (event)
     }
     else if (event.key === "Enter")
     {
-        tr = [1,0,1,0];
+        pos.x = 0;
+        pos.y = 0;
         scale = 10.0;
         draw();
     }
