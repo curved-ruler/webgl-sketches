@@ -495,15 +495,25 @@ let draw = function ()
     gl.uniform1i(glprog.colscheme, colscheme);
     gl.uniform3fv(glprog.col, tcol);
 
-    if (obj === 0)
+    if (obj === 0 || obj === 2)
     {
         gl.bindBuffer(gl.ARRAY_BUFFER, tribuf);
         gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 6*4, 0*4);
         gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 6*4, 3*4);
+        
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(1, 1);
         gl.drawArrays(gl.TRIANGLES, 0, model.tris.length / 6);
+        gl.disable(gl.POLYGON_OFFSET_FILL);
     }
-    else
+    
+    if (obj === 1 || obj === 2)
     {
+        if (obj === 2)
+        {
+            gl.uniform3fv(glprog.col, [0,0,0]);
+            gl.uniform1i(glprog.colscheme, 0);
+        }
         gl.bindBuffer(gl.ARRAY_BUFFER, linbuf);
         gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 6*4, 0*4);
         gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 6*4, 3*4);
@@ -636,7 +646,7 @@ let handle_key_down = function (event)
     else if (event.key === "o" || event.key === "O")
     {
         ++obj;
-        if (obj > 1) { obj = 0; }
+        if (obj > 2) { obj = 0; }
         draw();
     }
     else if (event.key === "v" || event.key === "V")
