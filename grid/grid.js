@@ -615,6 +615,17 @@ let draw = function ()
     
     if ((obj === 0 || obj === 3 || obj === 5) && grid.pbuf !== null)
     {
+        if (obj === 3)
+        {
+            gl.uniform1i(glprog.colmode, 1);
+            gl.uniform3fv(glprog.defcol, [0,0,0]);
+        }
+        else
+        {
+            gl.uniform1i(glprog.colmode, colmode);
+            gl.uniform3fv(glprog.defcol, lcol);
+        }
+        
         gl.bindBuffer(gl.ARRAY_BUFFER, grid.pbuf);
         gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
         gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
@@ -625,6 +636,17 @@ let draw = function ()
     
     if ((obj === 1 || obj === 4 || obj === 5) && grid.lbuf !== null)
     {
+        if (obj === 4)
+        {
+            gl.uniform1i(glprog.colmode, 1);
+            gl.uniform3fv(glprog.defcol, [0,0,0]);
+        }
+        else
+        {
+            gl.uniform1i(glprog.colmode, colmode);
+            gl.uniform3fv(glprog.defcol, lcol);
+        }
+        
         if (grid.contoured)
         {
         gl.bindBuffer(gl.ARRAY_BUFFER, grid.cbuf);
@@ -647,6 +669,9 @@ let draw = function ()
     
     if ((obj === 2 || obj === 3 || obj === 4) && grid.tbuf !== null)
     {
+        gl.uniform1i(glprog.colmode, colmode);
+        gl.uniform3fv(glprog.defcol, lcol);
+            
         gl.bindBuffer(gl.ARRAY_BUFFER, grid.tbuf);
         gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
         gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
