@@ -54,6 +54,16 @@
                     <button onclick="clear_path()">Clear</button>
                 </td>
             </tr>
+            <tr>
+                <td class="left">Presets:</td>
+                <td>
+                    <select id="presin" onchange="set_pres(this.value)">
+                        <option value="0">dotted circles</option>
+                        <option value="1">rotated circles</option>
+                        <option value="2">koch</option>
+                    </select>
+                </td>
+            </tr>
             <tr class="hidden">
                 <td class="left">Alpha:</td>
                 <td>

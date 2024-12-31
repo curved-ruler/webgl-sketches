@@ -45,22 +45,55 @@ let camera = {
 
 let progs = [
     `\
-let sq = (a) => {
-    for (let i=0 ; i<a*4; ++i)
+let circ = (a) => {
+    for (let i=0 ; i<360/a; ++i)
     {
         T.pen ? T.penup() : T.pendown(); 
         T.forward(1);
-        if (i%a === 0) (T.turn([0,0,1],90));
+        T.turn([0,0,1],a);
     }
 };
-sq(2);
-sq(4);
-sq(6);
-sq(8);
-sq(10);`
+circ(3);
+circ(4);
+circ(6);`,
+    `\
+let circ = (a) => {
+    for (let i=0 ; i<360/a; ++i)
+    { 
+        T.forward(1);
+        T.turn([0,0,1],a);
+    }
+};
+T.pendown();
+for (let i=0 ; i<36 ; ++i)
+{
+    circ(3);
+    T.turn([0,0,1],20.2);
+}`,
+    `\
+let koch = (lev, dist) => {
+    if (lev == 0) {
+        T.forward(dist);
+    } else {
+        koch(lev - 1, dist);
+        T.turn([0,0,1],60);
+        koch(lev - 1, dist);
+        T.turn([0,0,1],-120);
+        koch(lev - 1, dist);
+        T.turn([0,0,1],60);
+        koch(lev - 1, dist);
+    }
+};
+T.pendown();
+koch(3,10);
+T.turn([0,0,1],-120);
+koch(3,10);
+T.turn([0,0,1],-120);
+koch(3,10);`
 ];
 let P = null;
 let P_dom = null;
+let pres_dom = null;
 
 class aeroplane {
     oldpos = [0, 0, 0];
@@ -350,6 +383,12 @@ let set_prog = function ()
         return;
     }
 };
+let set_pres = function (strval)
+{
+    let i = parseInt(strval);
+    P_dom.value = progs[i];
+    pres_dom.blur();
+};
 let run_prog = function ()
 {
     set_prog();
@@ -429,6 +468,8 @@ let init = function ()
         if (opts[i].value == alpha) { opts.selectedIndex = i; }
     }
     
+    pres_dom = document.getElementById('presin');
+    pres_dom.options.selectedIndex = 0;
     P_dom = document.getElementById('progin');
     P_dom.value = progs[0];
     set_prog();
@@ -443,6 +484,7 @@ let init = function ()
 
 window.set_alpha = set_alpha;
 window.set_prog  = set_prog;
+window.set_pres  = set_pres;
 window.run_prog  = run_prog;
 window.clear_path = clear_path;
 
