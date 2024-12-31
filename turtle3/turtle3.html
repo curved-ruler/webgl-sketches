@@ -42,22 +42,19 @@
                 <td>Show/Hide Menu</td>
             </tr>
             <tr>
-                <td class="left">C:</td>
-                <td>Colscheme</td>
-            </tr>
-            <tr>
                 <td class="left">Mouse wheel / drag:</td>
-                <td>Scale / Pan</td>
+                <td>Scale / Rotate</td>
             </tr>
             <tr>
                 <td class="left">Program:</td>
                 <td>
-                    <textarea id="progin" type="text" rows="10" cols="42"></textarea>
+                    <textarea id="progin" type="text" rows="13" cols="42"></textarea>
                     <br/>
                     <button onclick="run_prog()">Run prog</button>
+                    <button onclick="clear_path()">Clear</button>
                 </td>
             </tr>
-            <tr>
+            <tr class="hidden">
                 <td class="left">Alpha:</td>
                 <td>
                     <select id="alpha" onchange="set_alpha(this.value)">

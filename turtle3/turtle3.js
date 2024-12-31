@@ -24,7 +24,7 @@ let menu_hidden = false;
 let proj = 0;
 let projmat, modlmat, viewmat;
 //let modinvmat;
-let scale    = 1;
+let scale    = 2;
 let axis     = 0;
 let rotation = 0;
 let rotdir   = true;
@@ -32,7 +32,7 @@ let grabbed  = 0;
 
 
 let camera = {
-    pos   : [0, 0, 10],
+    pos   : [0, 0, 100],
     look  : [0, 0, -1],
     up    : [1, 0, 0],
     near  : 0.01,
@@ -45,12 +45,19 @@ let camera = {
 
 let progs = [
     `\
-for (let i=0 ; i<10; ++i)
-{
-    T.pen ? T.penup() : T.pendown(); 
-    T.forward(1);
-    //T.turnz(10);
-}`
+let sq = (a) => {
+    for (let i=0 ; i<a*4; ++i)
+    {
+        T.pen ? T.penup() : T.pendown(); 
+        T.forward(1);
+        if (i%a === 0) (T.turn([0,0,1],90));
+    }
+};
+sq(2);
+sq(4);
+sq(6);
+sq(8);
+sq(10);`
 ];
 let P = null;
 let P_dom = null;
@@ -96,6 +103,13 @@ class aeroplane {
         this.oldpos[0] = this.pos[0];
         this.oldpos[1] = this.pos[1];
         this.oldpos[2] = this.pos[2];
+    }
+    turn (t,a)
+    {
+        let tn = v3.normalize(t);
+        let a2 = a * (Math.PI / 180) / 2;
+        let q  = [Math.cos(a2), t[0]*Math.sin(a2), t[1]*Math.sin(a2), t[2]*Math.sin(a2)];
+        this.orient = quat.mul(q, this.orient);
     }
 }
 let T = null;
@@ -338,6 +352,7 @@ let set_prog = function ()
 };
 let run_prog = function ()
 {
+    set_prog();
     try
     {
         P(T);
@@ -349,6 +364,14 @@ let run_prog = function ()
         errorlog(err.message);
         return;
     }
+};
+let clear_path = function ()
+{
+    T.path = [];
+    T.oldpos = [0, 0, 0];
+    T.pos    = [0, 0, 0];
+    T.orient = [1, 0, 0, 0];
+    draw();
 };
 
 
@@ -421,6 +444,7 @@ let init = function ()
 window.set_alpha = set_alpha;
 window.set_prog  = set_prog;
 window.run_prog  = run_prog;
+window.clear_path = clear_path;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
