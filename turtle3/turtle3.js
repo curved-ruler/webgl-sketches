@@ -221,7 +221,7 @@ class aeroplane {
     pos    = [0, 0, 0];
     orient = [1, 0, 0, 0];
     
-    model = { name : '../input/obj3/plane03.obj', tlen:0, llen:0, plen:0, tbuf:null, lbuf:null, pbuf:null };
+    model = { name : '../input/obj3/plane03b-lines.obj', tlen:0, llen:0, plen:0, tbuf:null, lbuf:null, pbuf:null };
     showplane = true;
     
     pen = true;
@@ -314,14 +314,14 @@ let fetch_objfile = function (objfile)
             if (xhr.readyState === 4 && xhr.status === 200)
             {
                 let model_resp = obj.create(xhr.responseText, 0.5, true, lcol);
-                //console.log("M", model_resp);
+                console.log("M", model_resp);
                 
-                if (model_resp.lines.length > 0)
+                if (model_resp.length > 0)
                 {
-                    T.model.llen = model_resp.lines.length;
+                    T.model.llen = model_resp.length;
                     T.model.lbuf = gl.createBuffer();
                     gl.bindBuffer(gl.ARRAY_BUFFER, T.model.lbuf);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_resp.lines), gl.STATIC_DRAW);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_resp), gl.STATIC_DRAW);
                 }
                 
                 draw();
