@@ -51,31 +51,25 @@ let create = function (obj_str, scale, y_up, col)
                     let v0 = parseInt( v_vt_vn[0] );
                     let vv = (v0 < 0) ? v.length + v0 : v0-1;
                     f.push(v[vv][0], v[vv][1], v[vv][2]);
-                    l.push(v[vv][0], v[vv][1], v[vv][2]);
                     
                     //f.push(0.243161, 0.887797, 1.000000);
                     f.push(col[0], col[1], col[2]);
-                    l.push(col[0], col[1], col[2]);
                 
                     v0 = parseInt( v_vt_vn[2] );
                     vv = (v0 < 0) ? v.length + v0 : v0-1;
                     f.push(vn[vv][0], vn[vv][1], vn[vv][2]);
-                    l.push(vn[vv][0], vn[vv][1], vn[vv][2]);
                 
                 v_vt_vn = vind(tokens[end-1]);
                 
                     v0 = parseInt( v_vt_vn[0] );
                     vv = (v0 < 0) ? v.length + v0 : v0-1;
                     f.push(v[vv][0], v[vv][1], v[vv][2]);
-                    l.push(v[vv][0], v[vv][1], v[vv][2]);
                     
                     f.push(col[0], col[1], col[2]);
-                    l.push(col[0], col[1], col[2]);
                 
                     v0 = parseInt( v_vt_vn[2] );
                     vv = (v0 < 0) ? v.length + v0 : v0-1;
                     f.push(vn[vv][0], vn[vv][1], vn[vv][2]);
-                    l.push(vn[vv][0], vn[vv][1], vn[vv][2]);
                 
                 v_vt_vn = vind(tokens[end]);
                 
@@ -88,6 +82,31 @@ let create = function (obj_str, scale, y_up, col)
                     v0 = parseInt( v_vt_vn[2] );
                     vv = (v0 < 0) ? v.length + v0 : v0-1;
                     f.push(vn[vv][0], vn[vv][1], vn[vv][2]);
+            }
+            
+            for (let end = 2 ; end < tokens.length ; ++end)
+            {
+                let v_vt_vn = vind(tokens[end-1]);
+                
+                    let v0 = parseInt( v_vt_vn[0] );
+                    let vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    l.push(v[vv][0], v[vv][1], v[vv][2]);
+                    l.push(col[0], col[1], col[2]);
+                
+                    v0 = parseInt( v_vt_vn[2] );
+                    vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    l.push(vn[vv][0], vn[vv][1], vn[vv][2]);
+                
+                v_vt_vn = vind(tokens[end]);
+                
+                    v0 = parseInt( v_vt_vn[0] );
+                    vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    l.push(v[vv][0], v[vv][1], v[vv][2]);
+                    l.push(col[0], col[1], col[2]);
+                
+                    v0 = parseInt( v_vt_vn[2] );
+                    vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    l.push(vn[vv][0], vn[vv][1], vn[vv][2]);
             }
         }
         /*

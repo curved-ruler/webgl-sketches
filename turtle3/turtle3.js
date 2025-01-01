@@ -14,10 +14,12 @@ let planet_view = [...Array(plv_size * plv_size)];
 
 
 let bcol  = [0.1, 0.1, 0.1];
-let tcol  = [0.9, 0.9, 0.9];
+let lcol  = [0.243161, 0.887797, 1.000000];
 let colmode = 0;
 let alpha   = 1.0;
 let alpha_dom = null;
+let bcol_dom  = null;
+let lcol_dom  = null;
 
 let menu_hidden = false;
 
@@ -56,6 +58,8 @@ let circ = (a) => {
 circ(3);
 circ(4);
 circ(6);`,
+
+
     `\
 let circ = (a) => {
     for (let i=0 ; i<360/a; ++i)
@@ -70,18 +74,38 @@ for (let i=0 ; i<36 ; ++i)
     circ(3);
     T.turn([0,0,1],20.2);
 }`,
+
+    
+    `\
+let circ = (a) => {
+    for (let i=0 ; i<360/a; ++i)
+    {
+        T.setcol(Math.random(), Math.random(), Math.random());
+        T.forward(1);
+        T.turn([0,0,1], a);
+    }
+};
+T.background(0.2, 0.2, 0.2);
+T.pendown();
+for (let i=0 ; i<180 ; ++i)
+{
+    circ(3);
+    T.turn([0,0,1], 20.2);
+}`,
+
+
     `\
 let koch = (lev, dist) => {
     if (lev == 0) {
         T.forward(dist);
     } else {
-        koch(lev - 1, dist);
-        T.turn([0,0,1],60);
-        koch(lev - 1, dist);
-        T.turn([0,0,1],-120);
-        koch(lev - 1, dist);
-        T.turn([0,0,1],60);
-        koch(lev - 1, dist);
+        koch(lev-1, dist);
+        T.turn([0,0,1], 60);
+        koch(lev-1, dist);
+        T.turn([0,0,1], -120);
+        koch(lev-1, dist);
+        T.turn([0,0,1], 60);
+        koch(lev-1, dist);
     }
 };
 T.pendown();
@@ -89,7 +113,104 @@ koch(3,10);
 T.turn([0,0,1],-120);
 koch(3,10);
 T.turn([0,0,1],-120);
-koch(3,10);`
+koch(3,10);`,
+
+
+    `\
+let koch = (lev, dist) => {
+    if (lev == 0) {
+        T.forward(dist);
+    } else {
+        koch(lev-1, dist);
+        T.turn([0,0,1], 60);
+        koch(lev-1, dist);
+        T.turn([0,0,1], -120);
+        koch(lev-1, dist);
+        T.turn([0,0,1], 60);
+        koch(lev-1, dist);
+    }
+};
+let k = (l,d) => {
+    let a = Math.pow(3,l)*d;
+    let v = [0,0,1];
+    
+    T.penup();
+    T.forward(-a*Math.sqrt(3)/6);
+    T.turn(v,90);
+    T.forward(a/2);
+    T.turn(v,-90-30);
+    
+    T.pendown();
+    koch(l,d);
+    T.turn(v,-120);
+    koch(l,d);
+    T.turn(v,-120);
+    koch(l,d);
+    
+    T.penup();
+    T.forward(-a/2);
+    T.turn(v,-90);
+    T.forward(a*Math.sqrt(3)/6);
+};
+
+let a = 20;
+k(0, a);
+k(1,(a+0.5)/3);
+k(2,(a+1.0)/(3*3));
+k(3,(a+1.5)/(3*3*3));
+k(4,(a+2.0)/(3*3*3*3));`,
+    
+    
+    `\
+let koch = (lev, dist) => {
+    if (lev == 0) {
+        T.forward(dist);
+    } else {
+        koch(lev-1, dist);
+        T.turn([0,0,1], 60);
+        koch(lev-1, dist);
+        T.turn([0,0,1], -120);
+        koch(lev-1, dist);
+        T.turn([0,0,1], 60);
+        koch(lev-1, dist);
+    }
+};
+let k = (l,d) => {
+    let a = Math.pow(3,l)*d;
+    let v = [0,0,1];
+    
+    T.penup();
+    T.forward(-a*Math.sqrt(3)/6);
+    T.turn(v,90);
+    T.forward(a/2);
+    T.turn(v,-90-30);
+    
+    T.pendown();
+    koch(l,d);
+    T.turn(v,-120);
+    koch(l,d);
+    T.turn(v,-120);
+    koch(l,d);
+    
+    T.penup();
+    T.forward(-a/2);
+    T.turn(v,-90);
+    T.forward(a*Math.sqrt(3)/6);
+};
+
+T.penup();
+T.turn([0,1,0],90);
+T.forward(20);
+T.turn([0,1,0],-90);
+
+for (let i=0 ; i<20 ; ++i)
+{
+    k(4,0.5);
+    T.penup();
+    T.turn([0,1,0],-90);
+    T.forward(2);
+    T.turn([0,1,0],90);
+}`
 ];
 let P = null;
 let P_dom = null;
@@ -111,11 +232,10 @@ class aeroplane {
     
     addpath () {
         this.path.push(this.oldpos[0], this.oldpos[1], this.oldpos[2]);
-        this.path.push(0.243161, 0.887797, 1.000000);
-        this.path.push(1,0,0);
+        this.path.push(lcol[0], lcol[1], lcol[2]);
+        
         this.path.push(this.pos[0], this.pos[1], this.pos[2]);
-        this.path.push(0.243161, 0.887797, 1.000000);
-        this.path.push(1,0,0);
+        this.path.push(lcol[0], lcol[1], lcol[2]);
     }
     makepath () {
         if (this.pathbuf != null) { gl.deleteBuffer(this.pathbuf); }
@@ -143,6 +263,19 @@ class aeroplane {
         let a2 = a * (Math.PI / 180) / 2;
         let q  = [Math.cos(a2), t[0]*Math.sin(a2), t[1]*Math.sin(a2), t[2]*Math.sin(a2)];
         this.orient = quat.mul(q, this.orient);
+    }
+    
+    setcol(r,g,b)
+    {
+        lcol[0] = r;
+        lcol[1] = g;
+        lcol[2] = b;
+    }
+    background(r,g,b)
+    {
+        bcol[0] = r;
+        bcol[1] = g;
+        bcol[2] = b;
     }
 }
 let T = null;
@@ -180,16 +313,8 @@ let fetch_objfile = function (objfile)
         {
             if (xhr.readyState === 4 && xhr.status === 200)
             {
-                let model_resp = obj.create(xhr.responseText, 0.5, true, [0.243161, 0.887797, 1.000000]);
+                let model_resp = obj.create(xhr.responseText, 0.5, true, lcol);
                 //console.log("M", model_resp);
-                
-                if (model_resp.tris.length > 0)
-                {
-                    T.model.tlen = model_resp.tris.length;
-                    T.model.tbuf = gl.createBuffer();
-                    gl.bindBuffer(gl.ARRAY_BUFFER, T.model.tbuf);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_resp.tris), gl.STATIC_DRAW);
-                }
                 
                 if (model_resp.lines.length > 0)
                 {
@@ -236,10 +361,6 @@ let draw = function ()
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
     
-    gl.uniform1i (glprog.colmode, colmode);
-    gl.uniform3fv(glprog.defcol,  tcol);
-    gl.uniform1f (glprog.alpha,   alpha);
-    
     if (T.showplane)
     {
         let pltr = m4.init();
@@ -249,16 +370,17 @@ let draw = function ()
         
         gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(viewmat, modlmat), pltr));
         
+        gl.uniform1i (glprog.colmode, 1);
+        gl.uniform3fv(glprog.defcol,  lcol);
+        gl.uniform1f (glprog.alpha,   alpha);
         
-        if (T.model.tlen > 0)
+        if (T.model.llen > 0)
         {
             gl.bindBuffer(gl.ARRAY_BUFFER, T.model.lbuf);
-            gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
-            gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
-            gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
-            gl.uniform1i(glprog.shaded, 0);
+            gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 6*4, 0*4);
+            gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 6*4, 3*4);
             
-            gl.drawArrays(gl.LINES, 0, T.model.llen / 9);
+            gl.drawArrays(gl.LINES, 0, T.model.llen / 6);
         }
     }
     
@@ -266,13 +388,15 @@ let draw = function ()
     {
         gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
         
+        gl.uniform1i (glprog.colmode, colmode);
+        gl.uniform3fv(glprog.defcol,  lcol);
+        gl.uniform1f (glprog.alpha,   alpha);
+        
         gl.bindBuffer(gl.ARRAY_BUFFER, T.pathbuf);
-        gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
-        gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
-        gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
-        gl.uniform1i(glprog.shaded, 0);
+        gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 6*4, 0*4);
+        gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 6*4, 3*4);
             
-        gl.drawArrays(gl.LINES, 0, T.path.length / 9);
+        gl.drawArrays(gl.LINES, 0, T.path.length / 6);
     }
 };
 
@@ -340,6 +464,11 @@ let handle_key_down = function (event)
     {
         proj += 1;
         if (proj > 2) { proj = 0; }
+        draw();
+    }
+    else if (event.key === "p" || event.key === "P")
+    {
+        T.showplane = !T.showplane;
         draw();
     }
     else if (event.key === "s" || event.key === "S")
@@ -436,15 +565,12 @@ let gpu_init = function (canvas_id)
     gl.enableVertexAttribArray(glprog.pos);
     glprog.col  = gl.getAttribLocation(glprog.bin, "col");
     gl.enableVertexAttribArray(glprog.col);
-    glprog.norm = gl.getAttribLocation(glprog.bin, "norm");
-    gl.enableVertexAttribArray(glprog.norm);
     
     glprog.p       = gl.getUniformLocation(glprog.bin, "p");
     glprog.vm      = gl.getUniformLocation(glprog.bin, "vm");
     glprog.proj    = gl.getUniformLocation(glprog.bin, "proj");
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
     glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
-    glprog.shaded  = gl.getUniformLocation(glprog.bin, "shaded");
     glprog.colmode = gl.getUniformLocation(glprog.bin, "colmode");
     glprog.defcol  = gl.getUniformLocation(glprog.bin, "defcol");
 }
@@ -461,12 +587,12 @@ let init = function ()
     canvas.addEventListener("mousemove", handle_mouse_move);
     canvas.addEventListener("wheel", handle_wheel);
     
-    alpha_dom = document.getElementById('alpha');
-    let opts = alpha_dom.options;
-    for (let i=0 ; i<opts.length ; ++i)
-    {
-        if (opts[i].value == alpha) { opts.selectedIndex = i; }
-    }
+    alpha_dom = document.getElementById('alphain');
+    bcol_dom  = document.getElementById('bcolin');
+    lcol_dom  = document.getElementById('lcolin');
+    alpha_dom.value = alpha;
+    bcol_dom.value  = "" + bcol[0] + ", " + bcol[1] + ", " + bcol[2];
+    lcol_dom.value  = "" + lcol[0] + ", " + lcol[1] + ", " + lcol[2];
     
     pres_dom = document.getElementById('presin');
     pres_dom.options.selectedIndex = 0;

@@ -43,7 +43,7 @@ let create = function (obj_str, scale, y_up, col)
         else if (tokens[0] === 'f' || tokens[0] === 'F')
         {
             if (tokens.length < 4) { console.log("ERROR: OBJ file face with two or less indices"); continue; }
-            
+            /*
             for (let end = 3 ; end < tokens.length ; ++end)
             {
                 let v_vt_vn = vind(tokens[1]);
@@ -83,7 +83,7 @@ let create = function (obj_str, scale, y_up, col)
                     vv = (v0 < 0) ? v.length + v0 : v0-1;
                     f.push(vn[vv][0], vn[vv][1], vn[vv][2]);
             }
-            
+            */
             for (let end = 2 ; end < tokens.length ; ++end)
             {
                 let v_vt_vn = vind(tokens[end-1]);
@@ -93,9 +93,9 @@ let create = function (obj_str, scale, y_up, col)
                     l.push(v[vv][0], v[vv][1], v[vv][2]);
                     l.push(col[0], col[1], col[2]);
                 
-                    v0 = parseInt( v_vt_vn[2] );
-                    vv = (v0 < 0) ? v.length + v0 : v0-1;
-                    l.push(vn[vv][0], vn[vv][1], vn[vv][2]);
+                    //v0 = parseInt( v_vt_vn[2] );
+                    //vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    //l.push(vn[vv][0], vn[vv][1], vn[vv][2]);
                 
                 v_vt_vn = vind(tokens[end]);
                 
@@ -104,9 +104,9 @@ let create = function (obj_str, scale, y_up, col)
                     l.push(v[vv][0], v[vv][1], v[vv][2]);
                     l.push(col[0], col[1], col[2]);
                 
-                    v0 = parseInt( v_vt_vn[2] );
-                    vv = (v0 < 0) ? v.length + v0 : v0-1;
-                    l.push(vn[vv][0], vn[vv][1], vn[vv][2]);
+                    //v0 = parseInt( v_vt_vn[2] );
+                    //vv = (v0 < 0) ? v.length + v0 : v0-1;
+                    //l.push(vn[vv][0], vn[vv][1], vn[vv][2]);
             }
         }
         /*
