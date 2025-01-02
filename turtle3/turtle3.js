@@ -59,6 +59,32 @@ circ(3);
 circ(4);
 circ(6);`,
 
+    `\
+let circ = (a) => {
+    for (let i=0 ; i<a; ++i)
+    {
+        T.pen ? T.penup() : T.pendown(); 
+        T.forward(1);
+        T.turn([0,0,1],360/a);
+    }
+};
+let c = (a) => {
+    T.penup();
+    T.turn([0,0,1],-90);
+    T.forward(1/(2*Math.sin(Math.PI/a)));
+    T.turn([0,0,1],90);
+    circ(a);
+    T.penup();
+    T.turn([0,0,1],90);
+    T.forward(1/(2*Math.sin(Math.PI/a)));
+    T.turn([0,0,1],-90);
+}
+
+c(30);
+c(40);
+c(50);
+c(60);`,
+
 
     `\
 let circ = (a) => {
