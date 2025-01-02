@@ -581,6 +581,21 @@ let resize = function ()
     gl.viewport(0, 0, canvas.width, canvas.height);
 };
 
+let handletab = function (ta_dom)
+{
+    ta_dom.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab')
+        {
+            e.preventDefault();
+            let str = ta_dom.value;
+            let start = ta_dom.selectionStart;
+            let end   = ta_dom.selectionEnd;
+            ta_dom.value = str.substring(0, start) + "    " + str.substring(end);
+            ta_dom.selectionEnd = end-(end-start)+4;
+        }
+    });
+};
+
 let gpu_init = function (canvas_id)
 {
     gl = gl_init.get_webgl2_context(canvas_id, {preserveDrawingBuffer: true, antialias: false});
@@ -599,7 +614,7 @@ let gpu_init = function (canvas_id)
     glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
     glprog.colmode = gl.getUniformLocation(glprog.bin, "colmode");
     glprog.defcol  = gl.getUniformLocation(glprog.bin, "defcol");
-}
+};
 
 let init = function ()
 {
@@ -623,6 +638,7 @@ let init = function ()
     pres_dom = document.getElementById('presin');
     pres_dom.options.selectedIndex = 0;
     P_dom = document.getElementById('progin');
+    handletab(P_dom);
     P_dom.value = progs[0];
     set_prog();
     
