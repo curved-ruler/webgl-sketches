@@ -497,6 +497,11 @@ let handle_key_down = function (event)
         T.showplane = !T.showplane;
         draw();
     }
+    else if (event.key === "r" || event.key === "R")
+    {
+        run_prog();
+        draw();
+    }
     else if (event.key === "s" || event.key === "S")
     {
         save_obj();
@@ -511,7 +516,7 @@ let handle_key_down = function (event)
         axis     = 0;
         rotation = 0;
         rotdir   = true;
-        scale    = 1;
+        scale    = 2;
         draw();
     }
 };
@@ -535,8 +540,9 @@ let set_prog = function ()
     catch (err)
     {
         errorlog(err.message);
-        return;
+        return false;
     }
+    return true;
 };
 let set_pres = function (strval)
 {
@@ -546,7 +552,9 @@ let set_pres = function (strval)
 };
 let run_prog = function ()
 {
-    set_prog();
+    let succ = set_prog();
+    if (!succ) return;
+    
     try
     {
         P(T);
