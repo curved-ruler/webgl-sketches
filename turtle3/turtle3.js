@@ -294,7 +294,7 @@ class aeroplane {
     {
         let tn = v3.normalize(t);
         let a2 = a * (Math.PI / 180) / 2;
-        let q  = [Math.cos(a2), t[0]*Math.sin(a2), t[1]*Math.sin(a2), t[2]*Math.sin(a2)];
+        let q  = [Math.cos(a2), tn[0]*Math.sin(a2), tn[1]*Math.sin(a2), tn[2]*Math.sin(a2)];
         this.orient = quat.mul(q, this.orient);
     }
     
