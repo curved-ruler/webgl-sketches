@@ -236,7 +236,14 @@ for (let i=0 ; i<20 ; ++i)
     T.turn([0,1,0],-90);
     T.forward(2);
     T.turn([0,1,0],90);
-}`
+}`,
+
+
+    `\
+T.forward(1);
+let r = Math.random();
+let v = r<0.33?[0,0,1]:r<0.66?[0,1,0]:[1,0,0];
+T.turn(v,(Math.random()<0.5)?90:-90);`
 ];
 let P = null;
 let P_dom = null;
