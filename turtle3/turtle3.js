@@ -513,6 +513,34 @@ let handle_key_down = function (event)
     {
         save_obj();
     }
+    else if (event.key === "w" || event.key === "W")
+    {
+        camera.pos   = [80, 80, 80];
+        camera.look  = v3.normalize([-1, -1, -1]);
+        camera.up    = v3.normalize([-1, -1,  2]);
+        draw();
+    }
+    else if (event.key === "a" || event.key === "A")
+    {
+        camera.pos   = [-100, 0, 0];
+        camera.look  = [ 1, 0, 0];
+        camera.up    = [ 0, 0, 1];
+        draw();
+    }
+    else if (event.key === "x" || event.key === "X")
+    {
+        camera.pos   = [ 0,100, 0];
+        camera.look  = [ 0,-1, 0];
+        camera.up    = [ 0, 0, 1];
+        draw();
+    }
+    else if (event.key === "d" || event.key === "D")
+    {
+        camera.pos   = [ 0, 0,100];
+        camera.look  = [ 0, 0,-1];
+        camera.up    = [ 1, 0, 0];
+        draw();
+    }
     else if (event.key === "F8")
     {
         let image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
