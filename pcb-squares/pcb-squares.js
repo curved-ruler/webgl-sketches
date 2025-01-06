@@ -102,7 +102,12 @@ for (let i=0 ; i<10 ; ++i)
 }
 
 return ret[1];
-`
+`,
+    `\
+// h - horizontal
+let i = Math.floor(Math.abs(y)) % 5;
+let j = Math.floor(Math.abs(x)) % 5;
+return h ? j===0 : i===0;`
 ];
 
 let err = function (str)
@@ -292,12 +297,12 @@ let pcalc_lines = function ()
     {
         if (lines[i].N < 0) continue;
         
-        //let horizontal = (lines[i].pos[0] === lines[i].pos[2]) ? true : false;
+        let horizontal = (lines[i].pos[0] === lines[i].pos[2]) ? true : false;
         //let S = Math.sin( lines[i].pos[0]*5*dtor ) + Math.cos( lines[i].pos[1] * 5*dtor );
         let x = (lines[i].pos[0] + lines[i].pos[2]) / 2;
         let y = (lines[i].pos[1] + lines[i].pos[3]) / 2;
         
-        let s = P(x, y);
+        let s = P(x, y, horizontal);
         
         lines[i].N = Math.floor( s );
     }
@@ -427,7 +432,7 @@ let set_p = function ()
     let Pstr = P_dom.value;
     try
     {
-        P = Function('x', 'y', Pstr);
+        P = Function('x', 'y', 'h', Pstr);
     }
     catch (e)
     {
