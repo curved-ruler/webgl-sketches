@@ -14,6 +14,7 @@ let pos       = { x:0.0,  y:0.0 };
 let mouse_pos = { x:0.0,  y:0.0 };
 let mouse_dom = { x:null, y:null };
 let mousep_dom = null;
+
 let tr = [1,0,1,0];
 let scale = 40.0;
 let grabbed  = 0;
@@ -21,6 +22,7 @@ let mouse_param = false;
 let screen_quad_buffer = null;
 let start_func = "";
 let menu_hidden = false;
+let presets_dom = null;
 
 
 
@@ -172,6 +174,8 @@ let init = function ()
     mouse_dom.x = document.getElementById('mousex');
     mouse_dom.y = document.getElementById('mousey');
     mousep_dom  = document.getElementById('mousep_chk');
+    presets_dom = document.getElementById('presin');
+    presets_dom.selectedIndex = 0;
     
     fta = document.getElementById('func');
     
@@ -197,6 +201,7 @@ let setf  = function ()
 let preset = function (opt)
 {
     start_func = S[opt];
+    presets_dom.blur();
     initf();
     create_shader();
     draw();

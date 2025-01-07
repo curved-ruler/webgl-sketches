@@ -860,22 +860,20 @@ let set_ui = function ()
     
     nAdom.value = A_noise;
     nLdom.value = L_noise;
-    let opts = nOdom.options;
-    for (let i=0 ; i<opts.length ; ++i)
+    
+    for (let i=0 ; i<nOdom.options.length ; ++i)
     {
-        if (opts[i].value == added_noise) { opts.selectedIndex = i; }
+        if (nOdom.options[i].value == added_noise) { nOdom.selectedIndex = i; }
     }
     
-    opts = alpha_dom.options;
-    for (let i=0 ; i<opts.length ; ++i)
+    for (let i=0 ; i<alpha_dom.options.length ; ++i)
     {
-        if (opts[i].value == alpha) { opts.selectedIndex = i; }
+        if (alpha_dom.options[i].value == alpha) { alpha_dom.selectedIndex = i; }
     }
     
-    opts = colsch_dom.options;
-    for (let i=0 ; i<opts.length ; ++i)
+    for (let i=0 ; i<colsch_dom.options.length ; ++i)
     {
-        if (opts[i].value == colscheme) { opts.selectedIndex = i; }
+        if (colsch_dom.options[i].value == colscheme) { colsch_dom.selectedIndex = i; }
     }
 };
 
