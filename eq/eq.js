@@ -132,6 +132,21 @@ let handle_key_down = function (event)
     }
 };
 
+let handletab = function (ta_dom)
+{
+    ta_dom.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab')
+        {
+            e.preventDefault();
+            let str = ta_dom.value;
+            let start = ta_dom.selectionStart;
+            let end   = ta_dom.selectionEnd;
+            ta_dom.value = str.substring(0, start) + "    " + str.substring(end);
+            ta_dom.selectionEnd = end-(end-start)+4;
+        }
+    });
+};
+
 let resize = function ()
 {
     if (!canvas || !gl) return;
@@ -178,6 +193,7 @@ let init = function ()
     presets_dom.selectedIndex = 0;
     
     fta = document.getElementById('func');
+    handletab(fta);
     
     resize();
     make_quad();
