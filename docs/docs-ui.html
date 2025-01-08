@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html>
+
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="pragma" content="no-cache"/>
+    <link rel="stylesheet" type="text/css" href="../index.css"/>
+    <title>Gorbevonalzo</title>
+  </head>
+  
+  <body class="big">
+  
+    <div class="container">
+      <span class="h">UI</span>
+      
+      <br/>
+      <br/>
+      <div class="txtleft">
+        Usually, the canvas is full screen, keeping this on every resize in JS.
+        
+        <div class="border vsp">
+          <div class="snippet-title"><span class="pad">&nbsp;</span><a href="https://github.com/curved-ruler/webgl-sketches/blob/main/eq/eq.js">eq.js</a></div>
+          <pre class="linen">135<br/>136<br/>137<br/>138<br/>139<br/>140<br/>&nbsp;<br/>143<br/>144<br/>&nbsp;<br/>236</pre>
+          <pre class="code">
+let resize = function ()
+{
+    if (!canvas || !gl) return;
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    gl.viewport(0, 0, canvas.width, canvas.height);
+};
+
+window.addEventListener("resize", function() { resize(); draw(); });</pre>
+          <div style="clear:both"></div>
+        </div>
+        
+        The canvas is <pre>position: absolute</pre> placed, and so is the menu over it.
+        Pressing M key shows or hides the menu. This is a problem for inputs on the menu
+        accepting the M character. Ctrl+M is the mute shortcut for browsers, so I didn't use it.
+        Instead, in the keypress handler function, I checked if any textareas has the focus,
+        the handler exits without doing anything.
+        
+        <br/><br/>
+        
+        TextAreas are usually for code, and pressing the Tab key in browsers just transfers focus.
+        To prevent this, there is no magic switch, I had to hardcode Tab key handling.
+        
+        <div class="border vsp">
+          <div class="snippet-title"><span class="pad">&nbsp;</span><a href="https://github.com/curved-ruler/webgl-sketches/blob/main/turtle3/turtle3.js">turtle3.js</a></div>
+          <pre class="linen">627<br/>628<br/>629<br/>630<br/>631<br/>632<br/>633<br/>634<br/>635<br/>636<br/>637<br/>638<br/>639<br/>640</pre>
+          <pre class="code">
+let handletab = function (ta_dom)
+{
+    ta_dom.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab')
+        {
+            e.preventDefault();
+            let str = ta_dom.value;
+            let start = ta_dom.selectionStart;
+            let end   = ta_dom.selectionEnd;
+            ta_dom.value = str.substring(0, start) + "    " + str.substring(end);
+            ta_dom.selectionEnd = end-(end-start)+4;
+        }
+    });
+};</pre>
+          <div style="clear:both"></div>
+        </div>
+        
+        Inputs either have immediate effect when the onchange fires, but sometimes,
+        usually on bigger computation need, several inputs have a "SET" button. It is a bit
+        confusing, I plan to indicate this with background color.
+        
+        <br/><br/>
+        
+        Input variables, and their DOM variables are usually in the global scope. There is an exception,
+        in the <a href="https://github.com/curved-ruler/webgl-sketches/tree/main/grid">Grid</a> program. There were
+        so many variables, I created a class for them, in
+        <a href="https://github.com/curved-ruler/webgl-sketches/blob/main/grid/grid_ui.js">grid-ui.js</a>.
+        
+      </div>
+    </div>
+    
+  </body>
+</html>
+ 

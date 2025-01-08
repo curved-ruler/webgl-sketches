@@ -15,6 +15,9 @@ body {
   
   text-align: center;
 }
+.big {
+  font-size:   17px;
+}
 
 
 span.h {
@@ -37,10 +40,10 @@ span.hh {
 
 div.container {
   margin:  70px auto;
-  padding: 40px 10px;
+  padding: 40px;
   
   text-align:    center;
-  width:         980px;
+  width:         920px;
   border:  solid 1px #555;
   background-color: rgb(30,30,30);
 }
@@ -71,9 +74,32 @@ div.e-title {
 div.e-link {
 }
 
-div.text {
-  
+.border {
+  border:  solid 1px #FFF;
 }
+.vsp {
+  margin: 15px 0px;
+}
+
+div.snippet-title {
+  padding: 5px 0px;
+  width: 100%;
+  background-color: rgb(50,50,50);
+}
+span.pad {
+  padding-left: 20px;
+}
+pre.code {
+  margin: 0px;
+}
+pre.linen {
+  margin:  0px;
+  padding: 0px 10px;
+  float: left;
+  text-align: right;
+  background-color: rgb(50,50,50);
+}
+
 .center {
   margin-left:  auto;
   margin-right: auto;
