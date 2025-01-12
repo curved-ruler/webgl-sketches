@@ -243,7 +243,34 @@ for (let i=0 ; i<20 ; ++i)
 T.forward(1);
 let r = Math.random();
 let v = r<0.33?[0,0,1]:r<0.66?[0,1,0]:[1,0,0];
-T.turn(v,(Math.random()<0.5)?90:-90);`
+T.turn(v,(Math.random()<0.5)?90:-90);`,
+
+
+    `\
+let regn = (n,d) => {
+    T.penup();
+    T.forward(-d/(2*Math.sin(Math.PI/n)));
+    T.turn([0,0,1],90*(n-2)/n);
+    T.pendown();
+    for (let i=0 ; i<n ; ++i)
+    {
+        T.forward(d);
+        T.turn([0,0,1],-360/n);
+    }
+    T.penup();
+    T.turn([0,0,1],-90*(n-2)/n);
+    T.forward(d/(2*Math.sin(Math.PI/n)));
+};
+
+let d = 3;
+let n = 8;
+let m = Math.sqrt(2/(1-Math.cos(Math.PI*(n-2)/n)));
+for (let i=0 ; i<20 ; ++i)
+{
+    regn(n,d);
+    T.turn([0,0,1],360/(2*n));
+    d = d * m;
+}`
 ];
 let P = null;
 let P_dom = null;
