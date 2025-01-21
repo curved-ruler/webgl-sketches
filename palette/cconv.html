@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script src="cconv.js" type="module"></script>
+        <style>
+body {
+  font-family: "Courier New", monospace;
+  font-size:   20px;
+}
+.col {
+  width:  50px;
+  height: 30px;
+  background-color: #000;
+  display: inline-block;
+}
+.text {
+  white-space: pre;
+  line-height: 0.1;
+}
+.arrow-down {
+  width: 0; 
+  height: 0; 
+  border-left:  10px solid transparent;
+  border-right: 10px solid transparent;
+  
+  border-top: 10px solid #000;
+}
+        </style>
+        <title>Color Conversion Tester</title>
+    </head>
+    <body>
+      <div class="maincont">
+        <div id="c0div">
+          <span class="arrow-down"></span>
+          <span id="c0r"><input type="range" min="0" max="255" value="0" class="slider" onchange="set_r(this.value)"></span>
+          <span id="c0g"><input type="range" min="0" max="255" value="0" class="slider" onchange="set_g(this.value)"></span>
+          <span id="c0b"><input type="range" min="0" max="255" value="0" class="slider" onchange="set_b(this.value)"></span>
+        </div>
+        
+        <div class="text">
+ <span id="rgb0c" class="col"></span><span>&nbsp;&nbsp;RGB:&nbsp;&nbsp;</span><span id="rgb0">0, 0, 0</span><br/>
+ <span id="hsv1c" class="col"></span><span>->HSV:&nbsp;&nbsp;</span><span id="hsv1">0, 0, 0</span><br/>
+ <span id="rgb2c" class="col"></span><span>->RGB:&nbsp;&nbsp;</span><span id="rgb2">0, 0, 0</span><br/>
+ <span id="hsv3c" class="col"></span><span>->HSV:&nbsp;&nbsp;</span><span id="hsv3">0, 0, 0</span><br/>
+ <span id="hsl4c" class="col"></span><span>->HSL:&nbsp;&nbsp;</span><span id="hsl4">0, 0, 0</span><br/>
+ <span id="hsv5c" class="col"></span><span>->HSV:&nbsp;&nbsp;</span><span id="hsv5">0, 0, 0</span><br/>
+ <span id="rgb6c" class="col"></span><span>->RGB:&nbsp;&nbsp;</span><span id="rgb6">0, 0, 0</span><br/>
+ <span id="hex7c" class="col"></span><span>->HEX:&nbsp;&nbsp;</span><span id="hex7">0, 0, 0</span><br/>
+ <span id="rgb8c" class="col"></span><span>->RGB:&nbsp;&nbsp;</span><span id="rgb8">0, 0, 0</span>
+        </div>
+      </div>
+    </body>
+</html>
+ 
