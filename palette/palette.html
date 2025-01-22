@@ -49,6 +49,9 @@
 .hidden {
   display: none;
 }
+.clicky {
+  cursor: pointer;
+}
         </style>
         <title>Color Picker</title>
     </head>
@@ -59,9 +62,11 @@
         <div id="menu">
           <div id="wheel" class="wheel"></div>
           <div id="colsdiv">
-            <span id="plus" onclick="addcolor()">+</span> M S V
+            <span id="plus" class="clicky" onclick="addcolor()">+(addcol)</span> M S V G
             <br/>
-            <span>HSV</span> PIX: <input id="ipix" type="text" size="4"/> VN: <input id="ivn" type="text" size="7"/>
+            PIX: <input id="ipix" type="text" size="4"/> VN: <input id="ivn" type="text" size="7"/>
+            <br/>
+            <span>HSV</span>
           </div>
         </div>
         </div>

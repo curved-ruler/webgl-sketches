@@ -68,6 +68,9 @@ let backgr = function (id)
     let hsl3 = cconv.readable(cconv.hsv2hsl([ colshsv[id*3], colshsv[id*3+1], 1 ]), 360, 100, 100);
     document.getElementById("s"+id).style.background = `linear-gradient(to right, hsl(${hsl0[0]} ${hsl0[1]} ${hsl0[2]}), hsl(${hsl1[0]} ${hsl1[1]} ${hsl1[2]}))`;
     document.getElementById("v"+id).style.background = `linear-gradient(to right, hsl(${hsl2[0]} ${hsl2[1]} ${hsl2[2]}), hsl(${hsl3[0]} ${hsl3[1]} ${hsl3[2]}))`;
+    
+    let hsl = cconv.hsv2hsl([ colshsv[id*3], colshsv[id*3+1], colshsv[id*3+2] ]);
+    cols[id].style.backgroundColor = `hsl(${hsl[0]*360}, ${hsl[1]*100}%, ${hsl[2]*100}%)`;
 };
 
 let delcolor = function (node)
@@ -106,7 +109,7 @@ let addcolor = function ()
   <span id="h${id}" class="wheel"><input type="range" min="0" max="360" value="90" onchange="seth(this)"></span>
   <span id="s${id}"><input type="range" min="0" max="100" value="90" onchange="sets(this)"></span>
   <span id="v${id}"><input type="range" min="0" max="100" value="90" onchange="setv(this)"></span>
-  <span onclick="delcolor(this)" style="background:#323232;">🗑</span>
+  <span onclick="delcolor(this)" style="background:#323232;" class="clicky">🗑</span>
 `;
     
     const div   = document.createElement("div");
@@ -118,10 +121,30 @@ let addcolor = function ()
     cols.push(div);
     colshsv.push(90/360, 0.9, 0.9);
     
-    let hsl = cconv.hsv2hsl([90/360, 0.9, 0.9]);
-    cols[i].style.backgroundColor = `hsl(${hsl[0]*360}, ${hsl[1]*100}%, ${hsl[2]*100}%)`;
-    
     backgr(i);
+    draw();
+};
+
+let clamp = function (x, min, max)
+{
+    if (x < min) return min;
+    if (x > max) return max;
+    return x;
+};
+let generate = function ()
+{
+    let h = Math.random();
+    for (let i=0 ; i<cols.length ; ++i)
+    {
+        colshsv[i*3]   = clamp(h + Math.random()*0.1, 0, 1);
+        colshsv[i*3+1] = Math.random();
+        colshsv[i*3+2] = Math.random();
+        
+        document.getElementById("h" + i).children[0].value = Math.floor(colshsv[i*3+0]*360);
+        document.getElementById("s" + i).children[0].value = Math.floor(colshsv[i*3+1]*100);
+        document.getElementById("v" + i).children[0].value = Math.floor(colshsv[i*3+2]*100);
+        backgr(i);
+    }
     draw();
 };
 
@@ -216,6 +239,10 @@ let handle_key_down = function (event)
     else if (event.key === "s" || event.key === "S")
     {
         save_pal();
+    }
+    else if (event.key === "g" || event.key === "G")
+    {
+        generate();
     }
     else if (event.key === "+" )
     {
