@@ -270,7 +270,65 @@ for (let i=0 ; i<20 ; ++i)
     regn(n,d);
     T.turn([0,0,1],360/(2*n));
     d = d * m;
-}`
+}`,
+
+
+    `\
+let cube = (d) => {
+    T.penup();
+    T.forward(d/2);
+    T.pitch(-90);
+    T.forward(d/2);
+    T.yaw(90);
+    T.forward(d/2);
+    
+    T.pendown();
+    for (let i=0 ; i<4 ; ++i)
+    {
+        T.pitch(-90);
+        T.forward(d);
+    }
+    
+    T.yaw(90);
+    T.forward(d);
+    T.yaw(90);
+    for (let i=0 ; i<4 ; ++i)
+    {
+        T.forward(d);
+        T.pitch(-90);
+    }
+    
+    T.penup();
+    T.forward(d);
+    T.yaw(90);
+    T.pendown();
+    T.forward(d);
+    
+    T.penup();
+    T.pitch(-90);
+    T.forward(d);
+    T.pendown();
+    T.pitch(-90);
+    T.forward(d);
+    
+    T.penup();
+    T.yaw(90);
+    T.forward(d);
+    T.pendown();
+    T.yaw(90);
+    T.forward(d);
+    
+    T.penup();
+    T.yaw(90);
+    T.forward(d/2);
+    T.yaw(90);
+    T.forward(d/2);
+    T.pitch(-90);
+    T.forward(d/2);
+};
+
+cube(10);
+`
 ];
 let P = null;
 let P_dom = null;
@@ -317,12 +375,30 @@ class aeroplane {
         this.oldpos[1] = this.pos[1];
         this.oldpos[2] = this.pos[2];
     }
+    
     turn (t,a)
     {
         let tn = v3.normalize(t);
         let a2 = a * (Math.PI / 180) / 2;
         let q  = [Math.cos(a2), tn[0]*Math.sin(a2), tn[1]*Math.sin(a2), tn[2]*Math.sin(a2)];
         this.orient = quat.mul(q, this.orient);
+    }
+    roll (a)
+    {
+        let look = tr.rot_q(this.orient, [1,0,0]);
+        this.turn(look, a);
+    }
+    pitch (a)
+    {
+        let look = tr.rot_q(this.orient, [1,0,0]);
+        let up   = tr.rot_q(this.orient, [0,0,1]);
+        let p    = v3.cross(look, up);
+        this.turn(p, a);
+    }
+    yaw (a)
+    {
+        let down  = tr.rot_q(this.orient, [0,0,-1]);
+        this.turn(down, a);
     }
     
     setcol(r,g,b)
@@ -374,7 +450,7 @@ let fetch_objfile = function (objfile)
             if (xhr.readyState === 4 && xhr.status === 200)
             {
                 let model_resp = obj.create(xhr.responseText, 0.5, true, lcol);
-                console.log("M", model_resp);
+                //console.log("M", model_resp);
                 
                 if (model_resp.length > 0)
                 {
