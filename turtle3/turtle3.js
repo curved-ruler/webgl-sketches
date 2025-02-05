@@ -272,10 +272,32 @@ for (let i=0 ; i<20 ; ++i)
 
 
     `\
-T.forward(1);
-let r = Math.random();
-let v = r<0.33?[0,0,1]:r<0.66?[0,1,0]:[1,0,0];
-T.turn(v,(Math.random()<0.5)?90:-90);`,
+for (let i=0 ; i<100 ; ++i)
+{
+    T.forward(1);
+    let r = Math.random();
+    let v = r<0.33?[0,0,1]:r<0.66?[0,1,0]:[1,0,0];
+    T.turn(v,(Math.random()<0.5)?90:-90);
+}`,
+
+
+    `\
+T.background(0,0,0);
+
+for (let j=0 ; j<1000 ; ++j)
+{
+  T.setcol(Math.random(), Math.random(),   Math.random());
+  for (let i=0 ; i<500 ; ++i)
+  {
+    let a = (Math.random()<0.5)?25.5:-25.5;
+    let r = Math.random();
+    r<0.33 ? T.roll(a)  :
+    r<0.66 ? T.pitch(a) :
+             T.yaw(a);
+
+    T.forward(1);
+  }
+}`,
 
 
     `\
