@@ -247,6 +247,25 @@ vec3 col(in float x, in float y)
 }
 `,
 
+mandel_mosaic: `\
+vec3 col(in float x, in float y)
+{
+    float d  = 0.02;
+    float sc = 2.5;
+    vec2 z0  = vec2(x,y);
+    vec2 c   = (floor(z0/d) + 0.5)*d;
+    vec2 z   = (z0 - floor(z0/d)*d)*(sc/d) - (sc/2.0);
+    int i = 0;
+    int n = 100;
+    for (i=0 ; i<n ; ++i)
+    {
+        z = vec2(z.x*z.x - z.y*z.y + c.x, 2.0*z.x*z.y + c.y);
+        if (length(z) > 2.0) break;
+    }
+    float t = fract(float(i) / float(n) * 1.95);
+    return hsv2rgb(vec3(0.1, 0.9, t));
+}`,
+
 julia : `\
 // Julia sets
 vec3 col(in float x, in float y)
