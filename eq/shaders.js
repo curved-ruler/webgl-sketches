@@ -161,6 +161,14 @@ vec3 col(in float x, in float y)
 }
 `,
 
+eq02b : `\
+vec3 col(in float x, in float y)
+{
+    float t = sin(x*x)+sin(y*y)+mouse.x;
+    t = fract(t);
+    return hsv2rgb(vec3(0.5,t,t));
+}`,
+
 groovy_a : `\
 vec3 col(in float x, in float y)
 {
