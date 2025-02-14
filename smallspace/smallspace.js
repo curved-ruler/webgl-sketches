@@ -14,8 +14,9 @@ let bcol  = [0, 0, 0];
 
 let menu_hidden = true;
 
-let proj    = 1;
-let projmat, modlmat, viewmat;
+let grabbed = 0;
+
+let proj = 1;
 
 
 let camera = {
@@ -26,24 +27,9 @@ let camera = {
     median: 30,
     far   : 100,
     fovy  : Math.PI / 3,
-    aspect: 1
-};
-
-
-let compute_matrices = function ()
-{
-    modlmat = m4.init();
+    aspect: 1,
     
-    viewmat = tr.view(camera);
-    projmat = m4.init();
-    if (proj === 0)
-    {
-        projmat = tr.axon(camera);
-    }
-    else if (proj === 1)
-    {
-        projmat = tr.persp(camera);
-    }
+    rot_k : 0.1
 };
 
 
@@ -72,10 +58,10 @@ let make_stars = function ()
 
 let draw = function ()
 {
-    draw_stars();
+    draw_stars(camera);
 };
 
-let draw_stars = function ()
+let draw_stars = function (cam)
 {
     if (!gl || !glp_stars.bin) return;
     
@@ -89,11 +75,14 @@ let draw_stars = function ()
     gl.clearColor(bcol[0], bcol[1], bcol[2], 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
-    compute_matrices();
+    let cam2 = structuredClone(cam);
+    cam2.pos = [0,0,0];
+    let pm = tr.persp(camera);
+    let vm = tr.view(camera);
     
-    gl.uniformMatrix4fv(glp_stars.p,  true, projmat);
-    gl.uniformMatrix4fv(glp_stars.vm, true, m4.mul(viewmat, modlmat));
-    gl.uniform1f(glp_stars.r, 2.0);
+    gl.uniformMatrix4fv(glp_stars.p,  true, pm);
+    gl.uniformMatrix4fv(glp_stars.vm, true, vm);
+    gl.uniform1f(glp_stars.r, 5.0);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, stars_buf);
     gl.vertexAttribPointer(glp_stars.pos,  2, gl.FLOAT, false, 4*4, 0*4);
@@ -103,6 +92,33 @@ let draw_stars = function ()
 };
 
 
+let handle_mouse_down = function (ev)
+{
+    grabbed = 1;
+};
+let handle_mouse_up = function (ev)
+{
+    grabbed = 0;
+};
+
+let handle_mouse_move = function (event)
+{
+    if (grabbed === 1)
+    {
+        let left = v3.cross(camera.up, camera.look);
+        let qx = tr.rot(camera.up, -camera.rot_k*event.movementX);
+        let qy = tr.rot(left,  camera.rot_k*event.movementY);
+        
+        camera.up   = v3.mmul(qy, camera.up);
+        camera.look = v3.mmul(qy, camera.look);
+        
+        camera.up   = v3.mmul(qx, camera.up);
+        camera.look = v3.mmul(qx, camera.look);
+        
+        //cam_constrain();
+        draw();
+    }
+};
 
 let handle_key_up = function (event)
 {
@@ -228,14 +244,14 @@ let init = function ()
     canvas = document.getElementById('canvas');
     gpu_init('canvas');
     
-    //canvas.addEventListener("mousedown", handle_mouse_down);
-    //canvas.addEventListener("mouseup",   handle_mouse_up);
-    //canvas.addEventListener("mousemove", handle_mouse_move);
+    canvas.addEventListener("mousedown", handle_mouse_down);
+    canvas.addEventListener("mouseup",   handle_mouse_up);
+    canvas.addEventListener("mousemove", handle_mouse_move);
     
     resize();
     
     make_stars();
-    draw_stars();
+    draw_stars(camera);
 };
 
 
