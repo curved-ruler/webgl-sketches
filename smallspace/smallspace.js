@@ -1,16 +1,10 @@
 
 import { gl_init }          from "./gl_init.js";
 import { m4, v3, quat, tr } from "./matvec.js";
+import { obj }              from "./obj.js";
 
 let gl = null;
 let canvas = null;
-
-let glp_stars = null;
-let stars_buf = null;
-let NS = 5000;
-let stars = [];
-
-let bcol  = [0, 0, 0];
 
 let menu_hidden = true;
 
@@ -25,13 +19,84 @@ let camera = {
     up    : [0, 0, 1],
     near  : 0.1,
     median: 30,
-    far   : 100,
+    far   : 1000,
     fovy  : Math.PI / 3,
     aspect: 1,
     
     rot_k : 0.1
 };
 
+let planet_models = [
+    "../input/obj1/oktaeder.obj",
+    "../input/obj1/kocka.obj",
+    "../input/obj1/dodekaeder.obj",
+    "../input/obj1/ikozaeder.obj",
+];
+let glp_planets = null;
+let NP = 20;
+let planets = [];
+let map_size = 100;
+
+let glp_stars = null;
+let stars_buf = null;
+let NS    = 10000;
+let stars = [];
+let bcol  = [0, 0, 0];
+
+
+
+let fetch_objfile = function (pl)
+{
+    let xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function()
+        {
+            if (xhr.readyState === 4 && xhr.status === 200)
+            {
+                let model_resp = obj.create(xhr.responseText, pl.scale, true, pl.col);
+                
+                if (model_resp.tris.length > 0)
+                {
+                    pl.tris = model_resp.tris;
+                    pl.tbuf = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, pl.tbuf);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_resp.tris), gl.STATIC_DRAW);
+                }
+                
+                if (model_resp.lines.length > 0)
+                {
+                    pl.lins = model_resp.lines;
+                    pl.lbuf = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, pl.lbuf);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_resp.lines), gl.STATIC_DRAW);
+                }
+                
+                draw();
+            }
+        }
+        xhr.open('GET', planet_models[pl.model], true);
+        xhr.send(null);
+};
+
+let make_planets = function ()
+{
+    planets = [];
+    
+    for (let i=0 ; i<NP ; i+=1)
+    {
+        planets.push({
+            model : Math.floor(Math.random() * planet_models.length),
+            tris  : [], tbuf : null,
+            lins  : [], lbuf : null,
+            pos   : [Math.random()*map_size - map_size/2,
+                     Math.random()*map_size - map_size/2,
+                     Math.random()*map_size - map_size/2],
+            col   : [Math.random(), Math.random(), Math.random()],
+            scale : Math.random()*0.05
+        });
+        
+        fetch_objfile(planets[i]);
+    }
+};
 
 let make_stars = function ()
 {
@@ -59,8 +124,53 @@ let make_stars = function ()
 let draw = function ()
 {
     draw_stars(camera);
+    
+    for (let i=0 ; i<planets.length ; i+=1)
+    {
+        draw_planet(planets[i]);
+    }
 };
 
+let draw_planet = function (pl)
+{
+    if (!gl || !glp_stars.bin) return;
+    
+    gl.useProgram(glp_planets.bin);
+    
+    //gl.enable(gl.CULL_FACE);
+    
+    gl.enable(gl.DEPTH_TEST);
+    gl.disable(gl.BLEND);
+    
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    
+    let pm   = tr.persp(camera);
+    let view = tr.view(camera);
+    let mod  = tr.translate(pl.pos);
+    let vm   = m4.mul(view, mod); 
+    
+    gl.uniformMatrix4fv(glp_planets.p,  true, pm);
+    gl.uniformMatrix4fv(glp_planets.vm, true, vm);
+    
+    if (pl.lins.length > 0)
+    {
+        gl.bindBuffer(gl.ARRAY_BUFFER, pl.lbuf);
+        gl.vertexAttribPointer(glp_planets.pos,  3, gl.FLOAT, false, 6*4, 0*4);
+        gl.vertexAttribPointer(glp_planets.col,  3, gl.FLOAT, false, 6*4, 3*4);
+        gl.drawArrays(gl.LINES, 0, pl.lins.length / 6);
+    }
+    if (pl.tris.length > 0)
+    {
+        gl.bindBuffer(gl.ARRAY_BUFFER, pl.tbuf);
+        gl.vertexAttribPointer(glp_planets.pos,  3, gl.FLOAT, false, 6*4, 0*4);
+        gl.vertexAttribPointer(glp_planets.col,  3, gl.FLOAT, false, 6*4, 3*4);
+        
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(1, 1);
+        gl.drawArrays(gl.TRIANGLES, 0, pl.tris.length / 6);
+        gl.disable(gl.POLYGON_OFFSET_FILL);
+    }
+};
 let draw_stars = function (cam)
 {
     if (!gl || !glp_stars.bin) return;
@@ -77,8 +187,8 @@ let draw_stars = function (cam)
     
     let cam2 = structuredClone(cam);
     cam2.pos = [0,0,0];
-    let pm = tr.persp(camera);
-    let vm = tr.view(camera);
+    let pm = tr.persp(cam2);
+    let vm = tr.view(cam2);
     
     gl.uniformMatrix4fv(glp_stars.p,  true, pm);
     gl.uniformMatrix4fv(glp_stars.vm, true, vm);
@@ -235,6 +345,42 @@ void main ()
     glp_stars.p  = gl.getUniformLocation(glp_stars.bin, "p");
     glp_stars.vm = gl.getUniformLocation(glp_stars.bin, "vm");
     glp_stars.r  = gl.getUniformLocation(glp_stars.bin, "r");
+    
+    
+    glp_planets = gl_init.create_glprog(gl, `\
+#version 300 es
+in      vec3  pos;
+in      vec3  col;
+
+uniform mat4  p;
+uniform mat4  vm;
+
+out vec3 fcol;
+
+void main ()
+{
+    gl_Position  = p * vm * vec4(pos, 1.0);
+    fcol = col;
+}`,
+    `\
+#version 300 es
+precision mediump float;
+in      vec3  fcol;
+out     vec4  fragcolor;
+
+void main ()
+{
+    fragcolor = vec4(fcol, 1.0);
+}
+`);
+    
+    glp_planets.pos  = gl.getAttribLocation(glp_planets.bin, "pos");
+    gl.enableVertexAttribArray(glp_planets.pos);
+    glp_planets.col  = gl.getAttribLocation(glp_planets.bin, "col");
+    gl.enableVertexAttribArray(glp_planets.col);
+    
+    glp_planets.p  = gl.getUniformLocation(glp_planets.bin, "p");
+    glp_planets.vm = gl.getUniformLocation(glp_planets.bin, "vm");
 }
 
 let init = function ()
@@ -251,7 +397,8 @@ let init = function ()
     resize();
     
     make_stars();
-    draw_stars(camera);
+    make_planets();
+    draw();
 };
 
 
