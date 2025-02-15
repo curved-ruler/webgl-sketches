@@ -251,6 +251,12 @@ let handle_key_down = function (event)
             document.getElementById("menu").className = "hidden";
         }
     }
+    else if (event.key === "r" || event.key === "R")
+    {
+        make_stars();
+        make_planets();
+        draw();
+    }
     else if (event.key === "i" || event.key === "I")
     {
     }
