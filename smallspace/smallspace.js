@@ -27,19 +27,20 @@ let camera = {
 };
 
 let planet_models = [
-    "../input/obj1/oktaeder.obj",
-    "../input/obj1/kocka.obj",
-    "../input/obj1/dodekaeder.obj",
-    "../input/obj1/ikozaeder.obj",
+    { path: "../input/obj1/oktaeder.obj",   tris : [], tbuf : null, lins : [], lbuf : null, },
+    { path: "../input/obj1/kocka.obj",      tris : [], tbuf : null, lins : [], lbuf : null, },
+    { path: "../input/obj1/dodekaeder.obj", tris : [], tbuf : null, lins : [], lbuf : null, },
+    { path: "../input/obj1/ikozaeder.obj",  tris : [], tbuf : null, lins : [], lbuf : null, }
 ];
 let glp_planets = null;
-let NP = 20;
+let NP = 50;
+let np_dom = null;
 let planets = [];
-let map_size = 100;
+let map_size = 300;
 
 let glp_stars = null;
 let stars_buf = null;
-let NS    = 10000;
+let NS    = 5000;
 let stars = [];
 let bcol  = [0, 0, 0];
 
@@ -52,7 +53,7 @@ let fetch_objfile = function (pl)
         {
             if (xhr.readyState === 4 && xhr.status === 200)
             {
-                let model_resp = obj.create(xhr.responseText, pl.scale, true, pl.col);
+                let model_resp = obj.create(xhr.responseText, 1, true);
                 
                 if (model_resp.tris.length > 0)
                 {
@@ -73,7 +74,7 @@ let fetch_objfile = function (pl)
                 draw();
             }
         }
-        xhr.open('GET', planet_models[pl.model], true);
+        xhr.open('GET', pl.path, true);
         xhr.send(null);
 };
 
@@ -85,16 +86,12 @@ let make_planets = function ()
     {
         planets.push({
             model : Math.floor(Math.random() * planet_models.length),
-            tris  : [], tbuf : null,
-            lins  : [], lbuf : null,
             pos   : [Math.random()*map_size - map_size/2,
                      Math.random()*map_size - map_size/2,
                      Math.random()*map_size - map_size/2],
             col   : [Math.random(), Math.random(), Math.random()],
-            scale : Math.random()*0.05
+            scale : Math.random()*0.1
         });
-        
-        fetch_objfile(planets[i]);
     }
 };
 
@@ -147,27 +144,28 @@ let draw_planet = function (pl)
     let pm   = tr.persp(camera);
     let view = tr.view(camera);
     let mod  = tr.translate(pl.pos);
-    let vm   = m4.mul(view, mod); 
+    let sc   = tr.scale(pl.scale);
+    let vm   = m4.mul(view, m4.mul(mod,sc)); 
     
     gl.uniformMatrix4fv(glp_planets.p,  true, pm);
     gl.uniformMatrix4fv(glp_planets.vm, true, vm);
     
-    if (pl.lins.length > 0)
+    if (planet_models[pl.model].lins.length > 0)
     {
-        gl.bindBuffer(gl.ARRAY_BUFFER, pl.lbuf);
-        gl.vertexAttribPointer(glp_planets.pos,  3, gl.FLOAT, false, 6*4, 0*4);
-        gl.vertexAttribPointer(glp_planets.col,  3, gl.FLOAT, false, 6*4, 3*4);
-        gl.drawArrays(gl.LINES, 0, pl.lins.length / 6);
+        gl.uniform3fv(glp_planets.col, [0,0,0]);
+        gl.bindBuffer(gl.ARRAY_BUFFER, planet_models[pl.model].lbuf);
+        gl.vertexAttribPointer(glp_planets.pos,  3, gl.FLOAT, false, 3*4, 0*4);
+        gl.drawArrays(gl.LINES, 0, planet_models[pl.model].lins.length / 3);
     }
-    if (pl.tris.length > 0)
+    if (planet_models[pl.model].tris.length > 0)
     {
-        gl.bindBuffer(gl.ARRAY_BUFFER, pl.tbuf);
-        gl.vertexAttribPointer(glp_planets.pos,  3, gl.FLOAT, false, 6*4, 0*4);
-        gl.vertexAttribPointer(glp_planets.col,  3, gl.FLOAT, false, 6*4, 3*4);
+        gl.uniform3fv(glp_planets.col, pl.col);
+        gl.bindBuffer(gl.ARRAY_BUFFER, planet_models[pl.model].tbuf);
+        gl.vertexAttribPointer(glp_planets.pos,  3, gl.FLOAT, false, 3*4, 0*4);
         
         gl.enable(gl.POLYGON_OFFSET_FILL);
         gl.polygonOffset(1, 1);
-        gl.drawArrays(gl.TRIANGLES, 0, pl.tris.length / 6);
+        gl.drawArrays(gl.TRIANGLES, 0, planet_models[pl.model].tris.length / 3);
         gl.disable(gl.POLYGON_OFFSET_FILL);
     }
 };
@@ -350,8 +348,8 @@ void main ()
     glp_planets = gl_init.create_glprog(gl, `\
 #version 300 es
 in      vec3  pos;
-in      vec3  col;
 
+uniform vec3  col;
 uniform mat4  p;
 uniform mat4  vm;
 
@@ -376,11 +374,10 @@ void main ()
     
     glp_planets.pos  = gl.getAttribLocation(glp_planets.bin, "pos");
     gl.enableVertexAttribArray(glp_planets.pos);
-    glp_planets.col  = gl.getAttribLocation(glp_planets.bin, "col");
-    gl.enableVertexAttribArray(glp_planets.col);
     
-    glp_planets.p  = gl.getUniformLocation(glp_planets.bin, "p");
-    glp_planets.vm = gl.getUniformLocation(glp_planets.bin, "vm");
+    glp_planets.p   = gl.getUniformLocation(glp_planets.bin, "p");
+    glp_planets.vm  = gl.getUniformLocation(glp_planets.bin, "vm");
+    glp_planets.col = gl.getUniformLocation(glp_planets.bin, "col");
 }
 
 let init = function ()
@@ -390,6 +387,9 @@ let init = function ()
     canvas = document.getElementById('canvas');
     gpu_init('canvas');
     
+    np_dom = document.getElementById('np_in');
+    np_dom.value = "" + NP;
+    
     canvas.addEventListener("mousedown", handle_mouse_down);
     canvas.addEventListener("mouseup",   handle_mouse_up);
     canvas.addEventListener("mousemove", handle_mouse_move);
@@ -397,12 +397,24 @@ let init = function ()
     resize();
     
     make_stars();
+    
+    for (let i=0 ; i<planet_models.length ; i+=1)
+    {
+        fetch_objfile(planet_models[i]);
+    }
     make_planets();
+    
     draw();
 };
 
-
-//window.set_alpha  = set_alpha;
+let set_np = function (strval)
+{
+    let iv = parseInt(strval);
+    NP = iv;
+    make_planets();
+    draw();
+}
+window.set_np  = set_np;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
