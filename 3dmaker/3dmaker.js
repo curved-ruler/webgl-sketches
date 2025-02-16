@@ -65,11 +65,22 @@ class aeroplane {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.pbuf);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.points), gl.DYNAMIC_DRAW);
         }
+        if (this.lines.length > 0)
+        {
+            if (this.lbuf != null) { gl.deleteBuffer(this.lbuf); }
+            this.lbuf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.lbuf);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.lines), gl.DYNAMIC_DRAW);
+        }
     }
     
     add_point (x,y,z) {
         this.points.push(x,y,z);
         this.points.push(lcol[0], lcol[1], lcol[2]);
+    }
+    add_line_point (x,y,z) {
+        this.lines.push(x,y,z);
+        this.lines.push(lcol[0], lcol[1], lcol[2]);
     }
     
     setcol(r,g,b)
@@ -139,22 +150,28 @@ let draw = function ()
     compute_matrices();
     
     gl.uniformMatrix4fv(glprog.p,  true, projmat);
+    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
+    gl.uniform1i (glprog.colmode, colmode);
+    gl.uniform3fv(glprog.defcol,  lcol);
+    gl.uniform1f (glprog.alpha,   alpha);
     
     if (T.points.length > 0)
     {
-        gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
-        
-        gl.uniform1i (glprog.colmode, colmode);
-        gl.uniform3fv(glprog.defcol,  lcol);
-        gl.uniform1f (glprog.alpha,   alpha);
-        
         gl.bindBuffer(gl.ARRAY_BUFFER, T.pbuf);
         gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 6*4, 0*4);
         gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 6*4, 3*4);
             
         gl.drawArrays(gl.POINTS, 0, T.points.length / 6);
+    }
+    if (T.lines.length > 0)
+    {
+        gl.bindBuffer(gl.ARRAY_BUFFER, T.lbuf);
+        gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 6*4, 0*4);
+        gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 6*4, 3*4);
+            
+        gl.drawArrays(gl.LINES, 0, T.lines.length / 6);
     }
 };
 
