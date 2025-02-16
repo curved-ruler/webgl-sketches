@@ -3,7 +3,6 @@ import { gl_init }          from "./gl_init.js";
 import { shaders }          from "./shaders.js";
 import { programs }         from "./programs.js";
 import { m4, v3, quat, tr } from "./matvec.js";
-import { obj }              from "./obj.js";
 
 let gl      = null;
 let glprog  = null;
@@ -12,12 +11,9 @@ let cwidth, cheight;
 
 
 let bcol  = [0.1, 0.1, 0.1];
-let lcol  = [0.243161, 0.887797, 1.000000];
+let lcol  = [1.0, 1.0, 1.0];
 let colmode = 0;
 let alpha   = 1.0;
-let alpha_dom = null;
-let bcol_dom  = null;
-let lcol_dom  = null;
 
 let menu_hidden = false;
 
@@ -51,70 +47,29 @@ let P_dom = null;
 let pres_dom = null;
 
 class aeroplane {
-    oldpos = [0, 0, 0];
-    pos    = [0, 0, 0];
-    orient = [1, 0, 0, 0];
     
-    model = { name : '../input/obj3/plane03b-lines.obj', tlen:0, llen:0, plen:0, tbuf:null, lbuf:null, pbuf:null };
-    showplane = true;
-    
-    pen = true;
-    path = [];
-    pathbuf = null;
+    points = [];
+    lines  = [];
+    tris   = [];
+    pbuf = null;
+    lbuf = null;
+    tbuf = null;
     
     constructor () {}
     
-    addpath () {
-        this.path.push(this.oldpos[0], this.oldpos[1], this.oldpos[2]);
-        this.path.push(lcol[0], lcol[1], lcol[2]);
-        
-        this.path.push(this.pos[0], this.pos[1], this.pos[2]);
-        this.path.push(lcol[0], lcol[1], lcol[2]);
-    }
     makepath () {
-        if (this.pathbuf != null) { gl.deleteBuffer(this.pathbuf); }
-        this.pathbuf = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.pathbuf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.path), gl.DYNAMIC_DRAW);
-    }
-    
-    pendown () { this.pen = true;  }
-    penup   () { this.pen = false; }
-    forward (x) {
-        let look = tr.rot_q(this.orient, [1,0,0]);
-        this.pos = v3.add(this.pos, v3.cmul(look,x));
-        if (this.pen)
+        if (this.points.length > 0)
         {
-            this.addpath();
+            if (this.pbuf != null) { gl.deleteBuffer(this.pbuf); }
+            this.pbuf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.pbuf);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.points), gl.DYNAMIC_DRAW);
         }
-        this.oldpos[0] = this.pos[0];
-        this.oldpos[1] = this.pos[1];
-        this.oldpos[2] = this.pos[2];
     }
     
-    turn (t,a)
-    {
-        let tn = v3.normalize(t);
-        let a2 = a * (Math.PI / 180) / 2;
-        let q  = [Math.cos(a2), tn[0]*Math.sin(a2), tn[1]*Math.sin(a2), tn[2]*Math.sin(a2)];
-        this.orient = quat.mul(q, this.orient);
-    }
-    roll (a)
-    {
-        let look = tr.rot_q(this.orient, [1,0,0]);
-        this.turn(look, a);
-    }
-    pitch (a)
-    {
-        let look = tr.rot_q(this.orient, [1,0,0]);
-        let up   = tr.rot_q(this.orient, [0,0,1]);
-        let p    = v3.cross(look, up);
-        this.turn(p, a);
-    }
-    yaw (a)
-    {
-        let down  = tr.rot_q(this.orient, [0,0,-1]);
-        this.turn(down, a);
+    add_point (x,y,z) {
+        this.points.push(x,y,z);
+        this.points.push(lcol[0], lcol[1], lcol[2]);
     }
     
     setcol(r,g,b)
@@ -144,6 +99,7 @@ let compute_matrices = function ()
     //modinvmat = m4.mul(tr.roty(-axis), modinvmat);
     
     viewmat = tr.view(camera);
+    
     projmat = m4.init();
     if (proj === 0)
     {
@@ -155,33 +111,6 @@ let compute_matrices = function ()
     }
 };
 
-
-
-
-let fetch_objfile = function (objfile)
-{
-    let xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function()
-        {
-            if (xhr.readyState === 4 && xhr.status === 200)
-            {
-                let model_resp = obj.create(xhr.responseText, 0.5, true, lcol);
-                //console.log("M", model_resp);
-                
-                if (model_resp.length > 0)
-                {
-                    T.model.llen = model_resp.length;
-                    T.model.lbuf = gl.createBuffer();
-                    gl.bindBuffer(gl.ARRAY_BUFFER, T.model.lbuf);
-                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_resp), gl.STATIC_DRAW);
-                }
-                
-                draw();
-            }
-        }
-        xhr.open('GET', objfile, true);
-        xhr.send(null);
-};
 
 
 let draw = function ()
@@ -213,30 +142,7 @@ let draw = function ()
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
     
-    if (T.showplane)
-    {
-        let pltr = m4.init();
-        pltr = m4.mul(tr.scale(20), pltr);
-        pltr = m4.mul(quat.rot_mat(T.orient), pltr);
-        pltr = m4.mul(tr.translate(T.pos), pltr);
-        
-        gl.uniformMatrix4fv(glprog.vm, true, m4.mul(m4.mul(viewmat, modlmat), pltr));
-        
-        gl.uniform1i (glprog.colmode, 1);
-        gl.uniform3fv(glprog.defcol,  lcol);
-        gl.uniform1f (glprog.alpha,   alpha);
-        
-        if (T.model.llen > 0)
-        {
-            gl.bindBuffer(gl.ARRAY_BUFFER, T.model.lbuf);
-            gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 6*4, 0*4);
-            gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 6*4, 3*4);
-            
-            gl.drawArrays(gl.LINES, 0, T.model.llen / 6);
-        }
-    }
-    
-    if (T.path.length > 0)
+    if (T.points.length > 0)
     {
         gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
         
@@ -244,11 +150,11 @@ let draw = function ()
         gl.uniform3fv(glprog.defcol,  lcol);
         gl.uniform1f (glprog.alpha,   alpha);
         
-        gl.bindBuffer(gl.ARRAY_BUFFER, T.pathbuf);
+        gl.bindBuffer(gl.ARRAY_BUFFER, T.pbuf);
         gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 6*4, 0*4);
         gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 6*4, 3*4);
             
-        gl.drawArrays(gl.LINES, 0, T.path.length / 6);
+        gl.drawArrays(gl.POINTS, 0, T.points.length / 6);
     }
 };
 
@@ -400,13 +306,10 @@ let set_prog = function ()
 };
 let set_pres = function (progname)
 {
-    for (let i=0 ; i<programs.length ; ++i)
+    let p = programs[progname];
+    if (p !== undefined && p !== null)
     {
-        if (programs[i].name === progname)
-        {
-            P_dom.value = programs[i].prog;
-            break;
-        }
+        P_dom.value = p;
     }
     pres_dom.blur();
 };
@@ -418,7 +321,7 @@ let run_prog = function ()
     try
     {
         P(T);
-        if (T.path.length > 0) { T.makepath(); }
+        T.makepath();
         draw();
     }
     catch (err)
@@ -429,10 +332,12 @@ let run_prog = function ()
 };
 let clear_path = function ()
 {
-    T.path = [];
-    T.oldpos = [0, 0, 0];
-    T.pos    = [0, 0, 0];
-    T.orient = [1, 0, 0, 0];
+    T.points = [];
+    T.lines  = [];
+    T.tris   = [];
+    //pbuf = null;
+    //lbuf = null;
+    //tbuf = null;
     draw();
 };
 
@@ -496,25 +401,18 @@ let init = function ()
     canvas.addEventListener("mousemove", handle_mouse_move);
     canvas.addEventListener("wheel", handle_wheel);
     
-    alpha_dom = document.getElementById('alphain');
-    bcol_dom  = document.getElementById('bcolin');
-    lcol_dom  = document.getElementById('lcolin');
-    alpha_dom.value = alpha;
-    bcol_dom.value  = "" + bcol[0] + ", " + bcol[1] + ", " + bcol[2];
-    lcol_dom.value  = "" + lcol[0] + ", " + lcol[1] + ", " + lcol[2];
-    
     pres_dom = document.getElementById('presin');
     pres_dom.options.selectedIndex = 0;
     P_dom = document.getElementById('progin');
     handletab(P_dom);
-    P_dom.value = programs[0].prog;
+    P_dom.value = programs["sph_spiral"];
     set_prog();
     
     resize();
     
     T = new aeroplane();
     
-    fetch_objfile(T.model.name);
+    draw();
 };
 
 

@@ -235,7 +235,8 @@ let handle_key_up = function (event)
 let handle_key_down = function (event)
 {
     //if (document.activeElement === P_dom) { return; }
-    if (event.ctrlKey) { return; }
+    //if (event.ctrlKey) { return; }
+    //console.log("K", event.key);
     
     
     if (event.key === "m" || event.key === "M")
@@ -253,7 +254,7 @@ let handle_key_down = function (event)
     }
     else if (event.key === "r" || event.key === "R")
     {
-        make_stars();
+        //make_stars();
         make_planets();
         draw();
     }
