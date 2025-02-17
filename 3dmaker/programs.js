@@ -3,19 +3,21 @@ let programs = {
     sph_spiral: `\
 let N   = 1000;
 let rev = 9;
+let sc  = 8;
 for (let i=0; i<N; i+=1) {
     let theta = i*Math.PI / N;
     let phi   = i*(2*rev*Math.PI / N);
     
-    T.add_point(Math.sin(theta) * Math.cos(phi),
-                Math.sin(theta) * Math.sin(phi),
-                Math.cos(theta));
+    T.add_point(sc * Math.sin(theta) * Math.cos(phi),
+                sc * Math.sin(theta) * Math.sin(phi),
+                sc * Math.cos(theta));
 }`,
 
     chebysev_net: `\
-let N   = 2000;
-let a = 0.5;
-let rev = 7;
+let N   = 4000;
+let a = 0.2;
+let rev = 9;
+let sc2 = 4;
 
 let fi = (u,v) => [Math.cos(v)*Math.cos(u),
                    Math.cos(v)*Math.sin(u),
@@ -35,9 +37,9 @@ for (let i=0 ; i<N ; i+=1)
     let uu =  i * 2*Math.PI / N + i2*2*Math.PI / rev;
     let vv =  i * 2*Math.PI / N;
     
-    T.add_point((a*fiu(uu,vv)[0] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[0] ) / 2,
-                (a*fiu(uu,vv)[1] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[1] ) / 2,
-                (a*fiu(uu,vv)[2] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[2] ) / 2);
+    T.add_point((a*fiu(uu,vv)[0] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[0] ) *sc2,
+                (a*fiu(uu,vv)[1] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[1] ) *sc2,
+                (a*fiu(uu,vv)[2] + Math.sqrt(4-a*a*Math.cos(vv)*Math.cos(vv))*fiv(uu,vv)[2] ) *sc2);
 }`,
 
     /*phyllotaxis: `\
@@ -56,13 +58,14 @@ for (let i=0 ; i<N ; i+=1)
 `,*/
 
     rndsphere: `\
+let sc  = 8;
 for (let i=0 ; i<1000 ; i+=1)
 {
     let u = Math.acos(2*Math.random() - 1);
     let v = 2*Math.PI*Math.random();
-    T.add_point(Math.sin(u) * Math.cos(v),
-                Math.sin(u) * Math.sin(v),
-                Math.cos(u));
+    T.add_point(sc * Math.sin(u) * Math.cos(v),
+                sc * Math.sin(u) * Math.sin(v),
+                sc * Math.cos(u));
 }`,
 
     rnd_dotted_circ: `\
@@ -97,12 +100,12 @@ let circ = (q, d, a) => {
     }
 };
 
-for (let i=0 ; i<50 ; i+=1)
+for (let i=0 ; i<10 ; i+=1)
 {
     let rnd = rndp();
     let ra  = Math.random()*Math.PI;
     let q   = [Math.cos(ra), rnd[0]*Math.sin(ra), rnd[1]*Math.sin(ra), rnd[2]*Math.sin(ra)];
-    circ(q, 10, 50);
+    circ(q, 8, 50);
 }`
 };
 
