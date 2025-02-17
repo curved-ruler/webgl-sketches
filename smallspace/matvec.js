@@ -186,7 +186,7 @@ let v3 = {
 let quat = {
     init : function ()
     {
-        return [0, 0, 0, 0]; // r, i, j, k
+        return [0, 1, 0, 0]; // r, i, j, k
     },
     
     add : function (q, q2)
@@ -251,6 +251,11 @@ let quat = {
                  2*i*k-2*r*j,      2*j*k+2*r*i,  r*r-i*i-j*j+k*k, 0,
                       0,                0,              0,        1
             ];
+    },
+    
+    rot : function (t, a)
+    {
+        return [Math.cos(a), t[0]*Math.sin(a), t[1]*Math.sin(a), t[2]*Math.sin(a)];
     }
 };
 

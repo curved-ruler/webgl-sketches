@@ -2,6 +2,7 @@
 import { gl_init }          from "./gl_init.js";
 import { m4, v3, quat, tr } from "./matvec.js";
 import { obj }              from "./obj.js";
+import { plane_controls }   from "./spaceship.js";
 
 let gl = null;
 let canvas = null;
@@ -19,11 +20,57 @@ let camera = {
     up    : [0, 0, 1],
     near  : 0.1,
     median: 30,
-    far   : 1000,
+    far   : 3000,
     fovy  : Math.PI / 3,
     aspect: 1,
+};
+
+let plane_params = `\
+return {
+    imass : 1/1000,   // inverse mass
+    iinertia : 1/100, // inverse inertia
+    damp  : -1,   // velocity damp
+    adamp : -2.0, // angular damp
+    maxvel  : 10, // max velocity
+    maxavel : 5,  // max angular velocity
+    force  : 100, // force magnitude
+    torque : 1,   // torque magnitude
+};`;
+let P = null;
+let P_dom = null;
+
+let spaceship = {
+    oldpos : [0, 0, 0],
+    pos    : [0, 0, 0],
+    orient : [1, 0, 0, 0],
     
-    rot_k : 0.1
+    imass    : 1/100,
+    iinertia : 1/100,
+    
+    forw  : false,
+    backw : false,
+    up    : false,
+    down  : false,
+    left  : false,
+    right : false,
+    
+    damp  : -1,
+    adamp : -2.0,
+    
+    maxvel  : 10,
+    maxavel : 5,
+    
+    force  : 100,
+    torque : 1,
+    rot_k  : 0.1*Math.PI/180,
+    
+    acceleration : [0,0,0],
+    angularacc   : [0,0,0],
+    velocity     : [0,0,0],
+    angularvel   : [0,0,0],
+    
+    //model : { name : '../input/obj3/plane03.obj', tlen:0, llen:0, plen:0, tbuf:null, lbuf:null, pbuf:null },
+    //showplane : true
 };
 
 let planet_models = [
@@ -33,10 +80,11 @@ let planet_models = [
     { path: "../input/obj1/ikozaeder.obj",  tris : [], tbuf : null, lins : [], lbuf : null, }
 ];
 let glp_planets = null;
-let NP = 50;
+let NP = 500;
 let np_dom = null;
 let planets = [];
-let map_size = 300;
+let map_size = 500;
+let pl_scale = 0.2;
 
 let glp_stars = null;
 let stars_buf = null;
@@ -70,12 +118,54 @@ let fetch_objfile = function (pl)
                     gl.bindBuffer(gl.ARRAY_BUFFER, pl.lbuf);
                     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model_resp.lines), gl.STATIC_DRAW);
                 }
-                
-                draw();
             }
         }
         xhr.open('GET', pl.path, true);
         xhr.send(null);
+};
+
+let cam_constrain = function ()
+{
+    camera.look = v3.normalize(camera.look);
+    
+    let up2 = v3.cross(camera.look, camera.up);
+    
+    camera.up = v3.cross(up2, camera.look);
+    camera.up = v3.normalize(camera.up);
+};
+let update_cam = function ()
+{
+    camera.pos  = [ spaceship.pos[0],spaceship.pos[1],spaceship.pos[2] ] ;
+    camera.look = tr.rot_q(spaceship.orient, [1,0,0]);
+    camera.up   = tr.rot_q(spaceship.orient, [0,0,1]);
+    
+    cam_constrain();
+};
+let lu_trans = function (look, up)
+{
+    let xi = [1,0,0];
+    let zi = [0,0,1];
+    
+    let q1 = [0, 1,0,0];
+    let v1 = v3.normalize(v3.cross(xi, look));
+    
+    if (v3.length(v1) > 0.0001)
+    {
+        let a = Math.acos(v3.dot(xi, look));
+        q1   = [Math.cos(a), v1[0]*Math.sin(a), v1[1]*Math.sin(a), v1[2]*Math.sin(a)];
+        zi   = tr.rot_q(q1, zi);
+    }
+    
+    let q2 = [0, 1,0,0];
+    let v2 = v3.normalize(v3.cross(zi, up));
+    
+    if (v3.length(v2) > 0.0001)
+    {
+        let a = Math.acos(v3.dot(zi, up));
+        q2   = [Math.cos(a), v2[0]*Math.sin(a), v2[1]*Math.sin(a), v2[2]*Math.sin(a)];
+    }
+    
+    return quat.mul(q1,q2);
 };
 
 let make_planets = function ()
@@ -90,7 +180,7 @@ let make_planets = function ()
                      Math.random()*map_size - map_size/2,
                      Math.random()*map_size - map_size/2],
             col   : [Math.random(), Math.random(), Math.random()],
-            scale : Math.random()*0.1
+            scale : Math.random()*pl_scale
         });
     }
 };
@@ -214,28 +304,32 @@ let handle_mouse_move = function (event)
     if (grabbed === 1)
     {
         let left = v3.cross(camera.up, camera.look);
-        let qx = tr.rot(camera.up, -camera.rot_k*event.movementX);
-        let qy = tr.rot(left,  camera.rot_k*event.movementY);
+        let qx = quat.rot(camera.up, -spaceship.rot_k*event.movementX);
+        let qy = quat.rot(left,       spaceship.rot_k*event.movementY);
         
-        camera.up   = v3.mmul(qy, camera.up);
-        camera.look = v3.mmul(qy, camera.look);
+        //camera.up   = v3.mmul(qy, camera.up);
+        //camera.look = v3.mmul(qy, camera.look);
         
-        camera.up   = v3.mmul(qx, camera.up);
-        camera.look = v3.mmul(qx, camera.look);
+        //camera.up   = v3.mmul(qx, camera.up);
+        //camera.look = v3.mmul(qx, camera.look);
         
-        //cam_constrain();
-        draw();
+        //spaceship.orient = lu_trans(camera.look, camera.up);
+        
+        spaceship.orient = quat.mul(quat.mul(qy,qx),spaceship.orient);
+        //spaceship.orient = quat.mul(spaceship.orient,quat.mul(qx,qy));
+        
+        
+        update_cam();
     }
 };
 
 let handle_key_up = function (event)
 {
-    //plane_controls.control(aeroplane, event, false);
+    plane_controls.control(spaceship, event, false);
 };
 let handle_key_down = function (event)
 {
     //if (document.activeElement === P_dom) { return; }
-    //if (event.ctrlKey) { return; }
     //console.log("K", event.key);
     
     
@@ -256,7 +350,6 @@ let handle_key_down = function (event)
     {
         //make_stars();
         make_planets();
-        draw();
     }
     else if (event.key === "i" || event.key === "I")
     {
@@ -272,9 +365,10 @@ let handle_key_down = function (event)
         let image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
         window.location.href=image;
     }
-    
-    
-    //plane_controls.control(aeroplane, event, true);
+    else
+    {
+        plane_controls.control(spaceship, event, true);
+    }
 };
 
 let errorlog = function (str)
@@ -285,9 +379,9 @@ let errorlog = function (str)
 
 let tick = function (timestamp)
 {
-    //plane_controls.tick(aeroplane, 0.1); // TODO timestamp
+    plane_controls.tick(spaceship, 0.1); // TODO timestamp
     
-    //update_cam();
+    update_cam();
     draw();
     
     window.requestAnimationFrame(tick);
@@ -410,8 +504,6 @@ let init = function ()
         fetch_objfile(planet_models[i]);
     }
     make_planets();
-    
-    draw();
 };
 
 let set_np = function (strval)
@@ -419,7 +511,6 @@ let set_np = function (strval)
     let iv = parseInt(strval);
     NP = iv;
     make_planets();
-    draw();
 }
 window.set_np  = set_np;
 
@@ -428,4 +519,4 @@ document.addEventListener("keydown", handle_key_down);
 document.addEventListener("keyup",   handle_key_up);
 window.addEventListener("resize", function() { resize(); draw(); });
 
-//window.requestAnimationFrame(tick);
+window.requestAnimationFrame(tick);
