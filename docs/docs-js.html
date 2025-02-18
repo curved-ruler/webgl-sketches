@@ -73,7 +73,7 @@ let handletab = function (ta_dom)
         
         Inputs either have immediate effect when the onchange fires, but sometimes,
         usually on bigger computation need, several inputs have a "SET" button. It is a bit
-        confusing, I plan to indicate this with background color.
+        confusing, I plan to indicate this somehow.
         
         <br/><br/>
         
@@ -81,6 +81,40 @@ let handletab = function (ta_dom)
         in the <a href="https://github.com/curved-ruler/webgl-sketches/tree/main/grid">Grid</a> program. There were
         so many variables, I created a class for them, in
         <a href="https://github.com/curved-ruler/webgl-sketches/blob/main/grid/grid_ui.js">grid-ui.js</a>.
+        
+      </div>
+    </div>
+    
+    <div class="container">
+      <span class="h">Scripting</span>
+      
+      <br/>
+      <br/>
+      <div class="txtleft">
+        
+        <br/>
+        There are two types of scripts I use, GLSL and Javascript. Shaders are compiled in the programs,
+        so GLSL scripting is really just a string manipulation before the compilation. It is used in
+        <a href="https://curved-ruler.github.io/webgl-sketches/eq/eq.html">eq</a>, it works well. It is also used in the
+        <a href="https://curved-ruler.github.io/webgl-sketches/parametric/parametric.html">Parametric surfaces</a>, and
+        the trouble is there that the created geometry is made by the vertex shader, it is only on GPU, and it is
+        a bit problematic to transfer to the CPU. (Haven't yet tried the transform feedback, which could do the job)
+        
+        <br/><br/>
+        The other one is JS. I use the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Function API</a>.
+        <br/>
+        Small example:
+        
+        <div class="border vsp">
+          <pre class="linen">1<br/>2<br/>3</pre>
+          <pre class="code">
+let script = "return (a+b)*c;";
+let F   = Function('a', 'b', 'c', script);
+let res = F(1, 2, 3);</pre>
+          <div style="clear:both"></div>
+        </div>
+        
+        Note that both line 2 and 3 can throw exception.
         
       </div>
     </div>
