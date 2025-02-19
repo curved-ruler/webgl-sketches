@@ -54,6 +54,8 @@ let spaceship = {
     left  : false,
     right : false,
     
+    slow  : false,
+    
     damp  : -1,
     adamp : -2.0,
     

@@ -34,18 +34,16 @@ let tick = function (plane, dt)
     if (plane.right) {
         add_f([right[0]*plane.force, right[1]*plane.force, right[2]*plane.force]);
     }
-    /*
+    
     let len = v3.length(plane.velocity);
-    if (len > 0.00001)
+    if (len < 0.0001)
     {
-        let vn = v3.normalize(plane.velocity);
-        let cosangle = v3.dot(vn, look);
-        let ll = (cosangle > 0.0) ? look : [-look[0], -look[1], -look[2]];
-        vn = v3.add(vn, v3.cmul(v3.sub(ll, vn), 0.2));
-        vn = v3.setlength(vn, len);
-        plane.velocity = vn;
+        plane.velocity = [0,0,0];
     }
-    */
+    else if (plane.slow)
+    {
+        plane.velocity = v3.setlength(plane.velocity, len*0.9);
+    }
     
     // dampers
     let veldamp = v3.normalize(plane.velocity);
@@ -85,8 +83,10 @@ let control = function (plane, ev, newval)
     if (ev.key === 'a' || ev.key === 'A') { plane.left  = newval; }
     if (ev.key === 'd' || ev.key === 'D') { plane.right = newval; }
     
-    //if (ev.key === 'Shift')   { plane.up   = newval; }
-    //if (ev.key === 'Control') { plane.down = newval; }
+    if (ev.key === 'q' || ev.key === 'Q') { plane.up   = newval; }
+    if (ev.key === 'e' || ev.key === 'E') { plane.down = newval; }
+    
+    if (ev.key === ' ') { plane.slow = newval; }
 };
 
 
