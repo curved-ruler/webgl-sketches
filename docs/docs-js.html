@@ -119,6 +119,65 @@ let res = F(1, 2, 3);</pre>
       </div>
     </div>
     
+    <div class="container">
+      <span class="h">Files</span>
+      
+      <br/>
+      <br/>
+      <div class="txtleft">
+        
+        <br/>
+        Every sketch is client only.
+        <br/>
+        <br/>
+        For saving files, I use a simplified version of Eli Grey's <a href="https://github.com/eligrey/FileSaver.js">FileSaver</a>, like here:
+        <a href="https://github.com/curved-ruler/webgl-sketches/blob/main/marching/FileSaver.js">my version</a>
+        <br/>
+        <br/>
+        Loading files from the server
+        <div class="border vsp">
+          <div class="snippet-title"><span class="pad">&nbsp;</span><a href="https://github.com/curved-ruler/webgl-sketches/blob/main/turtle3/turtle3.js">turtle3.js</a></div>
+          <pre class="linen">163<br/>164<br/>165<br/>166<br/>167<br/>168<br/>180<br/>181<br/>182<br/>183</pre>
+          <pre class="code">
+let xhr = new XMLHttpRequest();
+xhr.onreadystatechange = function()
+{
+    if (xhr.readyState === 4 && xhr.status === 200)
+    {
+        let model_resp = obj.create(xhr.responseText, 0.5, true, lcol);
+    }
+}
+xhr.open('GET', objfile, true);
+xhr.send(null);</pre>
+          <div style="clear:both"></div>
+        </div>
+        
+        <br/>
+        <br/>
+        Binary files:
+        <br/>
+        Read:
+        <br/>
+        <pre>
+const view = new DataView(arrayBuffer);
+let f = view.getFloat32(4*i, true);</pre>
+        Write:
+        <div class="border vsp">
+          <div class="snippet-title"><span class="pad">&nbsp;</span><a href="https://github.com/curved-ruler/webgl-sketches/blob/main/marching/mc.js">mc.js</a></div>
+          <pre class="linen">597<br/>598<br/>599<br/>600<br/>601<br/>602</pre>
+          <pre class="code">
+let buffer = new ArrayBuffer(3*4 + Nx*Ny*Nz*4);
+let view   = new DataView(buffer);
+
+view.setUint32(0, Nx);
+view.setUint32(4, Ny);
+view.setUint32(8, Nz);</pre>
+          <div style="clear:both"></div>
+        </div>
+        
+      </div>
+    </div>
+    
   </body>
 </html>
  

@@ -12,11 +12,13 @@
   <body class="big">
   
     <div class="container">
-      <span class="h">Context</span>
+      <span class="h">WebGL init</span>
       
       <br/>
       <br/>
       <div class="txtleft">
+        
+        Context
         
         <div class="border vsp">
           <div class="snippet-title"><span class="pad">&nbsp;</span><a href="https://github.com/curved-ruler/webgl-sketches/blob/main/turtle3/gl_init.js">gl_init.js</a></div>
@@ -24,6 +26,51 @@
           <pre class="code">
 glc2 = canvas.getContext('webgl2', options);</pre>
           <div style="clear:both"></div>
+        </div>
+        
+        One option that I use is {antialias: false}. It is not enough alone, canvas CSS should include "image-rendering: pixelated;"
+        <br/>
+        <br/>
+        <br/>
+        Text (GLSL) to shader
+        
+        <div class="border vsp">
+          <div class="snippet-title"><span class="pad">&nbsp;</span><a href="https://github.com/curved-ruler/webgl-sketches/blob/main/turtle3/gl_init.js">gl_init.js</a></div>
+          <pre class="linen">51<br/>52<br/>53<br/>54<br/>55<br/>56<br/>57<br/>58<br/>59<br/>60<br/>61<br/>62<br/>63<br/>64</pre>
+          <pre class="code">
+let compile_shader = function (gl, str, type)
+{ 
+    let shader = gl.createShader(type);
+    
+    gl.shaderSource(shader, str);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
+    {
+        console.error('Error while compiling shader: ' + gl.getShaderInfoLog(shader));
+        window.alert('Error while compiling shader:\n' + gl.getShaderInfoLog(shader));
+        return null;
+    }
+    return shader;
+};</pre>
+        <div style="clear:both"></div>
+        </div>
+        
+        <br/>
+        <br/>
+        Linking shaders
+        
+        <div class="border vsp">
+          <div class="snippet-title"><span class="pad">&nbsp;</span><a href="https://github.com/curved-ruler/webgl-sketches/blob/main/turtle3/gl_init.js">gl_init.js</a></div>
+          <pre class="linen">70<br/>71<br/>72<br/>73<br/>74<br/>75<br/>76</pre>
+          <pre class="code">
+let vsc = compile_shader(gl, vs_str, gl.VERTEX_SHADER);
+gl.attachShader(glp.bin, vsc);
+
+let fsc = compile_shader(gl, fs_str, gl.FRAGMENT_SHADER);
+gl.attachShader(glp.bin, fsc);
+
+gl.linkProgram(glp.bin);</pre>
+        <div style="clear:both"></div>
         </div>
         
       </div>
