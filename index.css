@@ -123,12 +123,10 @@ img.link {
   border: 0px;
 }
 
-/*
-a:link    { color: rgb(180,160,100); }
-a:visited { color: rgb(180,160,100); }
-*/
+
+a.out:link    { color: rgb(180,160,100); }
+a.out:visited { color: rgb(180,160,100); }
+
 a:link    { color: rgb(175,100,0); }
 a:visited { color: rgb(175,100,0); }
-a:hover {}
-a:active {}
 
