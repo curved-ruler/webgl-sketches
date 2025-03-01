@@ -520,6 +520,80 @@ vec3 col(in float x, in float y)
 }
 `,
 
+nr2 : `\
+vec2 fz (in vec2 z, in vec2 a, in vec2 b)
+{
+    vec2 z2 = cmul(z,z);
+    return z2+cdiv(a,z2+cdiv(b,z));
+}
+vec2 dfz (in vec2 z, in vec2 a, in vec2 b)
+{
+    vec2 z3 = cmul(z,cmul(z,z));
+    vec2 p0 = cmul(a,b-2.0*z3);
+    vec2 p1 = cmul(b+z3,b+z3);
+    return cdiv(p0,p1)+2.0*z;
+}
+
+vec3 col(in float x, in float y)
+{
+    const int N = 32;
+    vec2 z = vec2(x, y);
+    vec2 a = vec2(pow(0.3976,2.0), 0.0);
+    vec2 b = vec2(pow(0.7638,2.0), 0.0);
+    int i;
+    for (i=0 ; i<N ; ++i)
+    {
+        vec2 v = fz(z,a,b);
+        
+        //if ( abs(v.x) < 0.0001 && abs(v.y) < 0.0001 ) { break; }
+        if ( abs(v.x+v.y) < 0.0001 ) { break; }
+        
+        vec2 d = dfz(z,a,b);
+        vec2 q = cdiv(v,d);
+        z = z-q;
+    }
+    
+    float t = float(N-i)/float(N);
+    return vec3(fract(2.95*t));
+}`,
+
+nr2_mouse : `\
+vec2 fz (in vec2 z, in vec2 a, in vec2 b)
+{
+    vec2 z2 = cmul(z,z);
+    return z2+cdiv(a,z2+cdiv(b,z));
+}
+vec2 dfz (in vec2 z, in vec2 a, in vec2 b)
+{
+    vec2 z3 = cmul(z,cmul(z,z));
+    vec2 p0 = cmul(a,b-2.0*z3);
+    vec2 p1 = cmul(b+z3,b+z3);
+    return cdiv(p0,p1)+2.0*z;
+}
+
+vec3 col(in float x, in float y)
+{
+    const int N = 32;
+    vec2 z = vec2(x, y);
+    vec2 a = vec2(mouse.x, 0.0);
+    vec2 b = vec2(mouse.y, 0.0);
+    int i;
+    for (i=0 ; i<N ; ++i)
+    {
+        vec2 v = fz(z,a,b);
+        
+        //if ( abs(v.x) < 0.0001 && abs(v.y) < 0.0001 ) { break; }
+        if ( abs(v.x+v.y) < 0.0001 ) { break; }
+        
+        vec2 d = dfz(z,a,b);
+        vec2 q = cdiv(v,d);
+        z = z-q;
+    }
+    
+    float t = float(N-i)/float(N);
+    return vec3(fract(2.95*t));
+}`,
+
 sec_bad : `\
 vec3 col(in float x, in float y)
 {
