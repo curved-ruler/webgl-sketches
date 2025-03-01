@@ -466,6 +466,26 @@ vec3 col(in float x, in float y)
 }
 `,
 
+nr_bad_2: `\
+vec3 col(in float x, in float y)
+{
+    const int N = 32;
+    vec2 z = vec2(x, y);
+    int i;
+    for (i=0 ; i<N ; ++i)
+    {
+        vec2 v = cmul(z,cmul(z,cmul(z,cmul(z,cmul(z,z))))) + z;
+        vec2 d = 6.0*cmul(z,cmul(z,cmul(z,cmul(z,z)))) + 1.0;
+        vec2 q = cdiv(v,d);
+        z = z-q;
+        vec2 v2 = cmul(z,cmul(z,cmul(z,cmul(z,cmul(z,z))))) + z;
+        if ( abs(v2.x+v2.y) < 0.0001 ) { break; }
+    }
+    
+    float t = float(N-i)/float(N);
+    return vec3(fract(2.95*t));
+}`,
+
 nr : `\
 vec3 col(in float x, in float y)
 {
