@@ -231,6 +231,27 @@ for (let i=0 ; i<20 ; ++i)
     T.turn([0,1,0],90);
 }`
     },
+    
+    { name: "tree2d" , prog: `\
+let dd = 0.9;
+let an = 20;
+let tree = (lev,dist) => {
+    if (lev <= 0) return;
+    T.pendown();
+    T.forward(dist);
+    T.yaw(an);
+    tree(lev-1, dist*dd);
+    T.yaw(-2*an);
+    tree(lev-1, dist*dd);
+    T.yaw(an);
+    T.penup();
+    T.forward(-dist);
+};
+
+T.penup();
+T.forward(-12);
+tree(12,10);`
+    },
 
 
     { name: "randw" , prog: `\
