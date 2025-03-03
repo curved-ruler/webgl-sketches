@@ -252,9 +252,102 @@ T.penup();
 T.forward(-12);
 tree(12,10);`
     },
+    
+    { name: "tree3d" , prog: `\
+let dd = 0.6;
+let pa = (180 - Math.acos(-1/3)*180/Math.PI)/2;
+//let pa = 45;
+
+let tree = (lev,dist) => {
+    if (lev <= 0) return;
+    T.pendown();
+    T.forward(dist);
+T.pitch(pa);
+    tree(lev-1, dist*dd);
+T.pitch(-pa);
+T.roll(120);
+T.pitch(pa);
+    tree(lev-1, dist*dd);
+T.pitch(-pa);
+T.roll(120);
+T.pitch(pa);
+    tree(lev-1, dist*dd);
+    T.penup();
+T.pitch(-pa);
+T.roll(120);
+    T.forward(-dist);
+};
+
+T.penup();
+T.forward(-12);
+tree(9,10);`
+    },
+    
+    
+    { name: "tree3da" , prog: `\
+let dd = 0.6;
+let an = 120;
+let tree = (lev,dist) => {
+let pa = (180 - Math.acos(-1/3)*180/Math.PI)/2;
+    if (lev <= 0) return;
+    T.pendown();
+    T.forward(dist);
+T.pitch(pa);
+    
+    tree(lev-1, dist*dd);
+T.pitch(-pa);
+T.roll(an);
+T.pitch(pa);
+    tree(lev-1, dist*dd);
+T.pitch(-pa);
+T.roll(an);
+T.pitch(pa);
+    tree(lev-1, dist*dd);
+    T.penup();
+T.pitch(-pa);
+    T.forward(-dist);
+};
+
+T.penup();
+T.forward(-12);
+tree(9,10);`
+    },
+    
+    { name: "tree3db" , prog: `\
+let dd = 0.6;
+let an = 120;
+let tree = (lev,dist) => {
+//let pa = (180 - Math.acos(-1/3)*180/Math.PI)/2;
+let pa = 45;
+    if (lev <= 0) return;
+    T.pendown();
+    T.forward(dist);
+T.pitch(pa);
+    
+    tree(lev-1, dist*dd);
+T.pitch(-pa);
+T.roll(an);
+T.pitch(pa);
+    tree(lev-1, dist*dd);
+T.pitch(-pa);
+T.roll(an);
+T.pitch(pa);
+    tree(lev-1, dist*dd);
+    T.penup();
+T.pitch(-pa);
+T.roll(an);
+T.pitch(pa);
+    T.forward(-dist);
+};
+
+T.penup();
+T.forward(-12);
+tree(9,10);`
+    },
 
 
     { name: "randw" , prog: `\
+T.pendown();
 for (let i=0 ; i<100 ; ++i)
 {
     T.forward(1);
@@ -266,6 +359,7 @@ for (let i=0 ; i<100 ; ++i)
 
 
     { name: "randwc" , prog: `\
+T.pendown();
 T.background(0,0,0);
 
 for (let j=0 ; j<1000 ; ++j)
