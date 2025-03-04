@@ -254,33 +254,32 @@ tree(12,10);`
     },
     
     { name: "tree3d" , prog: `\
-let dd = 0.6;
-let pa = (180 - Math.acos(-1/3)*180/Math.PI)/2;
-//let pa = 45;
+let dd = 0.7;
+let pa = 45;
+let rn = 3;
+
+T.background(0,0,0);
+T.setcol(1,1,1);
 
 let tree = (lev,dist) => {
     if (lev <= 0) return;
     T.pendown();
     T.forward(dist);
-T.pitch(pa);
-    tree(lev-1, dist*dd);
-T.pitch(-pa);
-T.roll(120);
-T.pitch(pa);
-    tree(lev-1, dist*dd);
-T.pitch(-pa);
-T.roll(120);
-T.pitch(pa);
-    tree(lev-1, dist*dd);
+
+    for (let i=0 ; i<rn ; i+=1)
+    {
+        T.pitch(pa);
+        tree(lev-1, dist*dd);
+        T.pitch(-pa);
+        T.roll(360/rn);
+    }
     T.penup();
-T.pitch(-pa);
-T.roll(120);
     T.forward(-dist);
 };
 
 T.penup();
-T.forward(-12);
-tree(9,10);`
+T.forward(-10);
+tree(8,10);`
     },
     
     
@@ -343,6 +342,35 @@ T.pitch(pa);
 T.penup();
 T.forward(-12);
 tree(9,10);`
+    },
+    
+    { name: "tree3dc" , prog: `\
+let dd = 0.6;
+//let pa = (180 - Math.acos(-1/3)*180/Math.PI)/2;
+let pa = 40;
+let rn = 5;
+
+let tree = (lev,dist) => {
+    if (lev <= 0) return;
+    T.pendown();
+    T.forward(dist);
+    T.roll(5);
+
+    for (let i=0 ; i<rn ; i+=1)
+    {
+        T.pitch(pa);
+        tree(lev-1, dist*dd);
+        T.pitch(-pa);
+        T.roll(360/rn);
+    }
+    T.penup();
+    //T.roll(-5);
+    T.forward(-dist);
+};
+
+T.penup();
+T.forward(-10);
+tree(8,10);`
     },
 
 
