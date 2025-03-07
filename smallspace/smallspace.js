@@ -28,7 +28,6 @@ let camera = {
 let plane_params = `\
 return {
     imass :    1/100, // inverse mass
-    iinertia : 1/100, // inverse inertia
     damp   : -1,  // velocity damp
     maxvel : 10,  // max velocity
     force  : 100, // force magnitude

@@ -433,6 +433,47 @@ for (let i=0 ; i<20 ; ++i)
     d = d * m;
 }`
     },
+    
+    { name: "polytree" , prog: `\
+T.background(1,1,1);
+T.setcol(0,0,0);
+
+let regn = (n,d) => {
+    T.penup();
+    T.yaw(180/n);
+    T.forward(-d/(2*Math.sin(Math.PI/n)));
+    T.yaw(-90*(n-2)/n);
+    T.pendown();
+    for (let i=0 ; i<n ; ++i)
+    {
+        T.forward(d);
+        T.yaw(360/n);
+    }
+    T.penup();
+    T.yaw(90*(n-2)/n);
+    T.forward(d/(2*Math.sin(Math.PI/n)));
+    T.yaw(-180/n);
+};
+
+let ds   = 0.5;
+let s2   = 1.7;
+let tree = (lev, s, poly) =>
+{
+    if (lev <= 0) return;
+    regn(poly,s);
+    if (poly%2 != 0) T.yaw(180/poly);
+    for (let i=0 ; i<poly ; i+=1)
+    {
+        T.forward(s*s2);
+        tree(lev-1,s*ds,poly);
+        T.forward(-s*s2);
+        T.yaw(360/poly);
+    }
+    if (poly%2 != 0) T.yaw(-180/poly);
+};
+
+tree(7,10,5);`
+    },
 
 
     { name: "cube" , prog: `\
