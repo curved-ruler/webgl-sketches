@@ -42,7 +42,7 @@ let tick = function (plane, dt)
     }
     else if (plane.slow)
     {
-        plane.velocity = v3.setlength(plane.velocity, len*0.9);
+        plane.velocity = v3.setlength(plane.velocity, len * plane.brake);
     }
     
     // dampers

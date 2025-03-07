@@ -27,14 +27,13 @@ let camera = {
 
 let plane_params = `\
 return {
-    imass : 1/1000,   // inverse mass
+    imass :    1/100, // inverse mass
     iinertia : 1/100, // inverse inertia
-    damp  : -1,   // velocity damp
-    adamp : -2.0, // angular damp
-    maxvel  : 10, // max velocity
-    maxavel : 5,  // max angular velocity
+    damp   : -1,  // velocity damp
+    maxvel : 10,  // max velocity
     force  : 100, // force magnitude
-    torque : 1,   // torque magnitude
+    brake  : 0.95,
+    rot    : 0.1*Math.PI/180 // rot speed
 };`;
 let P = null;
 let P_dom = null;
@@ -43,9 +42,6 @@ let spaceship = {
     oldpos : [0, 0, 0],
     pos    : [0, 0, 0],
     orient : [1, 0, 0, 0],
-    
-    imass    : 1/100,
-    iinertia : 1/100,
     
     forw  : false,
     backw : false,
@@ -56,19 +52,22 @@ let spaceship = {
     
     slow  : false,
     
+    imass : 1/100,
     damp  : -1,
-    adamp : -2.0,
-    
-    maxvel  : 10,
-    maxavel : 5,
-    
+    maxvel : 10,
     force  : 100,
-    torque : 1,
+    brake  : 0.95,
     rot_k  : 0.1*Math.PI/180,
     
     acceleration : [0,0,0],
-    angularacc   : [0,0,0],
     velocity     : [0,0,0],
+    
+    // unused, no torques atm
+    iinertia : 1/100,
+    adamp    : -2.0,
+    maxavel  : 5,
+    torque : 1,
+    angularacc   : [0,0,0],
     angularvel   : [0,0,0],
     
     //model : { name : '../input/obj3/plane03.obj', tlen:0, llen:0, plen:0, tbuf:null, lbuf:null, pbuf:null },
@@ -378,6 +377,25 @@ let errorlog = function (str)
     console.error('Error: ' + str);
     window.alert('Error:\n' + str);
 };
+let set_params = function ()
+{
+    try
+    {
+        P = Function(P_dom.value);
+        let currp = P();
+        spaceship.imass    = currp.imass;
+        spaceship.damp     = currp.damp;
+        spaceship.maxvel   = currp.maxvel;
+        spaceship.force    = currp.force;
+        spaceship.rot_k    = currp.rot;
+        spaceship.brake    = currp.brake;
+    }
+    catch (err)
+    {
+        errorlog(err.message);
+        return;
+    }
+};
 
 let tick = function (timestamp)
 {
@@ -497,6 +515,10 @@ let init = function ()
     canvas.addEventListener("mouseup",   handle_mouse_up);
     canvas.addEventListener("mousemove", handle_mouse_move);
     
+    P_dom = document.getElementById('paramsin');
+    P_dom.value = plane_params;
+    set_params();
+    
     resize();
     
     make_stars();
@@ -513,8 +535,10 @@ let set_np = function (strval)
     let iv = parseInt(strval);
     NP = iv;
     make_planets();
-}
+};
+
 window.set_np  = set_np;
+window.set_params = set_params;
 
 document.addEventListener("DOMContentLoaded", init);
 document.addEventListener("keydown", handle_key_down);
