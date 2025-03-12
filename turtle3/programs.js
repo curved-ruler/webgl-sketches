@@ -435,9 +435,6 @@ for (let i=0 ; i<20 ; ++i)
     },
     
     { name: "polytree" , prog: `\
-T.background(1,1,1);
-T.setcol(0,0,0);
-
 let regn = (n,d) => {
     T.penup();
     T.yaw(180/n);

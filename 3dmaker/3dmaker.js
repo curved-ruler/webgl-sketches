@@ -3,6 +3,7 @@ import { gl_init }          from "./gl_init.js";
 import { shaders }          from "./shaders.js";
 import { programs }         from "./programs.js";
 import { m4, v3, quat, tr } from "./matvec.js";
+import { obj }              from "./obj.js";
 
 let gl      = null;
 let glprog  = null;
@@ -46,6 +47,40 @@ let P = null;
 let P_dom = null;
 let pres_dom = null;
 
+let fetch_objfile = function (objfile, pl)
+{
+    let xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function()
+        {
+            if (xhr.readyState === 4)
+            {
+                if (xhr.status === 200)
+                {
+                    let model_resp = obj.create(xhr.responseText, [0,0,0], 1, true, lcol);
+                    
+                    if (model_resp.tris.length > 0)
+                    {
+                        pl.tris = pl.tris.concat(model_resp.tris);
+                    }
+                    
+                    if (model_resp.lines.length > 0)
+                    {
+                        pl.lines = pl.lines.concat(model_resp.lines);
+                    }
+                    
+                    pl.makepath();
+                    draw();
+                }
+                else
+                {
+                    errorlog("load error " + xhr.status);
+                }
+            }
+        }
+        xhr.open('GET', "../input/" + objfile, true);
+        xhr.send(null);
+};
+
 class aeroplane {
     
     points = [];
@@ -72,15 +107,39 @@ class aeroplane {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.lbuf);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.lines), gl.DYNAMIC_DRAW);
         }
+        if (this.tris.length > 0)
+        {
+            if (this.tbuf != null) { gl.deleteBuffer(this.tbuf); }
+            this.tbuf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.tbuf);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.tris), gl.DYNAMIC_DRAW);
+        }
     }
     
     add_point (x,y,z) {
         this.points.push(x,y,z);
         this.points.push(lcol[0], lcol[1], lcol[2]);
+        this.points.push(0,0,0);
     }
     add_line_point (x,y,z) {
         this.lines.push(x,y,z);
         this.lines.push(lcol[0], lcol[1], lcol[2]);
+        this.lines.push(0,0,0);
+    }
+    add_tri_point (x,y,z, nx,ny,nz) {
+        this.tris.push(x,y,z);
+        this.tris.push(lcol[0], lcol[1], lcol[2]);
+        this.tris.push(nx, ny, nz);
+    }
+    
+    load (obj) {
+        fetch_objfile(obj, this);
+    }
+    obj (str, o, sc) {
+        let model_resp = obj.create(str, o, sc, true, lcol);
+        
+        this.tris  = this.tris.concat(model_resp.tris);
+        this.lines = this.lines.concat(model_resp.lines);
     }
     
     setcol(r,g,b)
@@ -153,25 +212,54 @@ let draw = function ()
     gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
-    gl.uniform1i (glprog.colmode, colmode);
-    gl.uniform3fv(glprog.defcol,  lcol);
-    gl.uniform1f (glprog.alpha,   alpha);
+    
+    if (T.tris.length > 0)
+    {
+        gl.uniform1i (glprog.colmode, 1);
+        gl.uniform3fv(glprog.defcol,  [0,0,0]);
+        gl.uniform1f (glprog.alpha,   alpha);
+    }
+    else
+    {
+        gl.uniform1i (glprog.colmode, 0);
+        gl.uniform3fv(glprog.defcol,  [0,0,0]);
+        gl.uniform1f (glprog.alpha,   alpha);
+    }
     
     if (T.points.length > 0)
     {
+        gl.uniform1i(glprog.shaded, 0);
         gl.bindBuffer(gl.ARRAY_BUFFER, T.pbuf);
-        gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 6*4, 0*4);
-        gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 6*4, 3*4);
+        gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
+        gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
+        gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
             
-        gl.drawArrays(gl.POINTS, 0, T.points.length / 6);
+        gl.drawArrays(gl.POINTS, 0, T.points.length / 9);
     }
     if (T.lines.length > 0)
     {
+        gl.uniform1i(glprog.shaded, 0);
         gl.bindBuffer(gl.ARRAY_BUFFER, T.lbuf);
-        gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 6*4, 0*4);
-        gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 6*4, 3*4);
+        gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
+        gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
+        gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
             
-        gl.drawArrays(gl.LINES, 0, T.lines.length / 6);
+        gl.drawArrays(gl.LINES, 0, T.lines.length / 9);
+    }
+    if (T.tris.length > 0)
+    {
+        gl.uniform1i(glprog.shaded,  1);
+        gl.uniform1i(glprog.colmode, 0);
+        
+        gl.bindBuffer(gl.ARRAY_BUFFER, T.tbuf);
+        gl.vertexAttribPointer(glprog.pos,  3, gl.FLOAT, false, 9*4, 0*4);
+        gl.vertexAttribPointer(glprog.col,  3, gl.FLOAT, false, 9*4, 3*4);
+        gl.vertexAttribPointer(glprog.norm, 3, gl.FLOAT, false, 9*4, 6*4);
+            
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(1, 1);
+        gl.drawArrays(gl.TRIANGLES, 0, T.tris.length / 9);
+        gl.disable(gl.POLYGON_OFFSET_FILL);
     }
 };
 
@@ -228,12 +316,6 @@ let handle_key_down = function (event)
             menu_hidden = true;
             document.getElementById("menu").className = "hidden";
         }
-    }
-    else if (event.key === "c" || event.key === "C")
-    {
-        colmode += 1;
-        if (colmode > 1) { colmode = 0; }
-        draw();
     }
     else if (event.key === "i" || event.key === "I")
     {
@@ -396,6 +478,8 @@ let gpu_init = function (canvas_id)
     gl.enableVertexAttribArray(glprog.pos);
     glprog.col  = gl.getAttribLocation(glprog.bin, "col");
     gl.enableVertexAttribArray(glprog.col);
+    glprog.norm = gl.getAttribLocation(glprog.bin, "norm");
+    gl.enableVertexAttribArray(glprog.norm);
     
     glprog.p       = gl.getUniformLocation(glprog.bin, "p");
     glprog.vm      = gl.getUniformLocation(glprog.bin, "vm");
@@ -403,6 +487,7 @@ let gpu_init = function (canvas_id)
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
     glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
     glprog.colmode = gl.getUniformLocation(glprog.bin, "colmode");
+    glprog.shaded  = gl.getUniformLocation(glprog.bin, "shaded");
     glprog.defcol  = gl.getUniformLocation(glprog.bin, "defcol");
 };
 

@@ -9,9 +9,10 @@ let shaders = {
 
 vec3 shade_diffuse (in vec3 color, in vec3 norm, in vec3 light)
 {
-    vec3 N = normalize(norm);
-    vec3 L = normalize(light);
-    return color*dot(N,L);
+    vec3 N  = normalize(norm);
+    vec3 L  = normalize(light);
+    float d = (dot(N,L)+1.0)/2.0;
+    return color*d;
 }
 
 vec4 tr6pp (in vec4 position, in mat4 vm, in float rad, in float aspect, in float nn, in float ff)
@@ -33,11 +34,13 @@ vec4 tr6pp (in vec4 position, in mat4 vm, in float rad, in float aspect, in floa
 
 in      vec3  pos;
 in      vec3  col;
+in      vec3  norm;
 
 uniform mat4  p;
 uniform mat4  vm;
 uniform int   proj;
 uniform int   colmode;
+uniform int   shaded;
 uniform vec3  defcol;
 uniform float aspect;
 
@@ -63,8 +66,17 @@ void main ()
                             );
     }
     
-    fcol = defcol;
-    if (colmode == 0) fcol = col;
+    vec3 col2 = defcol;
+    if (colmode == 0) col2 = col;
+    
+    if (shaded == 1)
+    {
+        fcol  = 0.5*col2 + 0.5*shade_diffuse(col2,norm,vec3(1.0, 1.0, 1.0));
+    }
+    else
+    {
+        fcol = col2;
+    }
 }
 `,
 
