@@ -479,6 +479,8 @@ vec3 col(in float x, in float y)
         vec2 q = cdiv(v,d);
         z = z-q;
         vec2 v2 = cmul(z,cmul(z,cmul(z,cmul(z,cmul(z,z))))) + z;
+        
+        //if ( length(v) < 0.0001 ) { break; }
         if ( abs(v2.x+v2.y) < 0.0001 ) { break; }
     }
     
@@ -509,16 +511,16 @@ vec3 col(in float x, in float y)
         
         z = z-q;
         
-        if ( abs(z-r0).x < 0.0001 && abs(z-r0).y < 0.0001 ) { ret.x = 0; ret.y = i; break; }
-        if ( abs(z-r1).x < 0.0001 && abs(z-r1).y < 0.0001 ) { ret.x = 1; ret.y = i; break; }
-        if ( abs(z-r2).x < 0.0001 && abs(z-r2).y < 0.0001 ) { ret.x = 2; ret.y = i; break; }
+        if ( length(z-r0) < 0.0001 ) { ret.x = 0; ret.y = i; break; }
+        if ( length(z-r1) < 0.0001 ) { ret.x = 1; ret.y = i; break; }
+        if ( length(z-r2) < 0.0001 ) { ret.x = 2; ret.y = i; break; }
     }
     
     vec3 c = ret.x == 0 ? vec3(1.0,0.0,0.0) : ret.x == 1 ? vec3(0.0,1.0,0.0) : vec3(0.0,0.0,1.0);
     
-    return float(N-i)/float(N) * c;
-}
-`,
+    int N4 = N/4;
+    return float(N4-i/4)/float(N4) * c;
+}`,
 
 nr2 : `\
 vec2 fz (in vec2 z, in vec2 a, in vec2 b)
@@ -546,7 +548,8 @@ vec3 col(in float x, in float y)
         vec2 v = fz(z,a,b);
         
         //if ( abs(v.x) < 0.0001 && abs(v.y) < 0.0001 ) { break; }
-        if ( abs(v.x+v.y) < 0.0001 ) { break; }
+        //if ( abs(v.x+v.y) < 0.0001 ) { break; }
+        if ( length(v) < 0.0001 ) { break; }
         
         vec2 d = dfz(z,a,b);
         vec2 q = cdiv(v,d);
@@ -583,7 +586,8 @@ vec3 col(in float x, in float y)
         vec2 v = fz(z,a,b);
         
         //if ( abs(v.x) < 0.0001 && abs(v.y) < 0.0001 ) { break; }
-        if ( abs(v.x+v.y) < 0.0001 ) { break; }
+        //if ( abs(v.x+v.y) < 0.0001 ) { break; }
+        if ( length(v) < 0.0001 ) { break; }
         
         vec2 d = dfz(z,a,b);
         vec2 q = cdiv(v,d);
@@ -653,16 +657,15 @@ vec3 col(in float x, in float y)
         z0 = z1;
         z1 = v2;
         
-        if ( abs(z1-r0).x < 0.01 && abs(z1-r0).y < 0.01 ) { ret.x = 0; ret.y = i; break; }
-        if ( abs(z1-r1).x < 0.01 && abs(z1-r1).y < 0.01 ) { ret.x = 1; ret.y = i; break; }
-        if ( abs(z1-r2).x < 0.01 && abs(z1-r2).y < 0.01 ) { ret.x = 2; ret.y = i; break; }
+        if ( length(z1-r0) < 0.0001 ) { ret.x = 0; ret.y = i; break; }
+        if ( length(z1-r1) < 0.0001 ) { ret.x = 1; ret.y = i; break; }
+        if ( length(z1-r2) < 0.0001 ) { ret.x = 2; ret.y = i; break; }
     }
     
     vec3 c = ret.x == 0 ? vec3(1.0,0.0,0.0) : ret.x == 1 ? vec3(0.0,1.0,0.0) : vec3(0.0,0.0,1.0);
     
     return float(N-i)/float(N) * c;
-}
-`,
+}`,
 
 bit01 : `\
 vec3 col(in float x, in float y)
