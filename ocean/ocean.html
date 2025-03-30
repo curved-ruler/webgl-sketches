@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script src="ocean.js" type="module"></script>
+        <title>Ocean</title>
+        <style>
+#canvas {
+  position: absolute;
+  top:  0px;
+  left: 0px;
+  image-rendering: smooth;
+}
+#menu {
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  color: rgb(120, 255, 255);
+}
+#menu-ovf {
+  position: absolute;
+  top:  10px;
+  left: 10px;
+  
+  height: 90%;
+  overflow-y: auto;
+}
+
+.left {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.hidden {
+  display: none;
+}
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+        
+        <div id="menu-ovf"><table id="menu">
+            <tr>
+                <td class="left">M:</td>
+                <td>Hide Menu</td>
+            </tr>
+            <tr>
+                <td class="left">W / S:</td>
+                <td>Step</td>
+            </tr>
+            <tr>
+                <td class="left">Space:</td>
+                <td>Run</td>
+            </tr>
+            <tr>
+                <td class="left">Circ:</td>
+                <td>
+                  <input id="circin" type="checkbox" checked="true" onchange="tog_circs()">
+                </td>
+            </tr>
+            <tr>
+                <td class="left">Params:</td>
+                <td>
+                    <textarea id="paramsin" type="text" rows="9" cols="42"></textarea>
+                    <br/>
+                    <button onclick="set_params()">Set params</button>
+                </td>
+            </tr>
+        </table></div>
+    </body>
+</html>
