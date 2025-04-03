@@ -8,9 +8,9 @@ define(function ()
         //precision : 'precision highp float;\n',
         
         def_norm : `\
-float dist (in vec2 p1, in vec2 p2)
+float dist (in vec2 p1, in vec2 p2, in int i)
 {
-    return pow(pow(abs(p1.x - p2.x), 2.0) + pow(abs(p1.y - p2.y), 2.0), 0.5);
+    return float(i%2+1) * pow( pow(abs(p1.x - p2.x), 2.0) + pow(abs(p1.y - p2.y), 2.0), 0.5);
 }
 `,
     
@@ -144,7 +144,7 @@ fdata compute_fdata (in vec2 p)
     {
         if (eukn(p, vec2(basedata[i*5], basedata[i*5+1])) < markerpix) { ret.spot = true; }
         
-        float di = dist(p, vec2(basedata[i*5], basedata[i*5+1]));
+        float di = dist(p, vec2(basedata[i*5], basedata[i*5+1]), i);
         dfs[3] = di; ifs[3] = i;
         
         CSWAP(3);

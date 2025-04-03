@@ -125,7 +125,7 @@ define(function ()
     };
     
     var dist_p_base = `\
-float dist (in vec2 p1, in vec2 p2)
+float dist (in vec2 p1, in vec2 p2, in int i)
 {
     float p = {ppp};
     return pow(pow(abs(p1.x - p2.x), p) + pow(abs(p1.y - p2.y), p), 1.0/p);
@@ -137,13 +137,13 @@ float dist (in vec2 p1, in vec2 p2)
     };
     
     var dist_pinf = `\
-float dist (in vec2 p1, in vec2 p2)
+float dist (in vec2 p1, in vec2 p2, in int i)
 {
     return max(abs(p1.x - p2.x), abs(p1.y - p2.y));
 }`;
     
     var dist_sin_01 = `\
-float dist (in vec2 p1, in vec2 p2)
+float dist (in vec2 p1, in vec2 p2, in int i)
 {
     return (sin((p1.x - p2.x)*7.0) + sin((p1.y - p2.y)*7.0))*0.4;
 }`;
