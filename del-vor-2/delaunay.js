@@ -50,7 +50,7 @@ let tri_inside = function (a, b, c, d)
 
 let checkflip = function (dm, i, a, b)
 {
-    if (a<3 && b<3)  return;
+    //if (a<6 && b<6)  return;
     if (i>=dm.t.length) return;
     
     let i2 =  i;
@@ -74,7 +74,7 @@ let checkflip = function (dm, i, a, b)
     
     if (c === -1)
     {
-        console.log("ERROR: Delaunay: checkflip - adjacent tirangle not found");
+        //console.log("Delaunay: checkflip - adjacent tirangle not found");
         return;
     }
     
@@ -90,7 +90,7 @@ let checkflip = function (dm, i, a, b)
     
     if (d === c) { console.log("d = c  " + i + " / " + i2); return;  }
     
-    if (a>2 && b>2 && d>2 && c<3) return;
+    //if (a>2 && b>2 && d>2 && c<3) return;
     
     let det = incircle( dm.p[ dm.t[i].x ], dm.p[ dm.t[i].y ], dm.p[ dm.t[i].z ], dm.p[c] );
     
@@ -152,5 +152,90 @@ let delaunay_step = function (dm, p)
         checkflip(dm, ts+1,  b, c);
 };
 
-export { delaunay_step };
+let circum1 = function (x,y,z)
+{
+    let p1 = { x:(x.x+y.x)/2, y:(x.y+y.y)/2 };
+    let p2 = { x:(x.x+z.x)/2, y:(x.y+z.y)/2 };
+    let i1 = { x:-(x.y-y.y),  y:(x.x-y.x) };
+    let i2 = { x:-(x.y-z.y),  y:(x.x-z.x) };
+    
+    let a = Math.abs(i1.x-i2.x);
+    let t = a < 0.00001 ? (p2.y-p1.y) / (i1.y-i2.y) : (p2.x-p1.x) / (i1.x-i2.x);
+    
+    return { x:p1.x + t*i1.x, y:p1.y + t*i1.y };
+};
+let sub = (a,b) => ( {x:a.x-b.x, y:a.y-b.y} );
+let dot = (a,b) => ( a.x*b.x + a.y*b.y );
+let length = (v) => ( Math.sqrt(v.x*v.x+v.y*v.y) );
+let normalize = (v) => {
+    let l = length(v);
+    if (l < 0.000001) { return {x:0,y:0}; }
+    else
+    {
+        return { x:v.x/l, y:v.y/l };
+    }
+};
+let circum2 = function (x,y,z)
+{
+    let d1 = dot(sub(z,x),sub(y,x));
+    let d2 = dot(sub(z,y),sub(x,y));
+    let d3 = dot(sub(x,z),sub(y,z));
+    let c1 = d2*d3;
+    let c2 = d3*d1;
+    let c3 = d1*d2;
+    
+    return {
+        x:( (c2+c3)*x.x + (c3+c1)*y.x + (c1+c2)*z.x ) / ( 2*(c1+c2+c3) ),
+        y:( (c2+c3)*x.y + (c3+c1)*y.y + (c1+c2)*z.y ) / ( 2*(c1+c2+c3) ),
+    };
+};
+let angle = (o,p) => {
+    return Math.acos( dot(normalize(sub(o,p)), {x:1, y:0}) );
+};
+
+let dual = function (dm)
+{
+    let vm = [];
+    
+    for (let i=0 ; i<dm.t.length ; i+=1)
+    {
+        let chk = 0;
+        if (dm.t[i].x < 4) chk+=1;
+        if (dm.t[i].y < 4) chk+=1;
+        if (dm.t[i].z < 4) chk+=1;
+        if (chk>1) { continue; }
+        
+        let x = dm.p[dm.t[i].x];
+        let y = dm.p[dm.t[i].y];
+        let z = dm.p[dm.t[i].z];
+        
+        let c = circum2(x,y,z);
+        
+        let pcenter = { x:c.x, y:c.y, tx:dm.t[i].x, ty:dm.t[i].y, tz:dm.t[i].z };
+        vm.push(pcenter);
+    }
+    
+    let voronoi = [];
+    
+    for (let i=4 ; i<dm.p.length ; i+=1)
+    {
+        let vi = [];
+        for (let v=0 ; v<vm.length ; v+=1)
+        {
+            if (vm[v].tx === i || vm[v].ty === i || vm[v].tz === i)
+            {
+                vi.push({ x:vm[v].x, y:vm[v].y });
+            }
+        }
+        voronoi.push( vi.sort( (a,b)=>{
+            let av = sub(a,dm.p[i]);
+            let bv = sub(b,dm.p[i]);
+            return Math.atan2(av.x, av.y) > Math.atan2(bv.x, bv.y) ? 1 : -1;
+        }) );
+    }
+    
+    return voronoi;
+};
+
+export { delaunay_step, dual };
 

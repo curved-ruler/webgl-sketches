@@ -12,9 +12,43 @@
   top:  0px;
   left: 0px;
 }
+#menu {
+  position: absolute;
+  top:  10px;
+  left: 10px;
+  padding: 10px;
+  background-color: rgb(50, 50, 50);
+  color: rgb(120, 255, 255);
+}
+.hidden {
+  display: none;
+}
         </style>
     </head>
     <body>
         <canvas id="canvas"></canvas>
+        
+        <table id="menu">
+            <tr>
+                <td class="left">M:</td>
+                <td>show/hide menu</td>
+            </tr>
+            <tr>
+                <td class="left">D:</td>
+                <td>display mode</td>
+            </tr>
+            <tr>
+                <td class="left">Mouse left click:</td>
+                <td>add point</td>
+            </tr>
+            <tr>
+                <td class="left">Mouse wheel drag:</td>
+                <td>pan</td>
+            </tr>
+            <tr>
+                <td class="left">Mouse wheel:</td>
+                <td>scale</td>
+            </tr>
+        </table>
     </body>
 </html>
