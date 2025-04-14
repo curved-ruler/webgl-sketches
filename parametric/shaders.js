@@ -214,6 +214,57 @@ vec3 parametric (in float u, in float v)
     );
 }`,
 
+spiral:`\
+// https://mathstodon.xyz/@jcponcemath/114298765742578405
+
+const vec2 u_range = vec2(0.0, 2.0*PI);
+const vec2 v_range = vec2(0.0, 20.0);
+
+vec3 parametric (in float u, in float v)
+{
+    float a = 1.5;
+    float b = 5.0;
+    float c = 2.0;
+    return vec3(
+        v*cos(u),
+        a*cos(b*u+c*v),
+        v*sin(u)
+    );
+}`,
+
+spiral2:`\
+//https://mathstodon.xyz/@jcponcemath/114305747272364942
+
+const vec2 u_range = vec2(-1.5, 1.5);
+const vec2 v_range = vec2(-2.0, 2.0);
+
+vec3 parametric (in float u, in float v)
+{
+    return vec3(
+        sinh(2.0*u)/(cos(10.0*u)+cosh(2.0*u)),
+        sin(10.0*u)/(cos(10.0*u)+cosh(2.0*u)),
+        v
+    );
+}`,
+
+umbrella:`\
+// https://mathstodon.xyz/@jcponcemath/114288330410809256
+
+const vec2 u_range = vec2(0.0, 5.0);
+const vec2 v_range = vec2(0.0, 2.0*PI);
+
+vec3 parametric (in float u, in float v)
+{
+    float R = 10.0;
+    float n = 10.0;
+    float r = R / n;
+    float u3 = pow(u,1.0/3.0);
+    return vec3 (
+        u3*( (R-r)*cos(v) + r*cos((n-1.0)*v) ),
+        u3*( (R-r)*sin(v) - r*sin((n-1.0)*v) ),
+        3.0*(1.0-u)
+    );
+}`,
 
 fxy:`\
 const vec2 u_range = vec2(-1.0, 1.0);

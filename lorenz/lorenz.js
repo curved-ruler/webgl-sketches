@@ -142,7 +142,22 @@ return [x+dt*dx, y+dt*dy, z+dt*dz];`,
     `\
 return [x + 1*Math.cos(y)*Math.sin(z),
         y + 1*Math.cos(z)*Math.sin(x),
-        z + 1*Math.cos(x)*Math.sin(y)];`
+        z + 1*Math.cos(x)*Math.sin(y)];`,
+    `\
+const dt = 0.001;
+
+const a = 40.0;
+const b = 1.833;
+const c = 0.16;
+const d = 0.65;
+const e = 55.0;
+const f = 20.0;
+
+let dx = a * (y - x) + c * x * z;
+let dy = e * x + f * y - x * z;
+let dz = b * z + x * y - d * x * x;
+
+return [x+dt*dx, y+dt*dy, z+dt*dz];`
 ];
 
 
