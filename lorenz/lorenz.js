@@ -157,7 +157,34 @@ let dx = a * (y - x) + c * x * z;
 let dy = e * x + f * y - x * z;
 let dz = b * z + x * y - d * x * x;
 
-return [x+dt*dx, y+dt*dy, z+dt*dz];`
+return [x+dt*dx, y+dt*dy, z+dt*dz];`,
+
+    `\
+const h  = 0.005;
+const h2 = h/2;
+const h6 = h/6;
+
+const a = 40.0;
+const b = 1.833;
+const c = 0.16;
+const d = 0.65;
+const e = 55.0;
+const f = 20.0;
+
+let dequan = (p) => (
+    { x:a * (p.y - p.x) + c * p.x * p.z,
+      y:e * p.x + f * p.y - p.x * p.z,
+      z:b * p.z + p.x * p.y - d * p.x * p.x }
+);
+
+let k1 = dequan({ x:x, y:y, z:z });
+let k2 = dequan({ x:x+h2*k1.x, y:y+h2*k1.y, z:z+h2*k1.z });
+let k3 = dequan({ x:x+h2*k2.x, y:y+h2*k2.y, z:z+h2*k2.z });
+let k4 = dequan({ x:x+h*k3.x, y:y+h*k3.y, z:z+h*k3.z });
+
+return [x+h6*(k1.x + 2*k2.x + 2*k3.x + k4.x),
+        y+h6*(k1.y + 2*k2.y + 2*k3.y + k4.y),
+        z+h6*(k1.z + 2*k2.z + 2*k3.z + k4.z)];`
 ];
 
 
