@@ -288,6 +288,21 @@ let handle_key_down = function ()
     }
 };
 
+let handletab = function (ta_dom)
+{
+    ta_dom.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab')
+        {
+            e.preventDefault();
+            let str = ta_dom.value;
+            let start = ta_dom.selectionStart;
+            let end   = ta_dom.selectionEnd;
+            ta_dom.value = str.substring(0, start) + "    " + str.substring(end);
+            ta_dom.selectionEnd = end-(end-start)+4;
+        }
+    });
+};
+
 let resize = function ()
 {
     if (!canvas || !gl) return;
@@ -372,6 +387,8 @@ let init = function ()
     fta    = document.getElementById('func');
     Nudom  = document.getElementById('nuin');
     Nvdom  = document.getElementById('nvin');
+    
+    handletab(fta);
     
     Pdom = document.getElementById('pres');
     Pdom.options.selectedIndex = 0;

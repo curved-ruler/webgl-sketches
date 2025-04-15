@@ -380,9 +380,9 @@ let init_pos_grid_3 = function ()
     for (let j=0 ; j<N3 ; ++j)
     for (let k=0 ; k<N3 ; ++k)
     {
-        pos1[(i*N3*N3 + j*N3 + k)*3 + 0] = -N3/2 + i;
-        pos1[(i*N3*N3 + j*N3 + k)*3 + 1] = -N3/2 + j;
-        pos1[(i*N3*N3 + j*N3 + k)*3 + 2] = -N3/2 + k;
+        pos1[(i*N3*N3 + j*N3 + k)*3 + 0] = -(N3-1)/2 + i;
+        pos1[(i*N3*N3 + j*N3 + k)*3 + 1] = -(N3-1)/2 + j;
+        pos1[(i*N3*N3 + j*N3 + k)*3 + 2] = -(N3-1)/2 + k;
     }
 };
 
@@ -681,6 +681,21 @@ let handle_key_down = function (event)
     }
 };
 
+let handletab = function (ta_dom)
+{
+    ta_dom.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab')
+        {
+            e.preventDefault();
+            let str = ta_dom.value;
+            let start = ta_dom.selectionStart;
+            let end   = ta_dom.selectionEnd;
+            ta_dom.value = str.substring(0, start) + "    " + str.substring(end);
+            ta_dom.selectionEnd = end-(end-start)+4;
+        }
+    });
+};
+
 let setf = function ()
 {
     let Fstr = Fdom.value;
@@ -836,6 +851,8 @@ let init = function ()
     bcol_dom   = document.getElementById('bcolin');
     lcol_dom   = document.getElementById('lcolin');
     follow_dom = document.getElementById('followin');
+    
+    handletab(Fdom);
     
     let opts = alpha_dom.options;
     for (let i=0 ; i<opts.length ; ++i)
