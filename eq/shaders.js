@@ -674,8 +674,7 @@ vec3 col(in float x, in float y)
     int b = int(floor(y));
     int left  = (a ^ b) % 9;
     return (left == 0) ? vec3(1.0) : vec3(0.0);
-}
-`,
+}`,
 
 bit02 : `\
 vec3 col(in float x, in float y)
@@ -684,8 +683,27 @@ vec3 col(in float x, in float y)
     int b = int(floor(y));
     int left  = (a*a + b*b) % 256;
     return vec3(float(left)/256.0);
+}`,
+
+xorsh1 : `\
+int xorshift (in int N)
+{
+    N = N * 101;
+    N ^= N << 13;
+    N ^= N >> 17;
+    N ^= N << 5;
+    return N;
 }
-`
+vec3 col(in float x, in float y)
+{
+    int a = int(floor(x));
+    int b = int(floor(y));
+    int c = xorshift(xorshift(xorshift((a*b))));
+    int d = xorshift(xorshift(xorshift((a/b))));
+    float r = float(c % 256);
+    float g = float(d % 256);
+    return vec3(fract((r+g)/256.0));
+}`
 
 };
 
