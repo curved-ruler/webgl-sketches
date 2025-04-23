@@ -688,7 +688,7 @@ vec3 col(in float x, in float y)
 xorsh1 : `\
 int xorshift (in int N)
 {
-    N = N * 101;
+    N = N * int(floor(mouse.x + 1.0));
     N ^= N << 13;
     N ^= N >> 17;
     N ^= N << 5;
