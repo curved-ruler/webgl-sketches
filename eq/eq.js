@@ -14,15 +14,18 @@ let pos       = { x:0.0,  y:0.0 };
 let mouse_pos = { x:0.0,  y:0.0 };
 let mouse_dom = { x:null, y:null };
 let mousep_dom = null;
-
 let tr = [1,0,1,0];
 let scale = 40.0;
+let time = 0;
+let run  = false;
+
 let grabbed  = 0;
 let mouse_param = false;
 let screen_quad_buffer = null;
 let start_func = "";
 let menu_hidden = false;
 let presets_dom = null;
+let time_dom = null;
 
 
 
@@ -56,10 +59,18 @@ let draw = function ()
     //console.log("TR", tr);
     gl.uniform4fv(shader.tr, tr);
     gl.uniform2f(shader.mouse, mouse_pos.x, mouse_pos.y);
+    gl.uniform1f(shader.time, time);
     
     gl.bindBuffer(gl.ARRAY_BUFFER, screen_quad_buffer);
     gl.vertexAttribPointer(shader.pos, 2, gl.FLOAT, false, 0*4, 0*4);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+};
+let tick = function ()
+{
+    time += 0.01;
+    time_dom.innerHTML = time.toFixed(3);
+    draw();
+    if (run) { window.requestAnimationFrame(tick); }
 };
 
 let zoomin  = function () { scale *= 0.8; };
@@ -123,11 +134,17 @@ let handle_key_down = function (event)
         mousep(mouse_param);
         mousep_dom.checked = mouse_param;
     }
+    else if (event.key === " ")
+    {
+        run = !run;
+        if (run) { window.requestAnimationFrame(tick); }
+    }
     else if (event.key === "Enter")
     {
         pos.x = 0;
         pos.y = 0;
-        scale = 10.0;
+        scale = 40.0;
+        time  = 0;
         draw();
     }
 };
@@ -170,6 +187,7 @@ let create_shader = function ()
     
     shader.tr    = gl.getUniformLocation(shader.glprog, "tr");
     shader.mouse = gl.getUniformLocation(shader.glprog, "mouse");
+    shader.time  = gl.getUniformLocation(shader.glprog, "time");
 }
 
 let init = function ()
@@ -186,6 +204,7 @@ let init = function ()
     canvas.addEventListener("mousemove", handle_mouse_move);
     canvas.addEventListener("wheel",     handle_wheel);
     
+    time_dom    = document.getElementById('time');
     mouse_dom.x = document.getElementById('mousex');
     mouse_dom.y = document.getElementById('mousey');
     mousep_dom  = document.getElementById('mousep_chk');

@@ -50,6 +50,7 @@
                         <option value="bit01">Bitwise</option>
                         <option value="bit02">Bitwise 2</option>
                         <option value="xorsh1">xorshift</option>
+                        <option value="time0">animated</option>
                     </select>
                 </td>
             </tr>
@@ -63,7 +64,13 @@
                     <input id="mousep_chk" type="checkbox" onchange="mousep(this.checked)" />
                     <span style="margin-bottom:4px;">&nbsp;mouse.x:&nbsp;<span id="mousex">-</span>&nbsp;&nbsp;&nbsp;mouse.y:&nbsp;<span id="mousey">-</span></span>
                 </td>
+            </tr>
             <tr>
+                <td class="left">Space:</td>
+                <td>
+                    start/stop&nbsp;&nbsp;time: <span id="time">0</span>
+                </td>
+            </tr>
             <tr>
                 <td class="left">Function:</td>
                 <td>

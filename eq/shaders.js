@@ -16,8 +16,9 @@ fs : `\
 #version 300 es
 precision highp float;
 
-uniform vec4 tr;
-uniform vec2 mouse;
+uniform vec4  tr;
+uniform vec2  mouse;
+uniform float time;
 out vec4 color;
 
 $HELPERS$
@@ -703,6 +704,13 @@ vec3 col(in float x, in float y)
     float r = float(c % 256);
     float g = float(d % 256);
     return vec3(fract((r+g)/256.0));
+}`,
+
+time0 : `\
+vec3 col(in float x, in float y)
+{
+    float t = sin(time)*sin(x/2.0)-(y/2.0);
+    return isint(t, 0.05) ? vec3(0.9,0.55,0.0) : vec3(0.1);
 }`
 
 };
