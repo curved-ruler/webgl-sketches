@@ -145,6 +145,7 @@ let handle_key_down = function (event)
         pos.y = 0;
         scale = 40.0;
         time  = 0;
+        time_dom.innerHTML = time.toFixed(3);
         draw();
     }
 };

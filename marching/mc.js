@@ -15,6 +15,34 @@ let b = 2.0*Math.sin(y/4.0)*Math.cos(z/4.0);
 let c = 2.0*Math.sin(z/4.0)*Math.cos(x/4.0);
 return a+b+c;`
     },
+    
+    { V: 3.0, Fstr: `\
+let pcg3d = (v) => {
+
+    v.x = v.x * 1664525 + 1013904223;
+    v.y = v.y * 1664525 + 1013904223;
+    v.z = v.z * 1664525 + 1013904223;
+
+    v.x += Math.floor(v.y*v.z) % 4194304;
+    v.y += Math.floor(v.z*v.x) % 4194304;
+    v.z += Math.floor(v.x*v.y) % 4194304;
+
+    v.x ^= v.x >> 16;
+    v.y ^= v.y >> 16;
+    v.z ^= v.z >> 16;
+
+    v.x += Math.floor(v.y*v.z) % 4194304;
+    v.y += Math.floor(v.z*v.x) % 4194304;
+    v.z += Math.floor(v.x*v.y) % 4194304;
+
+    return v;
+};
+let vv = pcg3d({x:x,y:y,z:z});
+let vx = Math.floor(vv.x) % 5;
+let vy = Math.floor(vv.y) % 5;
+let vz = Math.floor(vv.z) % 5;
+return (vx*vx+vy*vy+vz*vz);`
+    },
 
     { V: 21,  Fstr: 'return Math.sqrt(x*x + y*y + z*z);'},
     
