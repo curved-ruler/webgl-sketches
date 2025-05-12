@@ -37,7 +37,8 @@ in      vec3  col;
 in      vec3  norm;
 
 uniform mat4  p;
-uniform mat4  vm;
+uniform mat4  v;
+uniform mat4  m;
 uniform int   proj;
 uniform int   colmode;
 uniform int   shaded;
@@ -48,7 +49,7 @@ out vec3 fcol;
 
 void main ()
 {
-    vec4 p2 = vm * vec4(pos, 1.0);
+    vec4 p2 = v*m * vec4(pos, 1.0);
     gl_PointSize = 2.0;
     
     if (proj == 0 || proj == 1)
@@ -58,7 +59,7 @@ void main ()
     else
     {
         gl_Position = tr6pp(vec4(pos, 1.0), // pos
-                            vm,             // vm
+                            v*m,            // vm
                             1.4,            // rad
                             aspect,         // aspect
                             0.1,            // near
@@ -71,7 +72,7 @@ void main ()
     
     if (shaded == 1)
     {
-        fcol  = 0.5*col2 + 0.5*shade_diffuse(col2,norm,vec3(1.0, 1.0, 1.0));
+        fcol  = 0.5*col2 + 0.5*shade_diffuse(col2, mat3(v*m)*norm, vec3(0.0, 1.0, -1.0));
     }
     else
     {

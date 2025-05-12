@@ -1,9 +1,10 @@
 
-import { gl_init }          from "./gl_init.js";
-import { shaders }          from "./shaders.js";
-import { programs }         from "./programs.js";
-import { m4, v3, quat, tr } from "./matvec.js";
-import { obj }              from "./obj.js";
+import { gl_init }    from "./gl_init.js";
+import { shaders }    from "./shaders.js";
+import { programs }   from "./programs.js";
+import { mat4, vec3 } from "./matvec.js";
+import { tr4 }        from "./geom.js";
+import { obj }        from "./obj.js";
 
 let gl      = null;
 let glprog  = null;
@@ -29,11 +30,11 @@ let grabbed  = 0;
 
 
 let camera = {
-    pos   : [0, 0, 100],
-    look  : [0, 0, -1],
-    up    : [1, 0, 0],
+    pos   : { x:0, y:0, z:100},
+    look  : { x:0, y:0, z:-1},
+    up    : { x:1, y:0, z:0},
     near  : 0.01,
-    median: 30,
+    median: 100,
     far   : 1000,
     fovy  : Math.PI / 3,
     aspect: 1
@@ -140,6 +141,13 @@ class aeroplane {
         
         this.tris  = this.tris.concat(model_resp.tris);
         this.lines = this.lines.concat(model_resp.lines);
+        
+        //console.log("OBJ TRI", this.tris);
+        //console.log("OBJ LIN", this.lines);
+    }
+    cube (m) {
+        let model_resp = obj.cube(m, lcol);
+        this.tris  = this.tris.concat(model_resp);
     }
     
     setcol(r,g,b)
@@ -160,24 +168,20 @@ let T = null;
 
 let compute_matrices = function ()
 {
-    modlmat = tr.rotz(rotation);
-    modlmat = m4.mul(tr.rot(v3.cross(camera.up, camera.look), axis), modlmat);
-    modlmat = m4.mul(tr.scale(scale), modlmat);
+    modlmat = tr4.rotz(rotation*tr4.dtor);
+    modlmat = mat4.mul(tr4.rot_mat(vec3.cross(camera.up, camera.look), axis*tr4.dtor), modlmat);
+    modlmat = mat4.mul(tr4.scale(scale), modlmat);
     
-    //modinvmat = tr.scale(1/scale);
-    //modinvmat = m4.mul(tr.rotz(-rotation), modinvmat);
-    //modinvmat = m4.mul(tr.roty(-axis), modinvmat);
+    viewmat = tr4.view(camera);
     
-    viewmat = tr.view(camera);
-    
-    projmat = m4.init();
+    projmat = mat4.init();
     if (proj === 0)
     {
-        projmat = tr.axon(camera);
+        projmat = tr4.axon(camera);
     }
     else if (proj === 1)
     {
-        projmat = tr.persp(camera);
+        projmat = tr4.persp(camera);
     }
 };
 
@@ -208,8 +212,9 @@ let draw = function ()
     
     compute_matrices();
     
-    gl.uniformMatrix4fv(glprog.p,  true, projmat);
-    gl.uniformMatrix4fv(glprog.vm, true, m4.mul(viewmat, modlmat));
+    gl.uniformMatrix4fv(glprog.p, true, projmat);
+    gl.uniformMatrix4fv(glprog.v, true, viewmat);
+    gl.uniformMatrix4fv(glprog.m, true, modlmat);
     gl.uniform1i(glprog.proj, proj);
     gl.uniform1f(glprog.aspect, camera.aspect);
     
@@ -339,30 +344,30 @@ let handle_key_down = function (event)
     }
     else if (event.key === "w" || event.key === "W")
     {
-        camera.pos   = [80, 80, 80];
-        camera.look  = v3.normalize([-1, -1, -1]);
-        camera.up    = v3.normalize([-1, -1,  2]);
+        camera.pos   = { x:80, y:80, z:80};
+        camera.look  = vec3.normalize({ x:-1, y:-1, z:-1});
+        camera.up    = vec3.normalize({ x:-1, y:-1, z: 2});
         draw();
     }
     else if (event.key === "a" || event.key === "A")
     {
-        camera.pos   = [-100, 0, 0];
-        camera.look  = [ 1, 0, 0];
-        camera.up    = [ 0, 0, 1];
+        camera.pos   = {x:-100, y:0, z:0};
+        camera.look  = {x: 1, y:0, z:0};
+        camera.up    = {x: 0, y:0, z:1};
         draw();
     }
     else if (event.key === "x" || event.key === "X")
     {
-        camera.pos   = [ 0,100, 0];
-        camera.look  = [ 0,-1, 0];
-        camera.up    = [ 0, 0, 1];
+        camera.pos   = { x: 0, y:100, z:0};
+        camera.look  = { x: 0, y:-1, z:0};
+        camera.up    = { x: 0, y:0,  z:1};
         draw();
     }
     else if (event.key === "d" || event.key === "D")
     {
-        camera.pos   = [ 0, 0,100];
-        camera.look  = [ 0, 0,-1];
-        camera.up    = [ 1, 0, 0];
+        camera.pos   = { x: 0, y:0, z:100};
+        camera.look  = { x: 0, y:0, z:-1};
+        camera.up    = { x: 1, y:0, z:0};
         draw();
     }
     else if (event.key === "F8")
@@ -394,7 +399,7 @@ let set_prog = function ()
 {
     try
     {
-        P = Function('T', P_dom.value);
+        P = Function('T', 'vec3', 'mat4', 'tr4', P_dom.value);
     }
     catch (err)
     {
@@ -419,7 +424,7 @@ let run_prog = function ()
     
     try
     {
-        P(T);
+        P(T, vec3, mat4, tr4);
         T.makepath();
         draw();
     }
@@ -482,7 +487,8 @@ let gpu_init = function (canvas_id)
     gl.enableVertexAttribArray(glprog.norm);
     
     glprog.p       = gl.getUniformLocation(glprog.bin, "p");
-    glprog.vm      = gl.getUniformLocation(glprog.bin, "vm");
+    glprog.v       = gl.getUniformLocation(glprog.bin, "v");
+    glprog.m       = gl.getUniformLocation(glprog.bin, "m");
     glprog.proj    = gl.getUniformLocation(glprog.bin, "proj");
     glprog.aspect  = gl.getUniformLocation(glprog.bin, "aspect");
     glprog.alpha   = gl.getUniformLocation(glprog.bin, "alpha");
