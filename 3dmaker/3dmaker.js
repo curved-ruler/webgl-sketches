@@ -114,6 +114,8 @@ class aeroplane {
             this.tbuf = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this.tbuf);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.tris), gl.DYNAMIC_DRAW);
+            
+            console.log("T", this.tris.length);
         }
     }
     
@@ -141,13 +143,15 @@ class aeroplane {
         
         this.tris  = this.tris.concat(model_resp.tris);
         this.lines = this.lines.concat(model_resp.lines);
-        
-        //console.log("OBJ TRI", this.tris);
-        //console.log("OBJ LIN", this.lines);
     }
-    cube (m) {
-        let model_resp = obj.cube(m, lcol);
-        this.tris  = this.tris.concat(model_resp);
+    cube (m, col) {
+        let model_resp = obj.cube(m, col);
+        this.tris  = this.tris.concat(model_resp.tris);
+        this.lines = this.lines.concat(model_resp.lines);
+    }
+    cube_line (m, col) {
+        let model_resp = obj.cube(m, col);
+        this.lines = this.lines.concat(model_resp.lines);
     }
     
     setcol(r,g,b)

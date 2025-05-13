@@ -168,18 +168,22 @@ c(5, 2, [0,0,0]);`,
 let c = (lev, d, pos, miss) => {
     if (lev <= 0) return;
     let dd = 0.5;
+    let dp = (d)*(1+dd);
 
-    T.cube(mat4.mul( tr4.transl({ x:pos[0], y:pos[1], z:pos[2] }), tr4.scale(d) ));
+    let m   = mat4.mul( tr4.transl(pos), tr4.scale(d) );
+    let col = [1,1,1];
+    //T.cube(m, col);
+    T.cube_line(m, col);
 
-    if (miss != 1) c(lev-1, d*dd, [pos[0] + (d)*(1+dd), pos[1], pos[2]], 2);
-    if (miss != 2) c(lev-1, d*dd, [pos[0] - (d)*(1+dd), pos[1], pos[2]], 1);
-    if (miss != 3) c(lev-1, d*dd, [pos[0], pos[1] + (d)*(1+dd), pos[2]], 4);
-    if (miss != 4) c(lev-1, d*dd, [pos[0], pos[1] - (d)*(1+dd), pos[2]], 3);
-    if (miss != 5) c(lev-1, d*dd, [pos[0], pos[1], pos[2] + (d)*(1+dd)], 6);
-    if (miss != 6) c(lev-1, d*dd, [pos[0], pos[1], pos[2] - (d)*(1+dd)], 5);
+    if (miss != 1) c(lev-1, d*dd, {x:pos.x + dp, y:pos.y, z:pos.z}, 2);
+    if (miss != 2) c(lev-1, d*dd, {x:pos.x - dp, y:pos.y, z:pos.z}, 1);
+    if (miss != 3) c(lev-1, d*dd, {x:pos.x, y:pos.y + dp, z:pos.z}, 4);
+    if (miss != 4) c(lev-1, d*dd, {x:pos.x, y:pos.y - dp, z:pos.z}, 3);
+    if (miss != 5) c(lev-1, d*dd, {x:pos.x, y:pos.y, z:pos.z + dp}, 6);
+    if (miss != 6) c(lev-1, d*dd, {x:pos.x, y:pos.y, z:pos.z - dp}, 5);
 };
 
-c(4, 8*4, [0,0,0], -1);`
+c(4, 8*4, {x:0,y:0,z:0}, -1);`
 };
 
 
